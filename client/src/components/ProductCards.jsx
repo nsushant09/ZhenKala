@@ -11,9 +11,9 @@ const ProductCards = ({ products = [] }) => {
     }
 
     return (
-        <div className="flex flex-wrap gap-x-[16px] gap-y-[32px] justify-center md:justify-start my-[32px]">
+        <div className="flex flex-wrap justify-center items-center gap-[16px] my-[32px]">
             {products.map((product, index) => (
-                <div key={product.id || index} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] flex justify-center">
+                <div key={product.id || index} className="">
                     <ProductCard
                         name={product.name}
                         price={product.price}

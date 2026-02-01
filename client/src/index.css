@@ -107,7 +107,7 @@ select {
 
 /* Container */
 .container {
-  width: 80%;
+  width: 90%;
   max-width: 1920px;
   margin: 0 auto;
   padding: 0 var(--spacing-lg);

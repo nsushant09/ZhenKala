@@ -62,38 +62,37 @@ const HomePage = () => {
           </div>
 
           {/* Content Section 1: Image Left, Text Right */}
-          <div className="flex flex-col md:flex-row items-center md:gap-24 mb-[32px] mt-[32px]">
-            <div className="w-full md:w-1/2">
+          <div className="mb-[32px] mt-[32px] overflow-hidden">
+            <div className="w-full md:w-1/2 md:float-left md:mr-12 mb-8 md:mb-4">
               <img
                 src={ThangkaLeft}
                 alt="Thangka Detail Deity"
-                className="w-full h-auto object-cover shadow-2xl border-4 border-white/10"
+                className="w-full h-auto md:h-[500px] object-cover  border-4 border-white/10"
               />
             </div>
-            <div className="w-full md:w-1/2">
-              <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-light">
-                The history of Thangka painting is a journey of spiritual devotion that spans over a millennium, originating in the high-altitude monasteries of the Himalayas. Emerging around the 7th to 11th centuries, this art form was a fusion of Indian, Nepalese, and Chinese aesthetic traditions. Originally developed as a nomadic teaching tool, Thangkas were designed as "scroll paintings" that could be easily rolled up and transported by traveling monks or nomadic tribes. This portability allowed the complex iconographies of the Buddha and various deities to be spread across the vast Tibetan Plateau and into the neighboring regions of the Silk Road.
-              </p>
-              <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-light mt-4">
-                As the tradition matured between the 14th and 18th centuries, distinct schools of Thangka art began to flourish, most notably the Menri, Khyenri, and Karma Gadri styles. These schools refined the use of pigments derived from ground precious minerals—such as lapis lazuli for blues, cinnabar for reds, and 24-carat gold for the divine radiance of the deities. The creation of a Thangka became a meditative ritual in itself; artists were required to follow strict proportions outlined in sacred texts (iconometry), ensuring that every line and curve held mathematical and spiritual significance. During this period, the influence of Chinese landscape painting became more evident, introducing ethereal clouds, flowing water, and mist-covered mountains into the background of the sacred figures.            </p>
-            </div>
+            <p className="text-md md:text-lg text-gray-700 leading-relaxed">
+              The history of Thangka painting is a journey of spiritual devotion that spans over a millennium, originating in the high-altitude monasteries of the Himalayas. Emerging around the 7th to 11th centuries, this art form was a fusion of Indian, Nepalese, and Chinese aesthetic traditions. Originally developed as a nomadic teaching tool, Thangkas were designed as "scroll paintings" that could be easily rolled up and transported by traveling monks or nomadic tribes. This portability allowed the complex iconographies of the Buddha and various deities to be spread across the vast Tibetan Plateau and into the neighboring regions of the Silk Road.
+            </p>
+            <p className="text-md md:text-lg text-gray-700 leading-relaxed mt-4">
+              As the tradition matured between the 14th and 18th centuries, distinct schools of Thangka art began to flourish, most notably the Menri, Khyenri, and Karma Gadri styles. These schools refined the use of pigments derived from ground precious minerals—such as lapis lazuli for blues, cinnabar for reds, and 24-carat gold for the divine radiance of the deities. The creation of a Thangka became a meditative ritual in itself; artists were required to follow strict proportions outlined in sacred texts (iconometry), ensuring that every line and curve held mathematical and spiritual significance. During this period, the influence of Chinese landscape painting became more evident, introducing ethereal clouds, flowing water, and mist-covered mountains into the background of the sacred figures.
+            </p>
           </div>
 
           {/* Content Section 2: Text Left, Image Right */}
-          <div className="flex flex-col-reverse md:flex-row items-center md:gap-24">
-            <div className="w-full md:w-1/2">
-              <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-light">
-                In the modern era, Thangkas have transitioned from strictly monastic tools to highly sought-after pieces of fine art, particularly within the Chinese and international collector communities. While the cultural revolution in the mid-20th century posed a significant threat to the preservation of these works, the tradition survived through dedicated lineages of masters in Nepal, India, and Bhutan. Today, Thangka art is recognized as a "living heritage," where ancient techniques are preserved to create windows into the divine. For a brand like Zhenkala, this history serves as the foundation, transforming a simple piece of fabric into a "precious treasure" that carries the weight of centuries of Buddhist philosophy and artistic mastery.            </p>
-              <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-light mt-4">
-                In the modern era, Thangkas have transitioned from strictly monastic tools to highly sought-after pieces of fine art, particularly within the Chinese and international collector communities. While the cultural revolution in the mid-20th century posed a significant threat to the preservation of these works, the tradition survived through dedicated lineages of masters in Nepal, India, and Bhutan. Today, Thangka art is recognized as a "living heritage," where ancient techniques are preserved to create windows into the divine. For a brand like Zhenkala, this history serves as the foundation, transforming a simple piece of fabric into a "precious treasure" that carries the weight of centuries of Buddhist philosophy and artistic mastery.            </p>
-            </div>
-            <div className="w-full md:w-1/2">
+          <div className="mb-[32px] overflow-hidden">
+            <div className="w-full md:w-1/2 md:float-right md:ml-12 mb-8 md:mb-4">
               <img
                 src={ThangkaRight}
                 alt="Thangka Detail Landscape"
-                className="w-full h-auto object-cover shadow-2xl border-4 border-white/10"
+                className="w-full h-auto md:h-[500px] object-cover  border-4 border-white/10"
               />
             </div>
+            <p className="text-md md:text-lg text-gray-700 leading-relaxed">
+              In the modern era, Thangkas have transitioned from strictly monastic tools to highly sought-after pieces of fine art, particularly within the Chinese and international collector communities. While the cultural revolution in the mid-20th century posed a significant threat to the preservation of these works, the tradition survived through dedicated lineages of masters in Nepal, India, and Bhutan. Today, Thangka art is recognized as a "living heritage," where ancient techniques are preserved to create windows into the divine. For a brand like Zhenkala, this history serves as the foundation, transforming a simple piece of fabric into a "precious treasure" that carries the weight of centuries of Buddhist philosophy and artistic mastery.
+            </p>
+            <p className="text-md md:text-lg text-gray-700 leading-relaxed mt-4">
+              In the modern era, Thangkas have transitioned from strictly monastic tools to highly sought-after pieces of fine art, particularly within the Chinese and international collector communities. While the cultural revolution in the mid-20th century posed a significant threat to the preservation of these works, the tradition survived through dedicated lineages of masters in Nepal, India, and Bhutan. Today, Thangka art is recognized as a "living heritage," where ancient techniques are preserved to create windows into the divine. For a brand like Zhenkala, this history serves as the foundation, transforming a simple piece of fabric into a "precious treasure" that carries the weight of centuries of Buddhist philosophy and artistic mastery.
+            </p>
           </div>
 
         </div>
@@ -137,8 +136,8 @@ const HomePage = () => {
 
       </div>
 
-      <div className="relative w-full overflow-hidden reveal pop-up-scroll">
-        <img src="homepage-sillouete.png" alt="ZhenKala Silhouette" className="w-full h-auto object-cover" />
+      <div className="relative h-[350px] w-full overflow-hidden reveal pop-up-scroll">
+        <img src="homepage-sillouete.png" alt="ZhenKala Silhouette" className="w-auto h-auto object-contain" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/20 flex items-center justify-center">
           <div className="w-[85%] md:w-[75%] mx-auto garamond text-white text-center text-4xl md:text-6xl font-medium leading-tight">
             "Turning sacred intention into hand-painted reality. The essence of Himalayan art."

@@ -6,7 +6,7 @@ const ProductCard = ({ name = "Product Name", price = 0, discount = 0, image, ba
     const finalPrice = hasDiscount ? price - (price * (discount / 100)) : price;
 
     return (
-        <div className="bg-[#FCF9EC] rounded-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02] w-full max-w-sm cursor-pointer group">
+        <div className="bg-[#FCF9EC] rounded-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02] w-[300px] max-w-sm cursor-pointer group">
             {/* Image Container */}
             <div className="relative aspect-[4/5] bg-gray-200">
                 <img

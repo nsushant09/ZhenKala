@@ -4,10 +4,10 @@ import './Divider.css';
 
 const Divider = () => {
     return (
-        <div className="w-full h-[48px] bg-secondary-light flex items-center overflow-hidden my-[32px] reveal pop-up-scroll"
+        <div className="w-full h-[36px] bg-secondary-light flex items-center overflow-hidden my-[16px] reveal pop-up-scroll"
             style={{ backgroundColor: "var(--color-secondary-light)" }}>
             <div
-                className="w-full h-[32px] mandala-scroll"
+                className="w-full h-[24px] mandala-scroll"
                 style={{
                     backgroundImage: `url(${MandalaDivider})`,
                     backgroundRepeat: 'repeat-x',

@@ -4,7 +4,7 @@
 .navbar-top {
   background-color: var(--color-secondary-light);
   color: var(--color-secondary);
-  padding: 12px 0;
+  padding: 8px 0;
   font-size: 14px;
 }
 
@@ -55,7 +55,6 @@
 .navbar-links {
   display: flex;
   gap: var(--spacing-lg);
-  margin-left: auto;
 }
 
 .navbar-links a {
@@ -173,7 +172,7 @@
 
 .navbar-categories {
   background-color: var(--color-secondary);
-  padding: 16px 0;
+  padding: 12px 0;
 }
 
 .categories-list {
@@ -187,7 +186,7 @@
   position: relative;
   color: var(--color-on-secondary);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 14px;
   transition: var(--transition-fast);
 }
 
@@ -199,8 +198,8 @@
   content: '';
   position: absolute;
   width: 0;
-  height: 2px;
-  bottom: -4px;
+  height: 1px;
+  bottom: -2px;
   left: 0;
   background-color: var(--color-primary);
   transition: width var(--transition-normal);
