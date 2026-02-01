@@ -1,0 +1,13 @@
+@keyframes scrollMandala {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: -500px 0;
+    }
+}
+
+.mandala-scroll {
+    animation: scrollMandala 30s linear infinite;
+}
