@@ -1,0 +1,20 @@
+/* Authentication Specific Styles */
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.auth-footer {
+    margin-top: var(--spacing-xl);
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-gray-600);
+}
+
+.auth-footer a {
+    color: var(--color-on-background);
+    font-weight: 600;
+    text-decoration: underline;
+}

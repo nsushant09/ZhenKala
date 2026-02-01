@@ -5,7 +5,7 @@ import './Footer.css';
 
 const Footer = () => {
   return (
-    <footer className="footer reveal pop-up-scroll">
+    <footer className="footer">
 
       <div className="container">
         <div className="footer-content">

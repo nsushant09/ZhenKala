@@ -16,7 +16,9 @@ import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import DeliveryPage from './pages/DeliveryPage';
 import NotFoundPage from './pages/NotFoundPage';
+
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -57,6 +59,8 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/delivery" element={<DeliveryPage />} />
+
 
                 {/* Protected Routes */}
                 <Route

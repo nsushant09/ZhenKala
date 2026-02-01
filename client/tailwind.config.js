@@ -12,6 +12,7 @@ export default {
                 surface: 'var(--color-surface)',
                 background: 'var(--color-background)',
                 'on-secondary': 'var(--color-on-secondary)',
+                'on-background': 'var(--color-on-background)',
             },
             fontFamily: {
                 primary: 'var(--font-primary)',

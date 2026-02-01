@@ -29,7 +29,7 @@ const ProductCard = ({ name = "Product Name", price = 0, discount = 0, image, ba
                 {/* Price Section */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <span className="text-xl font-medium text-gray-900">
+                        <span className="text-xl font-medium text-on-background">
                             ${finalPrice.toLocaleString()}
                         </span>
                         {hasDiscount && (
@@ -41,7 +41,7 @@ const ProductCard = ({ name = "Product Name", price = 0, discount = 0, image, ba
                     </div>
 
                     {/* Add to Cart Button */}
-                    <button className="bg-secondary hover:bg-red-900 text-white px-4 py-2 rounded-md text-sm  transition-colors flex items-center gap-1">
+                    <button className="bg-secondary hover:bg-red-500 text-white px-4 py-2 rounded-md text-sm  transition-colors flex items-center gap-1">
                         <span>+</span> Cart
                     </button>
                 </div>

@@ -136,13 +136,14 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: var(--color-surface);
+  background-color: var(--color-primary);
   box-shadow: var(--shadow-lg);
   border-radius: var(--radius-md);
   min-width: 180px;
   padding: var(--spacing-sm);
   display: none;
-  margin-top: 8px;
+  /* border-top: 8px solid transparent; */
+  /* Bridge any potential gap */
 }
 
 .navbar-user-menu:hover .user-dropdown {
@@ -161,7 +162,7 @@
 
 .user-dropdown a:hover,
 .user-dropdown button:hover {
-  background-color: var(--color-gray-100);
+  color: var(--color-secondary);
 }
 
 .navbar-mobile-toggle {

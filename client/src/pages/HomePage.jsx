@@ -38,7 +38,7 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="bg-background flex flex-col gap-[32px]">
+    <div className="bg-background flex flex-col gap-[32px] mb-8">
       <div className="container bg-background min-h-screen flex flex-wrap flex-col gap-[32px] reveal pop-up-scroll">
         {/* Hero Banner */}
         <div className="w-full relative overflow-hidden mt-[16px]">

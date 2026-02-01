@@ -4,9 +4,11 @@ import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import './Navbar.css';
+import ConfirmModal from './ConfirmModal';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();
@@ -20,8 +22,13 @@ const Navbar = () => {
     }
   };
 
+  const confirmLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
   const handleLogout = () => {
     logout();
+    setShowLogoutConfirm(false);
     navigate('/');
   };
 
@@ -102,7 +109,7 @@ const Navbar = () => {
                 <div className="navbar-user-menu">
                   <button className="navbar-action">
                     <FiUser />
-                    <span>{user?.name}</span>
+                    <span>{user?.firstName}</span>
                   </button>
                   <div className="user-dropdown">
                     <Link to="/profile">Profile</Link>
@@ -110,7 +117,7 @@ const Navbar = () => {
                     {user?.role === 'admin' && (
                       <Link to="/admin">Admin Dashboard</Link>
                     )}
-                    <button onClick={handleLogout}>Logout</button>
+                    <button onClick={confirmLogout}>Logout</button>
                   </div>
                 </div>
               ) : (
@@ -172,6 +179,15 @@ const Navbar = () => {
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of your ZhenKala account?"
+        confirmText="Logout"
+        cancelText="Stay Logged In"
+      />
     </>
   );
 };

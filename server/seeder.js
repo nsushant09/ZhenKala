@@ -7,13 +7,15 @@ dotenv.config();
 
 const users = [
   {
-    name: 'Admin User',
+    firstName: 'Admin',
+    lastName: 'User',
     email: 'admin@zhenkala.com',
     password: 'admin123',
     role: 'admin',
   },
   {
-    name: 'John Doe',
+    firstName: 'John',
+    lastName: 'Doe',
     email: 'john@example.com',
     password: 'password123',
   },
@@ -263,7 +265,7 @@ const seedDatabase = async () => {
     console.log('\n📧 Test User Login:');
     console.log('   Email: john@example.com');
     console.log('   Password: password123');
-    
+
     process.exit();
   } catch (error) {
     console.error('❌ Error seeding database:', error);

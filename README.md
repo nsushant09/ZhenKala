@@ -260,11 +260,14 @@ Recommended platforms:
 - Railway
 
 ### Frontend (React)
-Recommended platforms:
-- Vercel
-- Netlify
-- AWS S3 + CloudFront
-
+The frontend is currently configured for **Cloudflare Pages**.
+To deploy updates:
+1. Navigate to the `client` folder.
+2. Run the deploy command:
+```bash
+npm run deploy
+```
+This script will automatically build the project and upload it to the `zhenkala` project on Cloudflare.
 ### Database (MongoDB)
 Recommended:
 - MongoDB Atlas (already configured for cloud)
