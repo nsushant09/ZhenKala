@@ -17,6 +17,7 @@ import OrderDetailPage from './pages/OrderDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import DeliveryPage from './pages/DeliveryPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 
@@ -60,6 +61,7 @@ function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/delivery" element={<DeliveryPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
 
                 {/* Protected Routes */}

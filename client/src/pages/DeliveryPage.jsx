@@ -7,13 +7,12 @@ const DeliveryPage = () => {
         <div className="bg-background pb-24">
             {/* Hero Section */}
             <section className="h-[40vh] bg-secondary flex items-center justify-center relative overflow-hidden text-white">
-                {/* Background Image Overlay */}
                 <div
-                    className="absolute inset-0 bg-[url('/thangka-right.png')] bg-cover bg-center opacity-30"
+                    className="absolute inset-0 bg-[url('/delivery-page.jpg')] bg-cover bg-center"
                     aria-hidden="true"
                 ></div>
 
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/20 flex items-center justify-center"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70"></div>
 
                 <div className="relative z-10 text-center reveal active">
                     <h1 className="garamond text-4xl md:text-5xl lg:text-7xl mb-2">Safe & Sacred Passage</h1>

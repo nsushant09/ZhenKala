@@ -30,13 +30,13 @@ const AboutPage = () => {
   return (
     <div className="bg-background pb-24">
       {/* Hero Section */}
-      <section className="relative h-[50vh] flex items-center justify-center overflow-hidden bg-secondary">
+      <section className="relative h-[40vh] flex items-center justify-center overflow-hidden bg-secondary">
         <img
           src={AboutHeroImg}
           alt="Sacred Thangka Art"
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
+          className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70"></div>
         <div className="relative z-10 text-center text-white reveal active">
           <h1 className="font-secondary text-5xl md:text-7xl lg:text-8xl mb-2 garamond">Our Journey</h1>
           <p className="text-primary text-lg tracking-widest uppercase opacity-90">Ancient Wisdom for a Modern World</p>
