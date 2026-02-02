@@ -11,6 +11,21 @@ const ScrollToTop = () => {
         });
     }, [pathname]);
 
+    useEffect(() => {
+        const handleLinkClick = (e) => {
+            const link = e.target.closest('a');
+            if (link && link.pathname === window.location.pathname && !link.hash) {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        };
+
+        window.addEventListener('click', handleLinkClick);
+        return () => window.removeEventListener('click', handleLinkClick);
+    }, []);
+
     return null;
 };
 
