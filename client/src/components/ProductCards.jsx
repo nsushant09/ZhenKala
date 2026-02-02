@@ -15,10 +15,12 @@ const ProductCards = ({ products = [] }) => {
             {products.map((product, index) => (
                 <div key={product.id || index} className="">
                     <ProductCard
+                        id={product.id || product._id}
                         name={product.name}
                         price={product.price}
                         discount={product.discount}
                         image={product.image}
+                        images={product.images}
                         badge={product.badge}
                     />
                 </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import HeroBanner from '/hero-banner.jpg';
 import ThangkaLeft from '../assets/thangka-left.png';
 import ThangkaRight from '../assets/thangka-right.png';
@@ -6,18 +6,37 @@ import Divider from '../components/Divider';
 import ProductCards from '../components/ProductCards';
 import Testimonials from '../components/Testimonials';
 import Statistics from '../components/Statistics';
+import api from '../services/api';
 
 const HomePage = () => {
-  const sampleProducts = [
-    { id: 1, name: "Reduk Wheel of Life", price: 500, discount: 50, badge: "Out of Stock" },
-    { id: 2, name: "Infinite Compassion Mandala", price: 350, discount: 15, badge: "Sale" },
-    { id: 3, name: "Golden Tara Thangka", price: 1200, badge: "Limited" },
-    { id: 4, name: "Medicine Buddha Healing Scroll", price: 450, discount: 10 },
-    { id: 5, name: "White Mahakala Abundance", price: 800, badge: "New" },
-    { id: 6, name: "Chenrezig Four-Armed Wisdom Hello World", price: 600, discount: 20, badge: "Sale" },
-    { id: 7, name: "Chenrezig Four-Armed Wisdom Hello World", price: 600, discount: 20, badge: "Sale" },
-    { id: 8, name: "Chenrezig Four-Armed Wisdom Hello World", price: 600, discount: 20, badge: "Sale" },
-  ];
+  const [artisanProducts, setArtisanProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchArtisanProducts = async () => {
+      try {
+        const { data } = await api.get('/products');
+        // Filter products with 'artisan-selection' tag
+        const artisanSelection = data.products.filter(product =>
+          product.tags && product.tags.includes('artisan-selection')
+        );
+        // Map to format expected by ProductCards
+        const formattedProducts = artisanSelection.map(product => ({
+          id: product._id,
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          discount: product.discount,
+          image: product.images[0]?.url,
+          images: product.images,
+          badge: product.stock === 0 ? 'Out of Stock' : (product.isFeatured ? 'Featured' : null)
+        }));
+        setArtisanProducts(formattedProducts);
+      } catch (error) {
+        console.error('Error fetching artisan products:', error);
+      }
+    };
+    fetchArtisanProducts();
+  }, []);
 
   const sampleTestimonials = [
     {
@@ -108,7 +127,7 @@ const HomePage = () => {
             className="text-center text-lg md:text-2xl font-medium"
           >Limited-Time Studio Offerings</h1>
 
-          <ProductCards products={sampleProducts} />
+          <ProductCards products={artisanProducts} />
         </div>
       </div>
       <Divider />

@@ -11,6 +11,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       unique: true,
       lowercase: true,
+      sparse: true,
     },
     description: {
       type: String,
@@ -82,6 +83,10 @@ const productSchema = new mongoose.Schema(
       {
         url: String,
         alt: String,
+        color: {
+          type: String,
+          default: null,
+        },
       },
     ],
     stock: {
@@ -127,14 +132,7 @@ const productSchema = new mongoose.Schema(
         },
       },
     ],
-    specifications: {
-      size: String,
-      material: String,
-      weight: String,
-      color: String,
-      origin: String,
-      customization: Boolean,
-    },
+
     tags: [String],
     isFeatured: {
       type: Boolean,

@@ -28,6 +28,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminProductForm from './pages/admin/AdminProductForm';
 
 // Components
 import Navbar from './components/Navbar';
@@ -118,6 +119,22 @@ function App() {
                   element={
                     <AdminRoute>
                       <AdminProducts />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/products/new"
+                  element={
+                    <AdminRoute>
+                      <AdminProductForm />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/products/:id/edit"
+                  element={
+                    <AdminRoute>
+                      <AdminProductForm />
                     </AdminRoute>
                   }
                 />

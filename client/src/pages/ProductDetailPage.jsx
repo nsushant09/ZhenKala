@@ -18,15 +18,21 @@ const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState(null);
+
+  // Selection State
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+
   const [quantity, setQuantity] = useState(1);
   const [showStickyCart, setShowStickyCart] = useState(false);
+
+  // Reviews State
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -42,10 +48,15 @@ const ProductDetailPage = () => {
     try {
       const { data } = await api.get(`/products/${id}`);
       setProduct(data);
-      // Set default variant if variants exist
+
+      // Initialize selection based on available variants
       if (data.variants && data.variants.length > 0) {
-        setSelectedVariant(data.variants[0]);
+        // Prefer first variant's attributes
+        const firstVar = data.variants[0];
+        if (firstVar.size) setSelectedSize(firstVar.size);
+        if (firstVar.color) setSelectedColor(firstVar.color);
       }
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -67,16 +78,70 @@ const ProductDetailPage = () => {
     setShowStickyCart(scrollPosition > 600);
   };
 
+  // Helper: Find active variant based on current selection
+  const getSelectedVariant = () => {
+    if (!product?.variants || product.variants.length === 0) return null;
+    return product.variants.find(v =>
+      (v.size === selectedSize || (!v.size && !selectedSize)) &&
+      (v.color === selectedColor || (!v.color && !selectedColor))
+    );
+  };
+
+  const selectedVariant = getSelectedVariant();
+
+  // Helper: Get displayable price/stock/discount
+  const getCurrentPrice = () => {
+    if (selectedVariant) return selectedVariant.price;
+    return product?.price || 0;
+  };
+
+  const getOriginalPrice = () => {
+    if (selectedVariant && selectedVariant.originalPrice) return selectedVariant.originalPrice;
+    if (selectedVariant) return selectedVariant.price; // fallback if no original price set
+    return product?.originalPrice || product?.price || 0;
+  };
+
+  const getDiscount = () => {
+    if (selectedVariant) return selectedVariant.discount || 0;
+    return product?.discount || 0;
+  };
+
+  const getStock = () => {
+    if (selectedVariant) return selectedVariant.stock;
+    return product?.stock || 0;
+  };
+
+  // Helper: Get images filtered by color
+  const getDisplayImages = () => {
+    if (!product) return [];
+    if (selectedColor) {
+      // Show images that match the selected color OR have no color assigned (generic)
+      const filtered = product.images.filter(img => !img.color || img.color === selectedColor);
+      return filtered.length > 0 ? filtered : product.images;
+    }
+    return product.images;
+  };
+
+  const displayImages = getDisplayImages();
+
+  // Reset selected image index if filtered images list changes and index is out of bounds
+  useEffect(() => {
+    if (selectedImageIndex >= displayImages.length) {
+      setSelectedImageIndex(0);
+    }
+  }, [displayImages.length]);
+
   const handleAddToCart = () => {
     if (!product) return;
 
     const cartItem = {
       product: product._id,
       name: product.name,
-      price: selectedVariant ? selectedVariant.price : product.price,
-      image: product.images[0]?.url,
+      price: getCurrentPrice(),
+      image: displayImages[0]?.url,
       quantity,
       variant: selectedVariant ? {
+        id: selectedVariant._id, // If needed for backend tracking
         size: selectedVariant.size,
         color: selectedVariant.color,
       } : null,
@@ -100,7 +165,7 @@ const ProductDetailPage = () => {
       });
       setReviewComment('');
       setReviewRating(5);
-      fetchProduct(); // Refresh to show new review
+      fetchProduct(); // Refresh
     } catch (error) {
       console.error('Error submitting review:', error);
       alert(error.response?.data?.message || 'Failed to submit review');
@@ -111,47 +176,13 @@ const ProductDetailPage = () => {
   const shareProduct = (platform) => {
     const url = window.location.href;
     const text = `Check out ${product.name}`;
-
     const shareUrls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
       pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(text)}`,
       whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`,
     };
-
     window.open(shareUrls[platform], '_blank', 'width=600,height=400');
-  };
-
-  const getAvailableStock = () => {
-    if (selectedVariant) {
-      return selectedVariant.stock;
-    }
-    return product?.stock || 0;
-  };
-
-  const getCurrentPrice = () => {
-    if (selectedVariant) {
-      return selectedVariant.discount > 0
-        ? selectedVariant.price * (1 - selectedVariant.discount / 100)
-        : selectedVariant.price;
-    }
-    return product?.discount > 0
-      ? product.price * (1 - product.discount / 100)
-      : product?.price || 0;
-  };
-
-  const getOriginalPrice = () => {
-    if (selectedVariant) {
-      return selectedVariant.originalPrice || selectedVariant.price;
-    }
-    return product?.originalPrice || product?.price || 0;
-  };
-
-  const hasDiscount = () => {
-    if (selectedVariant) {
-      return selectedVariant.discount > 0;
-    }
-    return product?.discount > 0;
   };
 
   if (loading) {
@@ -164,14 +195,23 @@ const ProductDetailPage = () => {
 
   if (!product) {
     return (
-      <div className="container" style={{ padding: '100px 20px', textAlign: 'center' }}>
+      <div className="container text-center py-20">
         <h2>Product not found</h2>
-        <Link to="/products" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>
-          Back to Products
-        </Link>
+        <Link to="/products" className="btn-primary mt-4 inline-block">Back to Products</Link>
       </div>
     );
   }
+
+  // Derived Values for UI
+  const currentPrice = getCurrentPrice();
+  const originalPrice = getOriginalPrice();
+  const discount = getDiscount();
+  const stock = getStock();
+  const mainImage = displayImages[selectedImageIndex] || displayImages[0];
+
+  // Get unique options for UI
+  const uniqueSizes = [...new Set(product.variants?.map(v => v.size).filter(Boolean))];
+  const uniqueColors = [...new Set(product.variants?.map(v => v.color).filter(Boolean))];
 
   return (
     <div className="product-detail-page">
@@ -182,8 +222,14 @@ const ProductDetailPage = () => {
           <span>/</span>
           <Link to="/products">Products</Link>
           <span>/</span>
-          <Link to={`/products?category=${product.category?.name}`}>{product.category?.name}</Link>
-          <span>/</span>
+          {product.category && (
+            <>
+              <Link to={`/products?category=${product.category.slug || product.category._id}`}>
+                {product.category.name}
+              </Link>
+              <span>/</span>
+            </>
+          )}
           <span>{product.name}</span>
         </div>
       </div>
@@ -194,15 +240,15 @@ const ProductDetailPage = () => {
           {/* Image Gallery */}
           <div className="product-images">
             <div className="main-image">
-              <img src={product.images[selectedImage]?.url} alt={product.images[selectedImage]?.alt || product.name} />
+              <img src={mainImage?.url} alt={mainImage?.alt || product.name} />
             </div>
-            {product.images.length > 1 && (
+            {displayImages.length > 1 && (
               <div className="image-thumbnails">
-                {product.images.map((image, index) => (
+                {displayImages.map((image, index) => (
                   <div
                     key={index}
-                    className={`thumbnail ${selectedImage === index ? 'active' : ''}`}
-                    onClick={() => setSelectedImage(index)}
+                    className={`thumbnail ${selectedImageIndex === index ? 'active' : ''}`}
+                    onClick={() => setSelectedImageIndex(index)}
                   >
                     <img src={image.url} alt={image.alt || `${product.name} ${index + 1}`} />
                   </div>
@@ -229,36 +275,33 @@ const ProductDetailPage = () => {
 
             {/* Price */}
             <div className="product-price">
-              <span className="current-price">${getCurrentPrice().toFixed(2)}</span>
-              {hasDiscount() && (
+              <span className="current-price">${currentPrice.toLocaleString()}</span>
+              {discount > 0 && (
                 <>
-                  <span className="original-price">${getOriginalPrice().toFixed(2)}</span>
-                  <span className="discount-badge">
-                    {selectedVariant ? selectedVariant.discount : product.discount}% OFF
-                  </span>
+                  <span className="original-price">${originalPrice.toLocaleString()}</span>
+                  <span className="discount-badge">{discount}% OFF</span>
                 </>
               )}
             </div>
 
-            {/* Description */}
-            <div className="product-description" dangerouslySetInnerHTML={{ __html: product.description }} />
+            {/* Rich Text Description */}
+            <div
+              className="product-description"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
 
             {/* Variant Selection */}
-            {product.variants && product.variants.length > 0 && (
+            {(uniqueSizes.length > 0 || uniqueColors.length > 0) && (
               <div className="variant-selection">
-                {/* Size Selection */}
-                {product.variants.some(v => v.size) && (
+                {uniqueSizes.length > 0 && (
                   <div className="variant-group">
                     <label>Size:</label>
                     <div className="variant-options">
-                      {[...new Set(product.variants.filter(v => v.size).map(v => v.size))].map((size) => (
+                      {uniqueSizes.map(size => (
                         <button
                           key={size}
-                          className={`variant-btn ${selectedVariant?.size === size ? 'active' : ''}`}
-                          onClick={() => {
-                            const variant = product.variants.find(v => v.size === size && (!selectedVariant?.color || v.color === selectedVariant.color));
-                            setSelectedVariant(variant || product.variants.find(v => v.size === size));
-                          }}
+                          className={`variant-btn ${selectedSize === size ? 'active' : ''}`}
+                          onClick={() => setSelectedSize(size)}
                         >
                           {size}
                         </button>
@@ -267,19 +310,15 @@ const ProductDetailPage = () => {
                   </div>
                 )}
 
-                {/* Color Selection */}
-                {product.variants.some(v => v.color) && (
+                {uniqueColors.length > 0 && (
                   <div className="variant-group">
                     <label>Color:</label>
                     <div className="variant-options">
-                      {[...new Set(product.variants.filter(v => v.color).map(v => v.color))].map((color) => (
+                      {uniqueColors.map(color => (
                         <button
                           key={color}
-                          className={`variant-btn ${selectedVariant?.color === color ? 'active' : ''}`}
-                          onClick={() => {
-                            const variant = product.variants.find(v => v.color === color && (!selectedVariant?.size || v.size === selectedVariant.size));
-                            setSelectedVariant(variant || product.variants.find(v => v.color === color));
-                          }}
+                          className={`variant-btn ${selectedColor === color ? 'active' : ''}`}
+                          onClick={() => setSelectedColor(color)}
                         >
                           {color}
                         </button>
@@ -295,11 +334,15 @@ const ProductDetailPage = () => {
               <label>Quantity:</label>
               <div className="quantity-controls">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
-                <input type="number" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
-                <button onClick={() => setQuantity(Math.min(getAvailableStock(), quantity + 1))}>+</button>
+                <input
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                />
+                <button onClick={() => setQuantity(Math.min(stock, quantity + 1))}>+</button>
               </div>
               <span className="stock-info">
-                {getAvailableStock() > 0 ? `${getAvailableStock()} in stock` : 'Out of stock'}
+                {stock > 0 ? `${stock} in stock` : 'Out of stock'}
               </span>
             </div>
 
@@ -308,11 +351,18 @@ const ProductDetailPage = () => {
               <button
                 className="btn-add-to-cart"
                 onClick={handleAddToCart}
-                disabled={getAvailableStock() === 0}
+                disabled={stock === 0}
               >
                 <FiShoppingCart /> Add to Cart
               </button>
-              <button className="btn-buy-now" disabled={getAvailableStock() === 0}>
+              <button
+                className="btn-buy-now"
+                disabled={stock === 0}
+                onClick={() => {
+                  handleAddToCart();
+                  navigate('/cart');
+                }}
+              >
                 Buy Now
               </button>
             </div>
@@ -320,38 +370,11 @@ const ProductDetailPage = () => {
             {/* Social Share */}
             <div className="social-share">
               <span>Share:</span>
-              <button onClick={() => shareProduct('facebook')} aria-label="Share on Facebook">
-                <FaFacebook />
-              </button>
-              <button onClick={() => shareProduct('twitter')} aria-label="Share on Twitter">
-                <FaTwitter />
-              </button>
-              <button onClick={() => shareProduct('pinterest')} aria-label="Share on Pinterest">
-                <FaPinterest />
-              </button>
-              <button onClick={() => shareProduct('whatsapp')} aria-label="Share on WhatsApp">
-                <FaWhatsapp />
-              </button>
+              <button onClick={() => shareProduct('facebook')}><FaFacebook /></button>
+              <button onClick={() => shareProduct('twitter')}><FaTwitter /></button>
+              <button onClick={() => shareProduct('pinterest')}><FaPinterest /></button>
+              <button onClick={() => shareProduct('whatsapp')}><FaWhatsapp /></button>
             </div>
-
-            {/* Specifications */}
-            {product.specifications && (
-              <div className="product-specifications">
-                <h3>Specifications</h3>
-                <table>
-                  <tbody>
-                    {Object.entries(product.specifications).map(([key, value]) => (
-                      value && (
-                        <tr key={key}>
-                          <td className="spec-key">{key.charAt(0).toUpperCase() + key.slice(1)}:</td>
-                          <td className="spec-value">{typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}</td>
-                        </tr>
-                      )
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -359,8 +382,6 @@ const ProductDetailPage = () => {
       {/* Reviews Section */}
       <div className="container reviews-section">
         <h2>Customer Reviews</h2>
-
-        {/* Review Form */}
         {isAuthenticated ? (
           <form className="review-form" onSubmit={handleSubmitReview}>
             <h3>Write a Review</h3>
@@ -377,7 +398,7 @@ const ProductDetailPage = () => {
               </div>
             </div>
             <textarea
-              placeholder="Share your experience with this product..."
+              placeholder="Share your experience..."
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
               required
@@ -392,9 +413,8 @@ const ProductDetailPage = () => {
           </div>
         )}
 
-        {/* Review List */}
         <div className="reviews-list">
-          {product.reviews && product.reviews.length > 0 ? (
+          {product.reviews?.length > 0 ? (
             product.reviews.map((review) => (
               <div key={review._id} className="review-item">
                 <div className="review-header">
@@ -405,14 +425,12 @@ const ProductDetailPage = () => {
                     ))}
                   </div>
                 </div>
-                <div className="review-date">
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </div>
+                <div className="review-date">{new Date(review.createdAt).toLocaleDateString()}</div>
                 <div className="review-comment">{review.comment}</div>
               </div>
             ))
           ) : (
-            <p className="no-reviews">No reviews yet. Be the first to review this product!</p>
+            <p className="no-reviews">No reviews yet.</p>
           )}
         </div>
       </div>
@@ -422,22 +440,16 @@ const ProductDetailPage = () => {
         <div className="container similar-products-section">
           <h2>You May Also Like</h2>
           <div className="similar-products-grid">
-            {similarProducts.map((similarProduct) => (
-              <Link
-                key={similarProduct._id}
-                to={`/product/${similarProduct._id}`}
-                className="similar-product-card"
-              >
+            {similarProducts.map((p) => (
+              <Link key={p._id} to={`/products/${p._id}`} className="similar-product-card">
                 <div className="similar-product-image">
-                  <img src={similarProduct.images[0]?.url} alt={similarProduct.name} />
+                  <img src={p.images[0]?.url} alt={p.name} />
                 </div>
                 <div className="similar-product-info">
-                  <h4>{similarProduct.name}</h4>
+                  <h4>{p.name}</h4>
                   <div className="similar-product-price">
-                    ${similarProduct.price.toFixed(2)}
-                    {similarProduct.discount > 0 && (
-                      <span className="discount">{similarProduct.discount}% OFF</span>
-                    )}
+                    ${(p.price || 0).toFixed(2)}
+                    {p.discount > 0 && <span className="discount">{p.discount}% OFF</span>}
                   </div>
                 </div>
               </Link>
@@ -446,22 +458,18 @@ const ProductDetailPage = () => {
         </div>
       )}
 
-      {/* Sticky Add to Cart */}
+      {/* Sticky Cart Bar */}
       {showStickyCart && (
         <div className="sticky-cart-bar">
           <div className="container sticky-cart-content">
             <div className="sticky-product-info">
-              <img src={product.images[0]?.url} alt={product.name} />
+              <img src={mainImage?.url || product.images[0]?.url} alt={product.name} />
               <div>
                 <h4>{product.name}</h4>
-                <span className="sticky-price">${getCurrentPrice().toFixed(2)}</span>
+                <span className="sticky-price">${currentPrice.toLocaleString()}</span>
               </div>
             </div>
-            <button
-              className="sticky-add-to-cart"
-              onClick={handleAddToCart}
-              disabled={getAvailableStock() === 0}
-            >
+            <button className="sticky-add-to-cart" onClick={handleAddToCart} disabled={stock === 0}>
               <FiShoppingCart /> Add to Cart
             </button>
           </div>

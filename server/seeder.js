@@ -236,220 +236,208 @@ const seedRecursive = async (hierarchy, parentId = null, ancestors = []) => {
 const products = [
   {
     name: 'Reduk Wheel of Life',
-    description: 'A magnificent hand-painted Thangka depicting the Wheel of Life (Bhavachakra), representing the cycle of existence in Buddhist cosmology. This piece features intricate details and vibrant colors, painted by master artisans using traditional mineral pigments and 24K gold.',
+    description: `
+      <p>A magnificent hand-painted Thangka depicting the Wheel of Life (Bhavachakra), representing the cycle of existence in Buddhist cosmology. This piece features intricate details and vibrant colors, painted by master artisans using traditional mineral pigments and 24K gold.</p>
+      <h3>Specifications</h3>
+      <ul>
+        <li><strong>Material:</strong> Cotton canvas, mineral pigments, 24K gold</li>
+        <li><strong>Origin:</strong> Kathmandu, Nepal</li>
+        <li><strong>Style:</strong> Traditional Karma Gadri</li>
+      </ul>
+    `,
+    category: 'Wheel of Life (Ridok)',
+    tags: ['thangka', 'buddhist art', 'wheel of life', 'traditional', 'artisan-selection'],
+    isFeatured: true,
+    variants: [
+      {
+        size: 'Standard (24" x 36")',
+        price: 250,
+        originalPrice: 500,
+        discount: 50,
+        stock: 5,
+        isActive: true
+      },
+      {
+        size: 'Large Masterpiece (36" x 48")',
+        price: 850,
+        stock: 2,
+        isActive: true
+      }
+    ],
+    // Fallback values derived from first/default variant
     price: 250,
     originalPrice: 500,
     discount: 50,
-    category: 'Wheel of Life (Ridok)',
+    stock: 7,
     images: [
       {
         url: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=800',
-        alt: 'Reduk Wheel of Life Thangka',
+        alt: 'Reduk Wheel of Life Full View',
       },
-    ],
-    stock: 5,
-    rating: 4.8,
-    numReviews: 12,
-    specifications: {
-      size: '24" x 36"',
-      material: 'Cotton canvas, mineral pigments, 24K gold',
-      weight: '0.5 kg',
-      color: 'Multi-color',
-      origin: 'Kathmandu, Nepal',
-      customization: true,
-    },
-    tags: ['thangka', 'buddhist art', 'wheel of life', 'traditional'],
-    isFeatured: true,
-  },
-  {
-    name: 'Medicine Buddha Thangka',
-    description: 'Exquisite Medicine Buddha Thangka painted with traditional techniques. The Medicine Buddha is known for healing physical and mental ailments. This piece showcases the deep blue Buddha in meditation pose, holding a myrobalan plant.',
-    price: 450,
-    originalPrice: 450,
-    discount: 0,
-    category: 'Medicine Buddha',
-    images: [
-      {
-        url: 'https://images.unsplash.com/photo-1604076947420-d3c5c9e77dd3?w=800',
-        alt: 'Medicine Buddha Thangka',
-      },
-    ],
-    stock: 0,
-    rating: 5.0,
-    numReviews: 8,
-    specifications: {
-      size: '30" x 42"',
-      material: 'Cotton canvas, mineral pigments, 24K gold',
-      weight: '0.7 kg',
-      color: 'Blue, Gold',
-      origin: 'Patan, Nepal',
-      customization: false,
-    },
-    tags: ['thangka', 'medicine buddha', 'healing', 'buddhist art'],
-    isFeatured: true,
-  },
-  {
-    name: 'Green Tara Thangka',
-    description: 'Beautiful Green Tara Thangka, the goddess of compassion and action. Hand-painted with meticulous attention to detail, featuring the goddess in her characteristic pose on a lotus throne.',
-    price: 380,
-    originalPrice: 380,
-    discount: 0,
-    category: 'Green Tara',
-    images: [
       {
         url: 'https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?w=800',
-        alt: 'Green Tara Thangka',
-      },
+        alt: 'Detail View',
+      }
     ],
-    stock: 3,
-    rating: 4.9,
-    numReviews: 15,
-    specifications: {
-      size: '28" x 40"',
-      material: 'Cotton canvas, mineral pigments, gold leaf',
-      weight: '0.6 kg',
-      color: 'Green, Gold',
-      origin: 'Bhaktapur, Nepal',
-      customization: true,
-    },
-    tags: ['thangka', 'green tara', 'compassion', 'deity'],
-    isFeatured: false,
+    rating: 4.8,
+    numReviews: 12,
   },
   {
-    name: 'Tibetan Singing Bowl Set',
-    description: 'Handcrafted Tibetan singing bowl made from seven sacred metals. Produces deep, resonant tones perfect for meditation, healing, and chakra balancing. Includes wooden striker and cushion.',
-    price: 120,
-    originalPrice: 120,
-    discount: 0,
-    category: 'Singing Bowls',
-    images: [
-      {
-        url: 'https://images.unsplash.com/photo-1545958119-ca1279e73c8a?w=800',
-        alt: 'Tibetan Singing Bowl',
-      },
-    ],
-    stock: 15,
-    rating: 4.7,
-    numReviews: 24,
-    specifications: {
-      size: '6 inches diameter',
-      material: 'Seven sacred metals (Gold, Silver, Mercury, Copper, Iron, Tin, Lead)',
-      weight: '0.8 kg',
-      color: 'Bronze',
-      origin: 'Kathmandu, Nepal',
-      customization: false,
-    },
-    tags: ['singing bowl', 'meditation', 'healing', 'sound therapy'],
-    isFeatured: true,
-  },
-  {
-    name: 'Buddha Statue - Shakyamuni',
-    description: 'Handcrafted bronze statue of Shakyamuni Buddha in meditation pose. Features intricate detailing and traditional craftsmanship. Perfect for home altars or meditation spaces.',
-    price: 350,
-    originalPrice: 350,
-    discount: 0,
+    name: 'Medicine Buddha Statue',
+    description: `
+      <p>Exquisite Medicine Buddha statue, masterfully crafted in Patan, Nepal. The Medicine Buddha is known for healing physical and mental ailments.</p>
+      <p>Available in two distinct finishes: <strong>Oxidized Copper</strong> for a vintage look, and <strong>Full Gold Gilded</strong> for a radiant, divine presence.</p>
+    `,
     category: 'Statues',
+    tags: ['statue', 'buddha', 'healing', 'artisan-selection'],
+    isFeatured: true,
+    variants: [
+      {
+        color: 'Oxidized Copper',
+        size: '12 inches',
+        price: 350,
+        stock: 3,
+        isActive: true
+      },
+      {
+        color: 'Gold Gilded',
+        size: '12 inches',
+        price: 550,
+        stock: 2,
+        isActive: true
+      }
+    ],
+    price: 350,
+    stock: 5,
     images: [
       {
         url: 'https://images.unsplash.com/photo-1615680022647-99c397cbcbdd?w=800',
-        alt: 'Shakyamuni Buddha Statue',
+        alt: 'Medicine Buddha - Bronze/Copper Look',
+        color: 'Oxidized Copper'
       },
+      {
+        url: 'https://images.unsplash.com/photo-1628147828005-59b136894562?w=800',
+        alt: 'Medicine Buddha - Gold Look',
+        color: 'Gold Gilded'
+      }
     ],
-    stock: 8,
-    rating: 4.9,
-    numReviews: 10,
-    specifications: {
-      size: '12 inches height',
-      material: 'Bronze with gold gilding',
-      weight: '2.5 kg',
-      color: 'Bronze, Gold',
-      origin: 'Patan, Nepal',
-      customization: false,
-    },
-    tags: ['statue', 'buddha', 'bronze', 'shakyamuni'],
-    isFeatured: false,
+    rating: 5.0,
+    numReviews: 8,
   },
   {
-    name: 'Tibetan Prayer Flags',
-    description: 'Traditional Tibetan prayer flags featuring sacred mantras and symbols. Made from cotton cloth and printed with traditional woodblocks. Set includes 25 flags on a 20-foot string.',
-    price: 35,
-    originalPrice: 35,
-    discount: 0,
-    category: 'Prayer Flags',
+    name: 'Singing Bowl Set',
+    description: `
+      <p>Handcrafted Tibetan singing bowl made from seven sacred metals. Produces deep, resonant tones perfect for meditation, healing, and chakra balancing. Includes wooden striker and cushion.</p>
+    `,
+    category: 'Singing Bowls',
+    tags: ['singing bowl', 'meditation', 'sound healing', 'artisan-selection'],
+    isFeatured: false,
+    variants: [
+      {
+        size: '6 inches',
+        price: 85,
+        stock: 15,
+        isActive: true
+      },
+      {
+        size: '8 inches',
+        price: 120,
+        stock: 10,
+        isActive: true
+      },
+      {
+        size: '10 inches',
+        price: 180,
+        stock: 5,
+        isActive: true
+      }
+    ],
+    price: 85,
+    stock: 30,
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1605648916361-9bc12ad6a569?w=800',
+        alt: 'Singing Bowl Set',
+      }
+    ],
+    rating: 4.7,
+    numReviews: 24,
+  },
+  {
+    name: 'Green Tara Thangka',
+    description: '<p>The Mother of all Buddhas, Green Tara represents the active compassion of all Buddhas. She is ready to step down from her lotus throne to help sentient beings.</p>',
+    category: 'Green Tara',
+    tags: ['thangka', 'green tara', 'compassion', 'artisan-selection'],
+    isFeatured: false,
+    variants: [
+      {
+        size: 'Standard (18" x 24")',
+        price: 180,
+        stock: 5
+      }
+    ],
+    price: 180,
+    stock: 5,
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?w=800',
+        alt: 'Green Tara Thangka'
+      }
+    ]
+  },
+  {
+    name: 'Vajra & Bell Set',
+    description: '<p>Essential ritual implements for Vajrayana practice. Representing method (Vajra) and wisdom (Bell).</p>',
+    category: 'Ritual & Decor',
+    tags: ['ritual', 'vajra', 'bell', 'artisan-selection'],
+    variants: [],
+    price: 65,
+    stock: 20,
     images: [
       {
         url: 'https://images.unsplash.com/photo-1534644107580-3a4dbd494a95?w=800',
-        alt: 'Tibetan Prayer Flags',
-      },
-    ],
-    stock: 50,
-    rating: 4.6,
-    numReviews: 32,
-    specifications: {
-      size: '25 flags, each 8" x 10"',
-      material: 'Cotton cloth',
-      weight: '0.2 kg',
-      color: 'Multi-color (Blue, White, Red, Green, Yellow)',
-      origin: 'Kathmandu, Nepal',
-      customization: false,
-    },
-    tags: ['prayer flags', 'tibetan', 'mantras', 'blessings'],
-    isFeatured: false,
+        alt: 'Vajra and Bell'
+      }
+    ]
   },
   {
     name: 'Silk Brocade Frame',
-    description: 'Premium silk brocade frame for Thangka paintings. Features traditional Himalayan patterns and high-quality silk. Available in multiple colors and sizes to complement your sacred art.',
-    price: 180,
-    originalPrice: 180,
-    discount: 0,
+    description: '<p>Traditional silk brocade for framing Thangkas. Protects the artwork and enhances its sacred beauty.</p>',
     category: 'Thangka with Brocade',
-    images: [
-      {
-        url: 'https://images.unsplash.com/photo-1515405295579-ba7b45403062?w=800',
-        alt: 'Silk Brocade Frame',
-      },
+    tags: ['brocade', 'silk', 'frame', 'artisan-selection'],
+    variants: [
+      { color: 'Red & Gold', price: 45, stock: 10 },
+      { color: 'Blue & Gold', price: 45, stock: 10 },
+      { color: 'Yellow & Gold', price: 45, stock: 10 }
     ],
-    stock: 20,
-    rating: 4.8,
-    numReviews: 18,
-    specifications: {
-      size: 'Custom sizing available',
-      material: 'High-quality silk with traditional patterns',
-      weight: '0.3 kg',
-      color: 'Multiple colors available',
-      origin: 'Kathmandu, Nepal',
-      customization: true,
-    },
-    tags: ['silk brocade', 'frame', 'thangka accessories'],
-    isFeatured: false,
+    price: 45,
+    stock: 30,
+    images: [
+      { url: 'https://images.unsplash.com/photo-1614959541559-4f94441a547d?w=800', alt: 'Red Brocade', color: 'Red & Gold' },
+      { url: 'https://images.unsplash.com/photo-1614959541818-6cd5e4j847d?w=800', alt: 'Blue Brocade', color: 'Blue & Gold' }
+    ]
+  },
+  {
+    name: 'Tibetan Prayer Flags',
+    category: 'Prayer Flags',
+    description: '<p>5-meter string of cotton prayer flags. Woodblock printed with Lungta (Wind Horse) and mantras.</p>',
+    tags: ['prayer flags', 'tibetan', 'artisan-selection'],
+    price: 15,
+    stock: 100,
+    images: [{ url: 'https://images.unsplash.com/photo-1534644107580-3a4dbd494a95?w=800', alt: 'Prayer Flags' }]
   },
   {
     name: 'Mandala Oil Painting',
-    description: 'Stunning mandala oil painting on canvas. Features intricate geometric patterns and vibrant colors representing the universe in Buddhist and Hindu symbolism.',
-    price: 420,
-    originalPrice: 420,
-    discount: 0,
     category: 'Oil Painting',
-    images: [
-      {
-        url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800',
-        alt: 'Mandala Oil Painting',
-      },
+    description: '<p>Contemporary style Mandala oil painting. A fusion of traditional sacred geometry and modern art medium.</p>',
+    tags: ['oil painting', 'mandala', 'art', 'artisan-selection'],
+    price: 420,
+    stock: 1,
+    variants: [
+      { size: '36" x 36"', price: 420, stock: 1 }
     ],
-    stock: 6,
-    rating: 4.9,
-    numReviews: 9,
-    specifications: {
-      size: '36" x 36"',
-      material: 'Canvas, oil paints',
-      weight: '1.2 kg',
-      color: 'Multi-color',
-      origin: 'Kathmandu, Nepal',
-      customization: true,
-    },
-    tags: ['oil painting', 'mandala', 'sacred geometry', 'art'],
-    isFeatured: true,
-  },
+    images: [{ url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800', alt: 'Mandala Art' }]
+  }
 ];
 
 const seedDatabase = async () => {
