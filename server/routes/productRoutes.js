@@ -7,6 +7,7 @@ const {
   updateProduct,
   deleteProduct,
   createProductReview,
+  getSimilarProducts,
 } = require('../controllers/productController');
 const { protect, admin } = require('../middleware/auth');
 
@@ -21,5 +22,8 @@ router.route('/:id')
 
 router.route('/:id/reviews')
   .post(protect, createProductReview);
+
+router.route('/:id/similar')
+  .get(getSimilarProducts);
 
 module.exports = router;

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('./models/User');
 const Product = require('./models/Product');
+const Category = require('./models/Category');
 
 dotenv.config();
 
@@ -21,6 +22,217 @@ const users = [
   },
 ];
 
+const categoryHierarchy = [
+  {
+    name: 'Thangka Art',
+    children: [
+      {
+        name: 'Deities',
+        children: [
+          {
+            name: 'Peaceful Deities',
+            children: [
+              { name: 'White Tara' },
+              { name: 'Green Tara' },
+              { name: 'Chenrezig' },
+              { name: 'Medicine Buddha' },
+              { name: 'Amitabha Buddha' },
+              { name: 'Avalokiteshvara' },
+              { name: 'Saraswati' }
+            ]
+          },
+          {
+            name: 'Wrathful Protectors',
+            children: [
+              { name: 'Mahakala' },
+              { name: 'Vajrapani' },
+              { name: 'Kali' },
+              { name: 'Palden Lhamo' },
+              { name: 'Kurkula (Red Tara)' },
+              { name: 'Ekajati' }
+            ]
+          },
+          {
+            name: 'Historical Masters',
+            children: [
+              { name: 'Guru Padmasambhava' },
+              { name: 'Milarepa' },
+              { name: 'Tsongkhapa' },
+              { name: 'Karmapa' },
+              { name: 'Machig Labdron' }
+            ]
+          }
+        ]
+      },
+      {
+        name: 'Mandalas',
+        children: [
+          {
+            name: 'Spiritual Geometry',
+            children: [
+              { name: 'Mantra Mandala' },
+              { name: 'Kalachakra Mandala' },
+              { name: 'Shree Yantra' },
+              { name: 'Lotus Mandala' }
+            ]
+          },
+          {
+            name: 'Cosmic & Body',
+            children: [
+              { name: 'Cosmos Mandala' },
+              { name: 'Chakra Body' },
+              { name: 'Astrological Calendar (Tibetan Calendar)' }
+            ]
+          },
+          {
+            name: 'Divine Mandalas',
+            children: [
+              { name: 'Deity Mandalas' },
+              { name: 'Bodhisattva Mandala' }
+            ]
+          }
+        ]
+      },
+      {
+        name: 'Stories & Symbols',
+        children: [
+          {
+            name: 'The Buddha\'s Journey',
+            children: [{ name: 'Buddha Life Story' }]
+          },
+          {
+            name: 'Philosophical',
+            children: [
+              { name: 'Wheel of Life (Ridok)' },
+              { name: 'Way to Heaven' }
+            ]
+          },
+          {
+            name: 'Auspicious Symbols',
+            children: [
+              { name: 'Four Friends' },
+              { name: 'Ganesh' },
+              { name: 'Auspicious Symbol (Asta Mangal)' }
+            ]
+          }
+        ]
+      },
+      {
+        name: 'Style & Exclusive',
+        children: [
+          {
+            name: 'Traditional Styles',
+            children: [
+              { name: 'Tibetan Style (Standard)' },
+              { name: 'Newari Style (Paubha)' },
+              { name: 'Karma Gadri (Minimalist)' }
+            ]
+          },
+          {
+            name: 'Premium Finishes',
+            children: [
+              { name: 'Gold & Silver Leaf Thangka' },
+              { name: 'Embroidery Thangka' }
+            ]
+          },
+          { name: 'Ghau (Pocket) Thangka' },
+          { name: 'Thangka with Brocade' },
+          { name: 'Antique Thangka' }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Singing Bowls',
+    children: [
+      {
+        name: 'Premium Hand-Made',
+        children: [
+          { name: 'Full Moon & Antique Bowls' },
+          { name: 'Chakra Sets (7-Bowl Sets)' }
+        ]
+      },
+      {
+        name: 'Specialty',
+        children: [
+          { name: 'Fire Bowl' },
+          { name: 'Lingam Bowl' },
+          { name: 'Head Bowl' },
+          { name: 'Knee Bowl' }
+        ]
+      },
+      {
+        name: 'Machine Made',
+        children: [
+          { name: 'Etched & Carved Designs' },
+          { name: 'Japanese Set' },
+          { name: 'Chinese God Designs' }
+        ]
+      },
+      {
+        name: 'Healing Instruments',
+        children: [
+          { name: 'Tingcha' },
+          { name: 'Healing Bells' },
+          { name: 'Vajra' }
+        ]
+      }
+    ]
+  },
+  { name: 'Oil Painting' },
+  { name: 'Statues' },
+  {
+    name: 'Jewellery & Accessories',
+    children: [
+      {
+        name: 'Sacred Malas',
+        children: [
+          { name: 'Bodhi Chitta' },
+          { name: 'Rudraksha' },
+          { name: 'Lotus Seed' }
+        ]
+      },
+      {
+        name: 'Gemstone Jewelry',
+        children: [
+          { name: 'Jade & Emerald pieces' },
+          { name: 'Bracelets' },
+          { name: 'Lockets' }
+        ]
+      },
+      {
+        name: 'Ritual & Decor',
+        children: [
+          { name: 'High-quality Incense' },
+          { name: 'Prayer Flags' }
+        ]
+      }
+    ]
+  }
+];
+
+const seedRecursive = async (hierarchy, parentId = null, ancestors = []) => {
+  let createdCount = 0;
+  const map = {};
+  for (const item of hierarchy) {
+    const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const category = await Category.create({
+      name: item.name,
+      parent: parentId,
+      ancestors: ancestors,
+      slug: slug
+    });
+    createdCount++;
+    map[item.name] = category._id;
+    if (item.children && item.children.length > 0) {
+      const { count, childMap } = await seedRecursive(item.children, category._id, [...ancestors, category._id]);
+      createdCount += count;
+      Object.assign(map, childMap);
+    }
+  }
+  return { count: createdCount, childMap: map };
+};
+
 const products = [
   {
     name: 'Reduk Wheel of Life',
@@ -28,7 +240,7 @@ const products = [
     price: 250,
     originalPrice: 500,
     discount: 50,
-    category: 'Thangka Art',
+    category: 'Wheel of Life (Ridok)',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=800',
@@ -55,7 +267,7 @@ const products = [
     price: 450,
     originalPrice: 450,
     discount: 0,
-    category: 'Thangka Art',
+    category: 'Medicine Buddha',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1604076947420-d3c5c9e77dd3?w=800',
@@ -82,7 +294,7 @@ const products = [
     price: 380,
     originalPrice: 380,
     discount: 0,
-    category: 'Thangka Art',
+    category: 'Green Tara',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?w=800',
@@ -109,7 +321,7 @@ const products = [
     price: 120,
     originalPrice: 120,
     discount: 0,
-    category: 'Singing Bowl',
+    category: 'Singing Bowls',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1545958119-ca1279e73c8a?w=800',
@@ -190,7 +402,7 @@ const products = [
     price: 180,
     originalPrice: 180,
     discount: 0,
-    category: 'Silk Brocade',
+    category: 'Thangka with Brocade',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1515405295579-ba7b45403062?w=800',
@@ -248,14 +460,27 @@ const seedDatabase = async () => {
     // Clear existing data
     await User.deleteMany();
     await Product.deleteMany();
+    await Category.deleteMany();
     console.log('🗑️  Data cleared');
 
+    // Insert categories recursively
+    const { count, childMap } = await seedRecursive(categoryHierarchy);
+    console.log(`📂 ${count} Categories seeded`);
+
     // Insert users
-    const createdUsers = await User.insertMany(users);
+    for (const user of users) {
+      await User.create(user);
+    }
     console.log('👤 Users seeded');
 
+    // Update products with category IDs
+    const productsWithIds = products.map((product) => ({
+      ...product,
+      category: childMap[product.category] || null,
+    }));
+
     // Insert products
-    await Product.insertMany(products);
+    await Product.insertMany(productsWithIds);
     console.log('📦 Products seeded');
 
     console.log('✅ Database seeded successfully!');

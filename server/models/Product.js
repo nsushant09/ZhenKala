@@ -7,6 +7,11 @@ const productSchema = new mongoose.Schema(
       required: [true, 'Please provide product name'],
       trim: true,
     },
+    slug: {
+      type: String,
+      unique: true,
+      lowercase: true,
+    },
     description: {
       type: String,
       required: [true, 'Please provide product description'],
@@ -27,19 +32,52 @@ const productSchema = new mongoose.Schema(
       max: 100,
     },
     category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
       required: [true, 'Please provide product category'],
-      enum: [
-        'Thangka Art',
-        'Singing Bowl',
-        'Statues',
-        'Jewellery',
-        'Oil Painting',
-        'Prayer Flags',
-        'Silk Brocade',
-        'Other',
-      ],
     },
+    variants: [
+      {
+        size: {
+          type: String,
+          default: null,
+        },
+        color: {
+          type: String,
+          default: null,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        originalPrice: {
+          type: Number,
+          default: 0,
+        },
+        discount: {
+          type: Number,
+          default: 0,
+          min: 0,
+          max: 100,
+        },
+        stock: {
+          type: Number,
+          required: true,
+          min: 0,
+          default: 0,
+        },
+        sku: {
+          type: String,
+          unique: true,
+          sparse: true,
+        },
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
     images: [
       {
         url: String,
@@ -111,5 +149,16 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Generate slug from name before saving
+productSchema.pre('save', function (next) {
+  if (!this.slug && this.name) {
+    this.slug = this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  }
+  next();
+});
 
 module.exports = mongoose.model('Product', productSchema);

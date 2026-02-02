@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import './Navbar.css';
+import api from '../services/api';
 import ConfirmModal from './ConfirmModal';
 
 const Navbar = () => {
@@ -32,14 +33,19 @@ const Navbar = () => {
     navigate('/');
   };
 
-  const categories = [
-    'Thangka Art',
-    'Singing Bowl',
-    'Statues',
-    'Jewellery',
-    'Oil Painting',
-    'Prayer Flags',
-  ];
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get('/categories?tree=true');
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   return (
     <>
@@ -142,17 +148,58 @@ const Navbar = () => {
       {/* Category Navigation */}
       <div className="navbar-categories">
         <div className="container">
-          <div className="categories-list">
-            {categories.map((category) => (
+          {categories.map((category) => (
+            <div key={category._id} className="category-item">
               <Link
-                key={category}
-                to={`/products?category=${encodeURIComponent(category)}`}
+                to={`/products?category=${encodeURIComponent(category.name)}`}
                 className="category-link"
               >
-                {category}
+                {category.name}
+                {category.children && category.children.length > 0 && <span className="dropdown-arrow">▾</span>}
               </Link>
-            ))}
-          </div>
+              {category.children && category.children.length > 0 && (
+                <div className="mega-menu">
+                  <div className="container">
+                    <div className="mega-menu-grid">
+                      {category.children.map((child) => (
+                        <div key={child._id} className="mega-menu-column">
+                          <Link
+                            to={`/products?category=${encodeURIComponent(child.name)}`}
+                            className="mega-menu-title"
+                          >
+                            {child.name}
+                          </Link>
+                          {child.children && child.children.length > 0 && (
+                            <ul className="mega-menu-list">
+                              {child.children.map((subChild) => (
+                                <li key={subChild._id}>
+                                  <Link to={`/products?category=${encodeURIComponent(subChild.name)}`}>
+                                    {subChild.name}
+                                  </Link>
+                                  {/* Level 4 handled by simple nested list if needed, or just flattened here */}
+                                  {subChild.children && subChild.children.length > 0 && (
+                                    <ul className="mega-menu-sublist">
+                                      {subChild.children.map((leaf) => (
+                                        <li key={leaf._id}>
+                                          <Link to={`/products?category=${encodeURIComponent(leaf.name)}`}>
+                                            {leaf.name}
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -161,13 +208,20 @@ const Navbar = () => {
         <div className="navbar-mobile-menu">
           <div className="mobile-menu-content">
             {categories.map((category) => (
-              <Link
-                key={category}
-                to={`/products?category=${encodeURIComponent(category)}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {category}
-              </Link>
+              <div key={category._id} className="mobile-category-item">
+                <div className="mobile-category-header">
+                  <Link
+                    to={`/products?category=${encodeURIComponent(category.name)}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {category.name}
+                  </Link>
+                  {category.children && category.children.length > 0 && (
+                    <button className="mobile-submenu-toggle">▾</button>
+                  )}
+                </div>
+                {/* Mobile nested menu can be further refined with state but for now just list top levels */}
+              </div>
             ))}
             <hr />
             <Link to="/about" onClick={() => setIsMenuOpen(false)}>

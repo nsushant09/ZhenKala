@@ -1,4 +1,6 @@
 const Product = require('../models/Product');
+const Category = require('../models/Category');
+const mongoose = require('mongoose');
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -11,7 +13,23 @@ exports.getProducts = async (req, res) => {
     let query = { isActive: true };
 
     if (category && category !== 'all') {
-      query.category = category;
+      let categoryIds = [];
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        categoryIds = [new mongoose.Types.ObjectId(category)];
+      } else {
+        const categoryDoc = await Category.findOne({ name: { $regex: `^${category}$`, $options: 'i' } });
+        if (categoryDoc) {
+          categoryIds = [categoryDoc._id];
+        }
+      }
+
+      if (categoryIds.length > 0) {
+        const descendants = await Category.find({ ancestors: categoryIds[0] });
+        const descendantIds = descendants.map(d => d._id);
+        query.category = { $in: [...categoryIds, ...descendantIds] };
+      } else {
+        query.category = new mongoose.Types.ObjectId();
+      }
     }
 
     if (minPrice || maxPrice) {
@@ -48,7 +66,8 @@ exports.getProducts = async (req, res) => {
     const products = await Product.find(query)
       .sort(sortBy)
       .limit(limitNum)
-      .skip(skip);
+      .skip(skip)
+      .populate('category', 'name slug parent ancestors');
 
     const total = await Product.countDocuments(query);
 
@@ -68,7 +87,8 @@ exports.getProducts = async (req, res) => {
 // @access  Public
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id)
+      .populate('category', 'name slug parent ancestors');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -168,5 +188,30 @@ exports.createProductReview = async (req, res) => {
     res.status(201).json({ message: 'Review added' });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// @desc    Get similar products
+// @route   GET /api/products/:id/similar
+// @access  Public
+exports.getSimilarProducts = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Find products in the same category, excluding the current product
+    const similarProducts = await Product.find({
+      category: product.category,
+      _id: { $ne: product._id },
+      isActive: true,
+    })
+      .limit(8)
+      .populate('category', 'name slug');
+
+    res.json(similarProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
