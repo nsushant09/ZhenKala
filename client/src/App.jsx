@@ -16,8 +16,10 @@ import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import FAQPage from './pages/FAQPage';
 import DeliveryPage from './pages/DeliveryPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import RefundPolicyPage from './pages/RefundPolicyPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 
@@ -32,6 +34,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
+import ScrollToTop from './components/ScrollToTop';
 
 // Hooks
 import useScrollReveal from './hooks/useScrollReveal';
@@ -44,6 +47,7 @@ function ScrollRevealHandler() {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <ScrollRevealHandler />
       <AuthProvider>
         <CartProvider>
@@ -60,8 +64,10 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/faq" element={<FAQPage />} />
                 <Route path="/delivery" element={<DeliveryPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="/refund-policy" element={<RefundPolicyPage />} />
 
 
                 {/* Protected Routes */}
