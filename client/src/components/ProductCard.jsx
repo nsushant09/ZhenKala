@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
-const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, discount = 0, image, images = [], badge }) => {
+const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, discount = 0, image, images = [], badge, stock = 0 }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -15,8 +15,9 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
     const productImages = images.length > 0 ? images : (image ? [{ url: image }] : []);
     const currentImage = productImages[currentImageIndex]?.url || "https://placehold.co/400x500/e0e0e0/ffffff?text=Product";
 
-    // Determine Badge
-    const displayBadge = badge || (discount > 0 ? `-${discount}%` : null);
+    // Determine Badges
+    const showDiscount = discount > 0;
+    const showLowStock = stock > 0 && stock < 5;
 
     const nextImage = (e) => {
         e.preventDefault();
@@ -46,12 +47,19 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                         className="w-full h-full object-cover transition-opacity duration-300"
                     />
 
-                    {/* Badge */}
-                    {displayBadge && (
-                        <div className="absolute top-0 left-0 bg-secondary text-white text-[10px] px-3 py-1 rounded-tl-sm uppercase tracking-wider font-medium shadow-sm z-10">
-                            {displayBadge}
-                        </div>
-                    )}
+                    {/* Badges */}
+                    <div className="absolute top-0 left-0 z-10 flex flex-col gap-1 items-start">
+                        {showDiscount && (
+                            <div className="bg-secondary text-white text-[10px] px-3 py-1 rounded-br-sm uppercase tracking-wider font-medium shadow-sm">
+                                -{discount}%
+                            </div>
+                        )}
+                        {showLowStock && (
+                            <div className="bg-black/80 text-white text-[10px] px-3 py-1 rounded-r-sm uppercase tracking-wider font-medium shadow-sm backdrop-blur-sm">
+                                {stock} in stock
+                            </div>
+                        )}
+                    </div>
 
                     {/* Carousel Controls */}
                     {productImages.length > 1 && (

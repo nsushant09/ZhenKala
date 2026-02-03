@@ -27,6 +27,7 @@ const ProductCards = ({ products = [] }) => {
                         image={product.image}
                         images={product.images}
                         badge={product.badge}
+                        stock={product.stock}
                     />
                 </div>
             ))}
