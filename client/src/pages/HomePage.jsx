@@ -14,23 +14,19 @@ const HomePage = () => {
   const { artisanProducts } = useShop();
   // No local fetch needed, Context handles caching.
 
-  const sampleTestimonials = [
-    {
-      quote: "I was worried about international shipping, but the packaging was superb. Seamless experience to London.",
-      name: "Su sha",
-      address: "Tibet, China"
-    },
-    {
-      quote: "The quality of the Thangka is breathtaking. Truly a piece of art that brings peace to my meditation space.",
-      name: "Emma Wright",
-      address: "New York, USA"
-    },
-    {
-      quote: "Deeply impressed by the colors and the detail. It's more than just a painting; it's a window into spiritual peace.",
-      name: "Hiroshi Tanaka",
-      address: "Kyoto, Japan"
-    }
-  ];
+  const [testimonials, setTestimonials] = useState([]);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const { data } = await api.get('/testimonials?limit=3');
+        setTestimonials(data);
+      } catch (error) {
+        console.error('Failed to fetch testimonials:', error);
+      }
+    };
+    fetchTestimonials();
+  }, []);
 
   return (
     <div className="bg-background flex flex-col gap-[32px] mb-8">
@@ -113,9 +109,12 @@ const HomePage = () => {
             className="text-center text-2xl md:text-4xl font-medium"
           >Happy Clients</h1>
 
-          <Testimonials testimonials={sampleTestimonials} />
+          <Testimonials testimonials={testimonials} />
 
-          <div className="flex flex-row justify-center text-primary items-center gap-2 bg-secondary py-[8px] px-[16px] rounded-md w-fit mx-auto cursor-pointer hover:bg-red-900 transition-all hover:scale-105 active:scale-95 duration-300">
+          <div
+            onClick={() => window.location.href = '/reviews'}
+            className="flex flex-row justify-center text-primary items-center gap-2 bg-secondary py-[8px] px-[16px] rounded-md w-fit mx-auto cursor-pointer hover:bg-red-900 transition-all hover:scale-105 active:scale-95 duration-300"
+          >
             <span>View all Reviews</span>
             <span><img src="/ArrowRight.svg" width={16} height={16} alt="" className="brightness-0 invert" /></span>
           </div>

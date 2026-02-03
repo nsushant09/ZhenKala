@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const User = require('./models/User');
 const Product = require('./models/Product');
 const Category = require('./models/Category');
+const Testimonial = require('./models/Testimonial');
 
 dotenv.config();
 
@@ -525,6 +526,39 @@ const products = [
   }
 ];
 
+const testimonials = [
+  {
+    quote: "I was worried about international shipping, but the packaging was superb. Seamless experience to London.",
+    name: "Su sha",
+    address: "Tibet, China",
+    rating: 5
+  },
+  {
+    quote: "The quality of the Thangka is breathtaking. Truly a piece of art that brings peace to my meditation space.",
+    name: "Emma Wright",
+    address: "New York, USA",
+    rating: 5
+  },
+  {
+    quote: "Deeply impressed by the colors and the detail. It's more than just a painting; it's a window into spiritual peace.",
+    name: "Hiroshi Tanaka",
+    address: "Kyoto, Japan",
+    rating: 5
+  },
+  {
+    quote: "The customer service was exceptional. They answered all my questions about the iconography.",
+    name: "David Chen",
+    address: "Singapore",
+    rating: 5
+  },
+  {
+    quote: "A precious addition to our shrine. The energy of the painting is very powerful.",
+    name: "Lhamo Tsering",
+    address: "Dharamsala, India",
+    rating: 5
+  }
+];
+
 const seedDatabase = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
@@ -534,6 +568,7 @@ const seedDatabase = async () => {
     await User.deleteMany();
     await Product.deleteMany();
     await Category.deleteMany();
+    await Testimonial.deleteMany();
     console.log('🗑️  Data cleared');
 
     // Insert categories recursively
@@ -580,6 +615,10 @@ const seedDatabase = async () => {
       await Product.create(product);
     }
     console.log('📦 Products seeded');
+
+    // Insert testimonials
+    await Testimonial.insertMany(testimonials);
+    console.log('💬 Testimonials seeded');
 
     console.log('✅ Database seeded successfully!');
     console.log('\n📧 Admin Login:');

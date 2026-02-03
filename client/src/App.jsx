@@ -7,6 +7,7 @@ import { ShopProvider } from './context/ShopContext';
 // Pages
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
+import ReviewsPage from './pages/ReviewsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -60,6 +61,7 @@ function App() {
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/reviews" element={<ReviewsPage />} />
                   <Route path="/products" element={<ProductsPage />} />
                   <Route path="/products/:id" element={<ProductDetailPage />} />
                   <Route path="/cart" element={<CartPage />} />
