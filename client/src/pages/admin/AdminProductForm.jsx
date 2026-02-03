@@ -93,8 +93,7 @@ const AdminProductForm = () => {
     const addVariant = () => {
         setVariants([
             ...variants,
-            ...variants,
-            { size: '', color: '', price: formData.price, originalPrice: formData.originalPrice || formData.price, stock: 10, discount: 0, isActive: true }
+            { size: '', color: '', price: 0, originalPrice: 0, stock: 10, discount: 0, isActive: true }
         ]);
     };
 
@@ -319,62 +318,8 @@ const AdminProductForm = () => {
                                 ></textarea>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Pricing & Stock Card */}
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-700 border-b pb-2">
-                            Basic Pricing & Stock (Fallbacks)
-                        </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Original Price ($)</label>
-                                <input
-                                    type="number"
-                                    name="originalPrice"
-                                    value={formData.originalPrice}
-                                    onChange={handleChange}
-                                    min="0"
-                                    className={inputClasses}
-                                    placeholder="0"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
-                                <input
-                                    type="number"
-                                    name="discount"
-                                    value={formData.discount}
-                                    onChange={handleChange}
-                                    min="0"
-                                    max="100"
-                                    className={inputClasses}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Selling Price (Auto)</label>
-                                <input
-                                    type="number"
-                                    name="price"
-                                    value={formData.price}
-                                    readOnly
-                                    className={`${inputClasses} bg-gray-100 text-gray-500 cursor-not-allowed`}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Total Stock</label>
-                                <input
-                                    type="number"
-                                    name="stock"
-                                    value={formData.stock}
-                                    onChange={handleChange}
-                                    min="0"
-                                    className={inputClasses}
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-6 mt-6">
+                        <div className="flex items-center gap-6 mt-6 border-t pt-4">
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -397,6 +342,8 @@ const AdminProductForm = () => {
                             </label>
                         </div>
                     </div>
+
+
 
                     {/* Variants Generator & Manager */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">

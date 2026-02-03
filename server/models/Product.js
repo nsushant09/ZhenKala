@@ -19,7 +19,6 @@ const productSchema = new mongoose.Schema(
     },
     price: {
       type: Number,
-      required: [true, 'Please provide product price'],
       min: 0,
     },
     originalPrice: {
@@ -91,7 +90,6 @@ const productSchema = new mongoose.Schema(
     ],
     stock: {
       type: Number,
-      required: [true, 'Please provide stock quantity'],
       min: 0,
       default: 0,
     },

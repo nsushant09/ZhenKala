@@ -12,6 +12,7 @@ import { FaFacebook, FaTwitter, FaPinterest, FaWhatsapp } from 'react-icons/fa';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -195,7 +196,7 @@ const ProductDetailPage = () => {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-secondary rounded-full animate-spin mx-auto"></div>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -308,7 +309,7 @@ const ProductDetailPage = () => {
                       {uniqueSizes.map(size => (
                         <button
                           key={size}
-                          style={{border: '1px solid #0000003f' }}
+                          style={{ border: '1px solid #0000003f' }}
                           className={`px-5 py-2.5 border-2 rounded-md font-medium transition-colors ${selectedSize === size ? 'border-secondary bg-secondary text-white' : 'border-gray-300 bg-white text-on-surface focus:border-secondary'}`}
                           onClick={() => {
                             setSelectedSize(size);

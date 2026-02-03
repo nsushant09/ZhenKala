@@ -3,6 +3,7 @@ import ProductCards from '../components/ProductCards';
 import Divider from '../components/Divider';
 import { FiFilter, FiX, FiChevronDown, FiChevronRight, FiSearch, FiShoppingBag } from 'react-icons/fi';
 import { useProductsViewModel } from '../hooks/useProductsViewModel';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const ProductsPage = () => {
   // ViewModel integration
@@ -241,9 +242,7 @@ const ProductsPage = () => {
           {/* Product Grid */}
           <div className="w-full md:w-3/4 lg:w-4/5">
             {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary"></div>
-              </div>
+              <LoadingSpinner />
             ) : products.length > 0 ? (
               <>
                 <ProductCards products={products} />

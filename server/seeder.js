@@ -256,10 +256,16 @@ const products = [
     category: 'Green Tara',
     tags: ['thangka', 'green tara', 'masterpiece', 'gold', 'healing'],
     isFeatured: true,
-    price: 450,
-    originalPrice: 650,
-    discount: 30,
-    stock: 1,
+    variants: [
+      {
+        size: 'Standard',
+        price: 450,
+        originalPrice: 650,
+        discount: 30,
+        stock: 1,
+        isActive: true
+      }
+    ],
     images: [
       {
         url: 'https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?q=80&w=1932&auto=format&fit=crop',
@@ -320,10 +326,7 @@ const products = [
         isActive: true
       }
     ],
-    price: 250,
-    originalPrice: 500,
-    discount: 50,
-    stock: 7,
+
     images: [
       {
         url: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=800',
@@ -374,8 +377,7 @@ const products = [
         isActive: true
       }
     ],
-    price: 350,
-    stock: 5,
+
     images: [
       {
         url: 'https://images.unsplash.com/photo-1615680022647-99c397cbcbdd?w=800',
@@ -426,8 +428,7 @@ const products = [
         isActive: true
       }
     ],
-    price: 85,
-    stock: 30,
+
     images: [
       {
         url: 'https://images.unsplash.com/photo-1605648916361-9bc12ad6a569?w=800',
@@ -443,9 +444,14 @@ const products = [
     description: '<p>Essential ritual implements for Vajrayana practice. Representing method (Vajra) and wisdom (Bell).</p>',
     category: 'Ritual & Decor',
     tags: ['ritual', 'vajra', 'bell', 'artisan-selection'],
-    variants: [],
-    price: 65,
-    stock: 20,
+    variants: [
+      {
+        size: 'Standard',
+        price: 65,
+        stock: 20,
+        isActive: true
+      }
+    ],
     images: [
       {
         url: 'https://images.unsplash.com/photo-1534644107580-3a4dbd494a95?w=800',
@@ -463,8 +469,7 @@ const products = [
       { color: 'Blue & Gold', price: 45, stock: 10 },
       { color: 'Yellow & Gold', price: 45, stock: 10 }
     ],
-    price: 45,
-    stock: 30,
+
     images: [
       { url: 'https://images.unsplash.com/photo-1614959541559-4f94441a547d?w=800', alt: 'Red Brocade', color: 'Red & Gold' },
       { url: 'https://images.unsplash.com/photo-1614959541818-6cd5e4j847d?w=800', alt: 'Blue Brocade', color: 'Blue & Gold' }
@@ -496,9 +501,7 @@ const products = [
         isActive: true
       }
     ],
-    // Base prices will be overwritten by sync hook, but setting defaults good practice
-    price: 180,
-    stock: 6,
+
     images: [
       {
         url: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=800',
@@ -572,8 +575,10 @@ const seedDatabase = async () => {
       };
     });
 
-    // Insert products
-    await Product.insertMany(productsWithIds);
+    // Insert products one by one to trigger pre-save middleware (which syncs price/stock from variants)
+    for (const product of productsWithIds) {
+      await Product.create(product);
+    }
     console.log('📦 Products seeded');
 
     console.log('✅ Database seeded successfully!');
