@@ -8,35 +8,11 @@ import Testimonials from '../components/Testimonials';
 import Statistics from '../components/Statistics';
 import api from '../services/api';
 
-const HomePage = () => {
-  const [artisanProducts, setArtisanProducts] = useState([]);
+import { useShop } from '../context/ShopContext';
 
-  useEffect(() => {
-    const fetchArtisanProducts = async () => {
-      try {
-        const { data } = await api.get('/products');
-        // Filter products with 'artisan-selection' tag
-        const artisanSelection = data.products.filter(product =>
-          product.tags && product.tags.includes('artisan-selection')
-        );
-        // Map to format expected by ProductCards
-        const formattedProducts = artisanSelection.map(product => ({
-          id: product._id,
-          _id: product._id,
-          name: product.name,
-          price: product.price,
-          discount: product.discount,
-          image: product.images[0]?.url,
-          images: product.images,
-          badge: product.stock === 0 ? 'Out of Stock' : (product.isFeatured ? 'Featured' : null)
-        }));
-        setArtisanProducts(formattedProducts);
-      } catch (error) {
-        console.error('Error fetching artisan products:', error);
-      }
-    };
-    fetchArtisanProducts();
-  }, []);
+const HomePage = () => {
+  const { artisanProducts } = useShop();
+  // No local fetch needed, Context handles caching.
 
   const sampleTestimonials = [
     {
@@ -127,7 +103,7 @@ const HomePage = () => {
             className="text-center text-lg md:text-2xl font-medium"
           >Limited-Time Studio Offerings</h1>
 
-          <ProductCards products={artisanProducts} />
+          <ProductCards products={artisanProducts || []} />
         </div>
       </div>
       <Divider />

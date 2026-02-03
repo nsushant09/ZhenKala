@@ -301,7 +301,15 @@ const ProductDetailPage = () => {
                         <button
                           key={size}
                           className={`variant-btn ${selectedSize === size ? 'active' : ''}`}
-                          onClick={() => setSelectedSize(size)}
+                          onClick={() => {
+                            setSelectedSize(size);
+                            // Auto-switch color if current combination invalid
+                            const variantExists = product.variants.find(v => v.size === size && v.color === selectedColor);
+                            if (!variantExists && selectedColor) {
+                              const validVariant = product.variants.find(v => v.size === size);
+                              if (validVariant) setSelectedColor(validVariant.color);
+                            }
+                          }}
                         >
                           {size}
                         </button>
@@ -318,7 +326,15 @@ const ProductDetailPage = () => {
                         <button
                           key={color}
                           className={`variant-btn ${selectedColor === color ? 'active' : ''}`}
-                          onClick={() => setSelectedColor(color)}
+                          onClick={() => {
+                            setSelectedColor(color);
+                            // Auto-switch size if current combination invalid
+                            const variantExists = product.variants.find(v => v.color === color && v.size === selectedSize);
+                            if (!variantExists && selectedSize) {
+                              const validVariant = product.variants.find(v => v.color === color);
+                              if (validVariant) setSelectedSize(validVariant.size);
+                            }
+                          }}
                         >
                           {color}
                         </button>
@@ -341,8 +357,10 @@ const ProductDetailPage = () => {
                 />
                 <button onClick={() => setQuantity(Math.min(stock, quantity + 1))}>+</button>
               </div>
-              <span className="stock-info">
-                {stock > 0 ? `${stock} in stock` : 'Out of stock'}
+              <span className={`stock-info ${stock > 0 && stock < 5 ? 'text-red-600 font-medium' : ''}`}>
+                {stock > 0
+                  ? (stock < 5 ? `Limited Stock: Only ${stock} left` : `${stock} in stock`)
+                  : 'Out of stock'}
               </span>
             </div>
 

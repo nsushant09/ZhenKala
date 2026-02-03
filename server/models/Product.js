@@ -134,6 +134,7 @@ const productSchema = new mongoose.Schema(
     ],
 
     tags: [String],
+    colors: [String],
     isFeatured: {
       type: Boolean,
       default: false,
@@ -148,8 +149,23 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Generate slug from name before saving
+// Enforce Data Consistency and Generate Slug
 productSchema.pre('save', function (next) {
+  // Sync Base Product with First Active Variant
+  if (this.variants && this.variants.length > 0) {
+    const activeVariant = this.variants.find(v => v.isActive) || this.variants[0];
+    if (activeVariant) {
+      this.price = activeVariant.price;
+      this.originalPrice = activeVariant.originalPrice || activeVariant.price;
+      this.discount = activeVariant.discount;
+
+      // Verify Total Stock matches sum of variants
+      const totalStock = this.variants.reduce((acc, v) => acc + (parseInt(v.stock) || 0), 0);
+      this.stock = totalStock;
+    }
+  }
+
+  // Generate Slug
   if (!this.slug && this.name) {
     this.slug = this.name
       .toLowerCase()

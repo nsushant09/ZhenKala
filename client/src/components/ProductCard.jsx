@@ -2,17 +2,21 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
-const ProductCard = ({ id, name = "Product Name", price = 0, discount = 0, image, images = [], badge }) => {
+const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, discount = 0, image, images = [], badge }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
 
-    // Calculate discounted price if a discount exists
-    const hasDiscount = discount > 0;
-    const finalPrice = hasDiscount ? price - (price * (discount / 100)) : price;
+    // Use passed props directly
+    // The backend now syncs price to be the actual selling price, and originalPrice as the base.
+    const hasDiscount = (originalPrice > price) || (discount > 0 && originalPrice > 0);
+
 
     // Determine images to use
     const productImages = images.length > 0 ? images : (image ? [{ url: image }] : []);
     const currentImage = productImages[currentImageIndex]?.url || "https://placehold.co/400x500/e0e0e0/ffffff?text=Product";
+
+    // Determine Badge
+    const displayBadge = badge || (discount > 0 ? `-${discount}%` : null);
 
     const nextImage = (e) => {
         e.preventDefault();
@@ -43,9 +47,9 @@ const ProductCard = ({ id, name = "Product Name", price = 0, discount = 0, image
                     />
 
                     {/* Badge */}
-                    {badge && (
+                    {displayBadge && (
                         <div className="absolute top-0 left-0 bg-secondary text-white text-[10px] px-3 py-1 rounded-tl-sm uppercase tracking-wider font-medium shadow-sm z-10">
-                            {badge}
+                            {displayBadge}
                         </div>
                     )}
 
@@ -89,11 +93,11 @@ const ProductCard = ({ id, name = "Product Name", price = 0, discount = 0, image
                     <div className="flex items-center justify-between mt-auto">
                         <div className="flex items-center gap-2">
                             <span className="text-xl font-medium text-on-background">
-                                ${finalPrice.toLocaleString()}
+                                ${price.toLocaleString()}
                             </span>
                             {hasDiscount && (
                                 <span className="text-lg text-gray-400 line-through decoration-1">
-                                    ${price.toLocaleString()}
+                                    ${originalPrice.toLocaleString()}
                                 </span>
                             )}
                         </div>

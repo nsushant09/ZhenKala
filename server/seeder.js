@@ -20,6 +20,12 @@ const users = [
     email: 'john@example.com',
     password: 'password123',
   },
+  {
+    firstName: 'Sarah',
+    lastName: 'Miller',
+    email: 'sarah@example.com',
+    password: 'password123',
+  },
 ];
 
 const categoryHierarchy = [
@@ -235,6 +241,56 @@ const seedRecursive = async (hierarchy, parentId = null, ancestors = []) => {
 
 const products = [
   {
+    name: 'Masterpiece Green Tara Thangka',
+    description: `
+      <p><strong>Green Tara - The Mother of Liberation</strong></p>
+      <p>This exceptional masterpiece depicts Green Tara, the female Buddha of active compassion. Painted by a master artist from the Solu region of Nepal, this Thangka features 24K pure gold leaf and natural stone pigments.</p>
+      <p>Green Tara sits in a posture of royal ease, her right leg extended, ready to step down and help sentient beings. She is known for her swift assistance in overcoming obstacles and fears.</p>
+      <h3>Details</h3>
+      <ul>
+        <li><strong>Canvas:</strong> Organic Cotton</li>
+        <li><strong>Pigments:</strong> Lapis Lazuli, Malachite, Cinnabar, 24K Gold</li>
+        <li><strong>Artist:</strong> Master Lama Artist (3+ months work)</li>
+      </ul>
+    `,
+    category: 'Green Tara',
+    tags: ['thangka', 'green tara', 'masterpiece', 'gold', 'healing'],
+    isFeatured: true,
+    price: 450,
+    originalPrice: 650,
+    discount: 30,
+    stock: 1,
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?q=80&w=1932&auto=format&fit=crop',
+        alt: 'Green Tara Full View',
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1628147828005-59b136894562?q=80&w=2070&auto=format&fit=crop',
+        alt: 'Face Detail',
+      }
+    ],
+    rating: 5.0,
+    numReviews: 3,
+    reviews: [
+      {
+        name: 'Sarah M.',
+        rating: 5,
+        comment: 'Absolutely stunning. The gold details are breathtaking. It radiates such peace.',
+      },
+      {
+        name: 'Tenzin K.',
+        rating: 5,
+        comment: 'A true masterpiece. The expression of Tara is so compassionate.',
+      },
+      {
+        name: 'Emily R.',
+        rating: 5,
+        comment: 'Arrived safely and beautifully packaged. Thank you.',
+      }
+    ],
+  },
+  {
     name: 'Reduk Wheel of Life',
     description: `
       <p>A magnificent hand-painted Thangka depicting the Wheel of Life (Bhavachakra), representing the cycle of existence in Buddhist cosmology. This piece features intricate details and vibrant colors, painted by master artisans using traditional mineral pigments and 24K gold.</p>
@@ -264,7 +320,6 @@ const products = [
         isActive: true
       }
     ],
-    // Fallback values derived from first/default variant
     price: 250,
     originalPrice: 500,
     discount: 50,
@@ -280,7 +335,19 @@ const products = [
       }
     ],
     rating: 4.8,
-    numReviews: 12,
+    numReviews: 2,
+    reviews: [
+      {
+        name: 'John D.',
+        rating: 5,
+        comment: 'The level of detail is incredible. I can look at it for hours.',
+      },
+      {
+        name: 'Alice W.',
+        rating: 4,
+        comment: 'Beautiful, but shipping took a bit longer than expected.',
+      }
+    ]
   },
   {
     name: 'Medicine Buddha Statue',
@@ -322,7 +389,14 @@ const products = [
       }
     ],
     rating: 5.0,
-    numReviews: 8,
+    numReviews: 1,
+    reviews: [
+      {
+        name: 'Michael B.',
+        rating: 5,
+        comment: 'Substantial weight and beautiful craftsmanship. The gold gilding is perfect.',
+      }
+    ]
   },
   {
     name: 'Singing Bowl Set',
@@ -361,29 +435,8 @@ const products = [
       }
     ],
     rating: 4.7,
-    numReviews: 24,
-  },
-  {
-    name: 'Green Tara Thangka',
-    description: '<p>The Mother of all Buddhas, Green Tara represents the active compassion of all Buddhas. She is ready to step down from her lotus throne to help sentient beings.</p>',
-    category: 'Green Tara',
-    tags: ['thangka', 'green tara', 'compassion', 'artisan-selection'],
-    isFeatured: false,
-    variants: [
-      {
-        size: 'Standard (18" x 24")',
-        price: 180,
-        stock: 5
-      }
-    ],
-    price: 180,
-    stock: 5,
-    images: [
-      {
-        url: 'https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?w=800',
-        alt: 'Green Tara Thangka'
-      }
-    ]
+    numReviews: 0,
+    reviews: []
   },
   {
     name: 'Vajra & Bell Set',
@@ -418,25 +471,54 @@ const products = [
     ]
   },
   {
-    name: 'Tibetan Prayer Flags',
-    category: 'Prayer Flags',
-    description: '<p>5-meter string of cotton prayer flags. Woodblock printed with Lungta (Wind Horse) and mantras.</p>',
-    tags: ['prayer flags', 'tibetan', 'artisan-selection'],
-    price: 15,
-    stock: 100,
-    images: [{ url: 'https://images.unsplash.com/photo-1534644107580-3a4dbd494a95?w=800', alt: 'Prayer Flags' }]
-  },
-  {
-    name: 'Mandala Oil Painting',
-    category: 'Oil Painting',
-    description: '<p>Contemporary style Mandala oil painting. A fusion of traditional sacred geometry and modern art medium.</p>',
-    tags: ['oil painting', 'mandala', 'art', 'artisan-selection'],
-    price: 420,
-    stock: 1,
+    name: 'Chenrezig (Avalokiteshvara) Thangka',
+    description: `
+      <p><strong>The Buddha of Compassion</strong></p>
+      <p>Chenrezig (Avalokiteshvara) is the embodiment of the compassion of all Buddhas. This stunning Thangka is painted in the traditional Karma Gadri style, known for its spacious landscapes and delicate shading.</p>
+      <p>The four-armed form represents the four immeasurables: Loving Kindness, Compassion, Joy, and Equanimity.</p>
+    `,
+    category: 'Chenrezig',
+    tags: ['thangka', 'compassion', 'chenrezig', 'artisan-selection'],
+    isFeatured: true,
     variants: [
-      { size: '36" x 36"', price: 420, stock: 1 }
+      {
+        size: 'Standard (18" x 24")',
+        price: 180,
+        stock: 5,
+        isActive: true
+      },
+      {
+        size: 'Masterpiece (Pure Gold, 24" x 36")',
+        price: 450,
+        originalPrice: 600,
+        discount: 25,
+        stock: 1,
+        isActive: true
+      }
     ],
-    images: [{ url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800', alt: 'Mandala Art' }]
+    // Base prices will be overwritten by sync hook, but setting defaults good practice
+    price: 180,
+    stock: 6,
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=800',
+        alt: 'Chenrezig Thangka',
+      }
+    ],
+    rating: 5.0,
+    numReviews: 2,
+    reviews: [
+      {
+        name: 'Tashi L.',
+        rating: 5,
+        comment: 'The energy of this painting is incredible. It has transformed my meditation space.'
+      },
+      {
+        name: 'James P.',
+        rating: 5,
+        comment: 'Expert packing and fast shipping to California. The quality exceeds the photos.'
+      }
+    ]
   }
 ];
 
@@ -456,16 +538,39 @@ const seedDatabase = async () => {
     console.log(`📂 ${count} Categories seeded`);
 
     // Insert users
+    // Use create instead of insertMany to trigger pre-save middleware (password hashing)
+    const createdUsers = [];
     for (const user of users) {
-      await User.create(user);
+      createdUsers.push(await User.create(user));
     }
+    const defaultUser = createdUsers[1]; // Use 'John Doe' as the default reviewer
     console.log('👤 Users seeded');
 
-    // Update products with category IDs
-    const productsWithIds = products.map((product) => ({
-      ...product,
-      category: childMap[product.category] || null,
-    }));
+    // Update products with category IDs and attach Users to Reviews
+    const productsWithIds = products.map((product) => {
+      // Map Category
+      const categoryId = childMap[product.category] || null;
+
+      // Map Reviews if they exist
+      let reviews = [];
+      if (product.reviews && product.reviews.length > 0) {
+        reviews = product.reviews.map(review => ({
+          ...review,
+          user: defaultUser._id // Attach a valid user ID
+        }));
+      }
+
+      return {
+        ...product,
+        category: categoryId,
+        reviews: reviews,
+        numReviews: reviews.length,
+        // Calculate average rating if reviews exist
+        rating: reviews.length > 0
+          ? reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length
+          : 0
+      };
+    });
 
     // Insert products
     await Product.insertMany(productsWithIds);

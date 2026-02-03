@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -14,6 +14,14 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [activeCategory, setActiveCategory] = useState(null);
+
+  // Close mega menu on route change
+  useEffect(() => {
+    setActiveCategory(null);
+    setIsMenuOpen(false); // Also close mobile menu
+  }, [location.pathname]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -149,16 +157,22 @@ const Navbar = () => {
       <div className="navbar-categories">
         <div className="container">
           {categories.map((category) => (
-            <div key={category._id} className="category-item">
+            <div
+              key={category._id}
+              className="category-item"
+              onMouseEnter={() => setActiveCategory(category._id)}
+              onMouseLeave={() => setActiveCategory(null)}
+            >
               <Link
                 to={`/products?category=${encodeURIComponent(category.name)}`}
                 className="category-link"
+                onClick={() => setActiveCategory(null)}
               >
                 {category.name}
                 {category.children && category.children.length > 0 && <span className="dropdown-arrow">▾</span>}
               </Link>
-              {category.children && category.children.length > 0 && (
-                <div className="mega-menu">
+              {category.children && category.children.length > 0 && activeCategory === category._id && (
+                <div className="mega-menu" style={{ display: 'block', opacity: 1, visibility: 'visible' }}>
                   <div className="container">
                     <div className="mega-menu-grid">
                       {category.children.map((child) => (
@@ -166,6 +180,7 @@ const Navbar = () => {
                           <Link
                             to={`/products?category=${encodeURIComponent(child.name)}`}
                             className="mega-menu-title"
+                            onClick={() => setActiveCategory(null)}
                           >
                             {child.name}
                           </Link>
@@ -173,15 +188,20 @@ const Navbar = () => {
                             <ul className="mega-menu-list">
                               {child.children.map((subChild) => (
                                 <li key={subChild._id}>
-                                  <Link to={`/products?category=${encodeURIComponent(subChild.name)}`}>
+                                  <Link
+                                    to={`/products?category=${encodeURIComponent(subChild.name)}`}
+                                    onClick={() => setActiveCategory(null)}
+                                  >
                                     {subChild.name}
                                   </Link>
-                                  {/* Level 4 handled by simple nested list if needed, or just flattened here */}
                                   {subChild.children && subChild.children.length > 0 && (
                                     <ul className="mega-menu-sublist">
                                       {subChild.children.map((leaf) => (
                                         <li key={leaf._id}>
-                                          <Link to={`/products?category=${encodeURIComponent(leaf.name)}`}>
+                                          <Link
+                                            to={`/products?category=${encodeURIComponent(leaf.name)}`}
+                                            onClick={() => setActiveCategory(null)}
+                                          >
                                             {leaf.name}
                                           </Link>
                                         </li>
