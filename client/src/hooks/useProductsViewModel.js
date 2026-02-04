@@ -51,10 +51,19 @@ export const useProductsViewModel = () => {
             setLoading(true);
             try {
                 const params = new URLSearchParams(location.search);
-                // Ensure page is set
-                if (!params.get('page')) params.set('page', 1);
 
-                const { data } = await api.get(`/products?${params.toString()}`);
+                // Clean up empty parameters to prevent backend filtering issues
+                const cleanParams = new URLSearchParams();
+                for (const [key, value] of params.entries()) {
+                    if (value && value !== 'all' && value !== '') {
+                        cleanParams.set(key, value);
+                    }
+                }
+
+                // Default page
+                if (!cleanParams.get('page')) cleanParams.set('page', 1);
+
+                const { data } = await api.get(`/products?${cleanParams.toString()}`);
                 setProducts(data.products);
                 setPagination({
                     page: data.page,

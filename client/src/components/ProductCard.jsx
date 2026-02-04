@@ -120,11 +120,11 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                     <div className="flex items-center justify-between mt-auto">
                         <div className="flex items-center gap-2">
                             <span className="text-xl font-medium text-on-background">
-                                ${price.toLocaleString()}
+                                ${typeof price === 'number' ? price.toLocaleString() : price}
                             </span>
                             {hasDiscount && (
                                 <span className="text-lg text-gray-400 line-through decoration-1">
-                                    ${originalPrice.toLocaleString()}
+                                    ${typeof originalPrice === 'number' ? originalPrice.toLocaleString() : originalPrice}
                                 </span>
                             )}
                         </div>

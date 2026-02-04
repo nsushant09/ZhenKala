@@ -12,7 +12,8 @@ exports.getProducts = async (req, res) => {
     // Build query
     let query = { isActive: true };
 
-    if (category && category !== 'all') {
+    // Robust category filtering: Ignore 'all' or empty strings
+    if (category && category !== 'all' && category.trim() !== '') {
       let categoryIds = [];
       if (mongoose.Types.ObjectId.isValid(category)) {
         categoryIds = [new mongoose.Types.ObjectId(category)];
@@ -28,21 +29,26 @@ exports.getProducts = async (req, res) => {
         const descendantIds = descendants.map(d => d._id);
         query.category = { $in: [...categoryIds, ...descendantIds] };
       } else {
+        // Only force no-results if a specific category was requested but not found
         query.category = new mongoose.Types.ObjectId();
       }
     }
 
-    if (minPrice || maxPrice) {
+    // Robust price filtering: Only apply if numeric and not empty
+    if ((minPrice && minPrice.trim() !== '') || (maxPrice && maxPrice.trim() !== '')) {
       query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
+      if (minPrice && minPrice.trim() !== '') query.price.$gte = Number(minPrice);
+      if (maxPrice && maxPrice.trim() !== '') query.price.$lte = Number(maxPrice);
+
+      // If object remains empty, delete it
+      if (Object.keys(query.price).length === 0) delete query.price;
     }
 
-    if (rating) {
+    if (rating && rating.trim() !== '') {
       query.rating = { $gte: Number(rating) };
     }
 
-    if (search) {
+    if (search && search.trim() !== '') {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },

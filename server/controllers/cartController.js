@@ -25,18 +25,16 @@ exports.addToCart = async (req, res) => {
   try {
     const { productId, quantity = 1, size, color } = req.body;
 
-    // Check if product exists and has stock
+    // 1. Validate Product & Stock
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Check stock based on variant if applicable
     let stockAvailable = product.stock;
     let price = product.price;
 
     if (size || color) {
-      // Find matching variant
       const variant = product.variants.find(v =>
         (v.size == size || (!v.size && !size)) &&
         (v.color == color || (!v.color && !color))
@@ -52,41 +50,33 @@ exports.addToCart = async (req, res) => {
       return res.status(400).json({ message: 'Insufficient stock' });
     }
 
+    // 2. Find or Create Cart
     let cart = await Cart.findOne({ user: req.user._id });
-
     if (!cart) {
-      // Create new cart
-      cart = await Cart.create({
-        user: req.user._id,
-        items: [{ product: productId, quantity, size, color, price }],
-      });
-    } else {
-      // Check if product with SAME variant already in cart
-      const itemIndex = cart.items.findIndex(
-        (item) =>
-          item.product.toString() === productId &&
-          item.size == size &&
-          item.color == color
-      );
-
-      if (itemIndex > -1) {
-        // Update quantity
-        cart.items[itemIndex].quantity += quantity;
-
-        // Check stock again including current cart quantity
-        if (stockAvailable < cart.items[itemIndex].quantity) {
-          return res.status(400).json({ message: 'Insufficient stock' });
-        }
-        // Update price in case it changed
-        cart.items[itemIndex].price = price;
-      } else {
-        // Add new item
-        cart.items.push({ product: productId, quantity, size, color, price });
-      }
-
-      await cart.save();
+      cart = new Cart({ user: req.user._id, items: [] });
     }
 
+    // 3. Update or Add Item
+    const existingItemIndex = cart.items.findIndex(
+      (item) =>
+        item.product.toString() === productId &&
+        item.size == size &&
+        item.color == color
+    );
+
+    if (existingItemIndex > -1) {
+      // Check total quantity after update
+      const newQuantity = cart.items[existingItemIndex].quantity + quantity;
+      if (stockAvailable < newQuantity) {
+        return res.status(400).json({ message: 'Insufficient stock for updated quantity' });
+      }
+      cart.items[existingItemIndex].quantity = newQuantity;
+      cart.items[existingItemIndex].price = price; // Sync price while we are at it
+    } else {
+      cart.items.push({ product: productId, quantity, size, color, price });
+    }
+
+    await cart.save();
     cart = await cart.populate('items.product');
     res.json(cart);
   } catch (error) {
@@ -95,48 +85,35 @@ exports.addToCart = async (req, res) => {
 };
 
 // @desc    Update cart item quantity
-// @route   PUT /api/cart/:productId
+// @route   PUT /api/cart/:itemId
 // @access  Private
 exports.updateCartItem = async (req, res) => {
   try {
     const { quantity } = req.body;
-    const { productId } = req.params; // NOTE: Ideally this should be item ID, but using productId for now assuming unique per user+product combo is tricky. 
-    // Actually, distinct variants = distinct items. We need to identify WHICH item.
-    // For now, let's assume the frontend passes the Cart Item ID in the route or body if possible.
-    // BUT the route is /:productId. This is ambiguous if user has same product with diff variants.
-    // To support variants properly, we should really be operating on CART ITEM ID.
-    // For this refactor, I will change the logic to find item by _id if passed, OR try to match product + variant from body? 
-    // Simplest: Identify by Cart Item Subdocument ID.
+    const { productId: itemId } = req.params; // Item Subdoc ID
 
-    // Changing params: productId -> itemId
-    const itemId = productId; // Treating the param as cart item ID for better precision
+    if (quantity < 1) {
+      return res.status(400).json({ message: 'Quantity must be at least 1' });
+    }
 
     const cart = await Cart.findOne({ user: req.user._id });
-
     if (!cart) {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    const itemIndex = cart.items.findIndex(
-      (item) => item._id.toString() === itemId
-    );
-
-    // If not found by Item ID, try Product ID (fallback for legacy/simple items)
-    // But this risks updating the wrong variant.
-
-    if (itemIndex === -1) {
+    const item = cart.items.id(itemId);
+    if (!item) {
       return res.status(404).json({ message: 'Item not found in cart' });
     }
 
-    const cartItem = cart.items[itemIndex];
-    // Check stock
-    const product = await Product.findById(cartItem.product);
-
+    // Check stock for this specifc item/variant
+    const product = await Product.findById(item.product);
     let stockAvailable = product.stock;
-    if (cartItem.size || cartItem.color) {
+
+    if (item.size || item.color) {
       const variant = product.variants.find(v =>
-        (v.size == cartItem.size || (!v.size && !cartItem.size)) &&
-        (v.color == cartItem.color || (!v.color && !cartItem.color))
+        (v.size == item.size || (!v.size && !item.size)) &&
+        (v.color == item.color || (!v.color && !item.color))
       );
       if (variant) stockAvailable = variant.stock;
     }
@@ -145,7 +122,7 @@ exports.updateCartItem = async (req, res) => {
       return res.status(400).json({ message: 'Insufficient stock' });
     }
 
-    cart.items[itemIndex].quantity = quantity;
+    item.quantity = quantity;
     await cart.save();
 
     const updatedCart = await cart.populate('items.product');
@@ -156,29 +133,18 @@ exports.updateCartItem = async (req, res) => {
 };
 
 // @desc    Remove item from cart
-// @route   DELETE /api/cart/:productId
+// @route   DELETE /api/cart/:itemId
 // @access  Private
 exports.removeFromCart = async (req, res) => {
   try {
-    const { productId } = req.params; // Treating as itemId
-    const itemId = productId;
+    const { productId: itemId } = req.params;
 
     const cart = await Cart.findOne({ user: req.user._id });
-
     if (!cart) {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    // Filter by Item ID
-    const initialLength = cart.items.length;
-    cart.items = cart.items.filter(
-      (item) => item._id.toString() !== itemId
-    );
-
-    // Fallback: If no item removed (maybe loose productId passed?), try removing by productId 
-    // BUT only if we are sure. Safer to stick to ItemId. 
-    // Frontend must pass Item._id
-
+    cart.items.pull(itemId);
     await cart.save();
 
     const updatedCart = await cart.populate('items.product');
@@ -194,9 +160,8 @@ exports.removeFromCart = async (req, res) => {
 exports.clearCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.user._id });
-
     if (!cart) {
-      return res.status(404).json({ message: 'Cart not found' });
+      return res.status(200).json({ items: [] });
     }
 
     cart.items = [];
