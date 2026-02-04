@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../services/api';
 
@@ -17,6 +17,9 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { isAuthenticated } = useAuth();
 
+  // Tracking debounce timeouts for each item
+  const debounceTimers = useRef({});
+
   // Load cart from localStorage for guest users or from API for logged-in users
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,6 +30,11 @@ export const CartProvider = ({ children }) => {
         setCart(JSON.parse(localCart));
       }
     }
+
+    // Cleanup timers on unmount
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
   }, [isAuthenticated]);
 
   // Fetch cart from API (for authenticated users)
@@ -42,16 +50,41 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Add item to cart
-  const addToCart = async (productId, quantity = 1) => {
+  // Internal sync function for debounced updates
+  const syncQuantityWithBackend = async (itemId, quantity, previousCart) => {
     try {
+      const response = await api.put(`/cart/${itemId}`, { quantity });
+      // NOTE: We don't necessarily want to call setCart(response.data) here 
+      // if another update has happened locally in the meantime.
+      // Instead, we just trust the local state unless there's an error.
+    } catch (apiError) {
+      console.error('Sync failed, reverting:', apiError);
+      setCart(previousCart);
+    }
+  };
+
+  // Add item to cart
+  const addToCart = async (product, quantity = 1, variant = null) => {
+    try {
+      if (!product) return false;
+      const productId = product._id || product.id;
+
       if (isAuthenticated) {
-        const response = await api.post('/cart', { productId, quantity });
+        const payload = {
+          productId,
+          quantity,
+          size: variant?.size,
+          color: variant?.color
+        };
+        const response = await api.post('/cart', payload);
         setCart(response.data);
       } else {
         // Guest cart logic
         const existingItemIndex = cart.items.findIndex(
-          (item) => item.product._id === productId
+          (item) =>
+            (item.product._id === productId || item.product.id === productId) &&
+            item.size === variant?.size &&
+            item.color === variant?.color
         );
 
         let updatedCart;
@@ -60,16 +93,25 @@ export const CartProvider = ({ children }) => {
             ...cart,
             items: cart.items.map((item, index) =>
               index === existingItemIndex
-                ? { ...item, quantity: item.quantity + quantity }
+                ? { ...item, quantity: item.quantity + quantity } // Price update logic optionally here
                 : item
             ),
           };
         } else {
-          // Note: For guest cart, you'd need to fetch product details
-          // This is a simplified version
+          // Prepare new item
+          const newItem = {
+            product: product,
+            quantity,
+            size: variant?.size,
+            color: variant?.color,
+            price: variant?.price || product.price,
+            // Generate a temp ID for frontend key
+            _id: 'guest_' + Date.now() + Math.random()
+          };
+
           updatedCart = {
             ...cart,
-            items: [...cart.items, { product: { _id: productId }, quantity }],
+            items: [...cart.items, newItem],
           };
         }
 
@@ -84,38 +126,63 @@ export const CartProvider = ({ children }) => {
   };
 
   // Update cart item quantity
-  const updateCartItem = async (productId, quantity) => {
-    try {
-      if (isAuthenticated) {
-        const response = await api.put(`/cart/${productId}`, { quantity });
-        setCart(response.data);
-      } else {
-        const updatedCart = {
-          ...cart,
-          items: cart.items.map((item) =>
-            item.product._id === productId ? { ...item, quantity } : item
-          ),
-        };
-        setCart(updatedCart);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
+  const updateCartItem = (itemId, quantity) => {
+    if (quantity < 1) return;
+
+    // 1. CAPTURE CURRENT STATE for potential revert
+    const previousCart = { ...cart };
+
+    // 2. OPTIMISTIC UPDATE (Instant UI feedback)
+    setCart(prev => ({
+      ...prev,
+      items: prev.items.map(item =>
+        item._id === itemId ? { ...item, quantity } : item
+      )
+    }));
+
+    if (isAuthenticated) {
+      // 3. DEBOUNCED SYNC
+      if (debounceTimers.current[itemId]) {
+        clearTimeout(debounceTimers.current[itemId]);
       }
-      return true;
-    } catch (error) {
-      console.error('Error updating cart:', error);
-      return false;
+
+      debounceTimers.current[itemId] = setTimeout(() => {
+        syncQuantityWithBackend(itemId, quantity, previousCart);
+        delete debounceTimers.current[itemId];
+      }, 500); // 500ms debounce
+    } else {
+      // Guest mode - update local storage immediately
+      const updatedItems = cart.items.map((item) =>
+        (item._id === itemId) ? { ...item, quantity } : item
+      );
+      localStorage.setItem('cart', JSON.stringify({ ...cart, items: updatedItems }));
     }
   };
 
   // Remove item from cart
-  const removeFromCart = async (productId) => {
+  const removeFromCart = async (itemId) => {
     try {
       if (isAuthenticated) {
-        const response = await api.delete(`/cart/${productId}`);
-        setCart(response.data);
+        const previousCart = { ...cart };
+
+        // Optimistic Remove
+        setCart(prev => ({
+          ...prev,
+          items: prev.items.filter(item => item._id !== itemId)
+        }));
+
+        try {
+          await api.delete(`/cart/${itemId}`);
+        } catch (apiError) {
+          console.error('Remove failed, reverting:', apiError);
+          setCart(previousCart);
+          return false;
+        }
       } else {
+        // Use _id (frontend generated for guest)
         const updatedCart = {
           ...cart,
-          items: cart.items.filter((item) => item.product._id !== productId),
+          items: cart.items.filter((item) => item._id !== itemId),
         };
         setCart(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
@@ -146,7 +213,7 @@ export const CartProvider = ({ children }) => {
   // Calculate cart totals
   const getCartTotal = () => {
     return cart.items.reduce(
-      (total, item) => total + (item.product?.price || 0) * item.quantity,
+      (total, item) => total + (item.price || item.product?.price || 0) * item.quantity,
       0
     );
   };

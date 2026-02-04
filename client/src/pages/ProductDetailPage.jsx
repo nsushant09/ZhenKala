@@ -141,20 +141,15 @@ const ProductDetailPage = () => {
   const handleAddToCart = () => {
     if (!product) return;
 
-    const cartItem = {
-      product: product._id,
-      name: product.name,
-      price: getCurrentPrice(),
-      image: displayImages[0]?.url,
-      quantity,
-      variant: selectedVariant ? {
-        id: selectedVariant._id, // If needed for backend tracking
-        size: selectedVariant.size,
-        color: selectedVariant.color,
-      } : null,
-    };
+    // Construct variant object if selected
+    const variant = selectedVariant ? {
+      id: selectedVariant._id,
+      size: selectedVariant.size,
+      color: selectedVariant.color,
+      price: selectedVariant.price
+    } : null;
 
-    addToCart(cartItem);
+    addToCart(product, quantity, variant);
   };
 
   const handleSubmitReview = async (e) => {

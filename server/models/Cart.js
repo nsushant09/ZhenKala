@@ -20,6 +20,18 @@ const cartSchema = new mongoose.Schema(
           min: 1,
           default: 1,
         },
+        size: {
+          type: String,
+        },
+        color: {
+          type: String,
+        },
+        variantId: {
+          type: String, // Optional: to link back to specific variant ID if needed
+        },
+        price: {
+          type: Number, // Snapshot price
+        },
       },
     ],
   },

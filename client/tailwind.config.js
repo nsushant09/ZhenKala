@@ -13,6 +13,8 @@ export default {
                 background: 'var(--color-background)',
                 'on-secondary': 'var(--color-on-secondary)',
                 'on-background': 'var(--color-on-background)',
+                success: 'var(--color-success)',
+                'on-success': 'var(--color-on-success)',
             },
             fontFamily: {
                 primary: 'var(--font-primary)',

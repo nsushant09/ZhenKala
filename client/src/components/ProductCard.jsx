@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
+import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiCheck } from 'react-icons/fi';
 
 const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, discount = 0, image, images = [], badge, stock = 0 }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const { addToCart } = useCart();
+
+    // Local state for add-to-cart animation
+    const [isAdding, setIsAdding] = useState(false);
 
     // Use passed props directly
     // The backend now syncs price to be the actual selling price, and originalPrice as the base.
@@ -29,6 +34,20 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
         e.preventDefault();
         e.stopPropagation();
         setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
+    };
+
+    const handleAddToCart = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isAdding) return;
+
+        setIsAdding(true);
+        // Add to cart logic
+        // Since ProductCard is simple, we add with no variants (default) and quantity 1
+        await addToCart({ _id: id, name, price, image, stock }, 1, null);
+
+        setIsAdding(false);
     };
 
     return (
@@ -112,13 +131,18 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
 
                         {/* Add to Cart Button */}
                         <button
-                            className="bg-secondary hover:bg-red-500 text-white px-4 py-2 rounded-md text-sm transition-colors flex items-center gap-1 shadow-sm"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                // Add to cart logic here
-                            }}
+                            className={`
+                                relative overflow-hidden px-4 py-2 rounded-md text-sm transition-all duration-300 flex items-center gap-1 shadow-sm
+                                ${isAdding ? 'bg-secondary cursor-default' : 'bg-secondary hover:bg-red-500 hover:scale-110'} text-white
+                            `}
+                            onClick={handleAddToCart}
+                            disabled={isAdding}
                         >
-                            <span>+</span> Cart
+                            {isAdding ? (
+                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            ) : (
+                                <><span>+</span> Cart</>
+                            )}
                         </button>
                     </div>
                 </div>
