@@ -22,14 +22,32 @@ export const CartProvider = ({ children }) => {
 
   // Load cart from localStorage for guest users or from API for logged-in users
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchCart();
-    } else {
-      const localCart = localStorage.getItem('cart');
-      if (localCart) {
-        setCart(JSON.parse(localCart));
+    const handleAuthChange = async () => {
+      if (isAuthenticated) {
+        // Check for guest cart items to merge
+        const localCart = localStorage.getItem('cart');
+        if (localCart) {
+          const parsedLocalCart = JSON.parse(localCart);
+          if (parsedLocalCart.items && parsedLocalCart.items.length > 0) {
+            await mergeGuestCart(parsedLocalCart.items);
+          } else {
+            fetchCart();
+          }
+          localStorage.removeItem('cart');
+        } else {
+          fetchCart();
+        }
+      } else {
+        const localCart = localStorage.getItem('cart');
+        if (localCart) {
+          setCart(JSON.parse(localCart));
+        } else {
+          setCart({ items: [] });
+        }
       }
-    }
+    };
+
+    handleAuthChange();
 
     // Cleanup timers on unmount
     return () => {
@@ -50,10 +68,31 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // Merge guest cart items with backend cart
+  const mergeGuestCart = async (items) => {
+    try {
+      setLoading(true);
+      const formattedItems = items.map(item => ({
+        productId: item.product._id || item.product.id,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color
+      }));
+
+      const response = await api.post('/cart/merge', { items: formattedItems });
+      setCart(response.data);
+    } catch (error) {
+      console.error('Error merging cart:', error);
+      fetchCart(); // Fallback to just fetching existing cart
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Internal sync function for debounced updates
   const syncQuantityWithBackend = async (itemId, quantity, previousCart) => {
     try {
-      const response = await api.put(`/cart/${itemId}`, { quantity });
+      await api.put(`/cart/${itemId}`, { quantity });
       // NOTE: We don't necessarily want to call setCart(response.data) here 
       // if another update has happened locally in the meantime.
       // Instead, we just trust the local state unless there's an error.
@@ -155,7 +194,9 @@ export const CartProvider = ({ children }) => {
       const updatedItems = cart.items.map((item) =>
         (item._id === itemId) ? { ...item, quantity } : item
       );
-      localStorage.setItem('cart', JSON.stringify({ ...cart, items: updatedItems }));
+      const updatedCart = { ...cart, items: updatedItems };
+      setCart(updatedCart);
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
     }
   };
 
@@ -194,6 +235,43 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // Remove multiple items from cart
+  const removeMultipleFromCart = async (itemIds) => {
+    if (!itemIds || itemIds.length === 0) return true;
+
+    try {
+      if (isAuthenticated) {
+        const previousCart = { ...cart };
+
+        // Optimistic Remove All selected
+        setCart(prev => ({
+          ...prev,
+          items: prev.items.filter(item => !itemIds.includes(item._id))
+        }));
+
+        try {
+          // Perform parallel deletes
+          await Promise.all(itemIds.map(id => api.delete(`/cart/${id}`)));
+        } catch (apiError) {
+          console.error('Bulk remove failed, fetching fresh cart:', apiError);
+          fetchCart(); // Re-fetch to be safe if some failed
+          return false;
+        }
+      } else {
+        const updatedCart = {
+          ...cart,
+          items: cart.items.filter((item) => !itemIds.includes(item._id)),
+        };
+        setCart(updatedCart);
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+      }
+      return true;
+    } catch (error) {
+      console.error('Error removing multiple items:', error);
+      return false;
+    }
+  };
+
   // Clear cart
   const clearCart = async () => {
     try {
@@ -228,6 +306,7 @@ export const CartProvider = ({ children }) => {
     addToCart,
     updateCartItem,
     removeFromCart,
+    removeMultipleFromCart,
     clearCart,
     getCartTotal,
     getCartCount,

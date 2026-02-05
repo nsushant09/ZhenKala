@@ -32,6 +32,7 @@ export const ShopProvider = ({ children }) => {
                     image: product.images[0]?.url,
                     images: product.images,
                     stock: product.stock,
+                    variants: product.variants,
                     isFeatured: product.isFeatured,
                     badge: product.stock === 0 ? 'Out of Stock' : (product.isFeatured ? 'Featured' : null)
                 }));

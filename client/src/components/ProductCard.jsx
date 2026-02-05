@@ -3,7 +3,7 @@ import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight, FiCheck } from 'react-icons/fi';
 
-const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, discount = 0, image, images = [], badge, stock = 0 }) => {
+const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, discount = 0, image, images = [], badge, stock = 0, variants = [] }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
     const { addToCart } = useCart();
@@ -43,9 +43,19 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
         if (isAdding) return;
 
         setIsAdding(true);
-        // Add to cart logic
-        // Since ProductCard is simple, we add with no variants (default) and quantity 1
-        await addToCart({ _id: id, name, price, image, stock }, 1, null);
+
+        // Source data for the cart item
+        // If variants are available, use the first one's details for consistency with detail page
+        const firstVariant = variants && variants.length > 0 ? variants[0] : null;
+
+        // Pass the product and the variant info
+        // addToCart(product, quantity, variant)
+        await addToCart({ _id: id, name, price, images, stock }, 1, firstVariant ? {
+            id: firstVariant._id,
+            size: firstVariant.size,
+            color: firstVariant.color,
+            price: firstVariant.price
+        } : null);
 
         setIsAdding(false);
     };

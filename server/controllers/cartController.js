@@ -154,6 +154,60 @@ exports.removeFromCart = async (req, res) => {
   }
 };
 
+// @desc    Merge guest cart
+// @route   POST /api/cart/merge
+// @access  Private
+exports.mergeCart = async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items)) {
+      return res.status(400).json({ message: 'Invalid items data' });
+    }
+
+    let cart = await Cart.findOne({ user: req.user._id });
+    if (!cart) {
+      cart = new Cart({ user: req.user._id, items: [] });
+    }
+
+    for (const item of items) {
+      const { productId, quantity, size, color } = item;
+
+      // Basic validation for each item
+      const product = await Product.findById(productId);
+      if (!product) continue;
+
+      let price = product.price;
+      if (size || color) {
+        const variant = product.variants.find(v =>
+          (v.size == size || (!v.size && !size)) &&
+          (v.color == color || (!v.color && !color))
+        );
+        if (variant) price = variant.price;
+      }
+
+      const existingItemIndex = cart.items.findIndex(
+        (ci) =>
+          ci.product.toString() === productId &&
+          ci.size == size &&
+          ci.color == color
+      );
+
+      if (existingItemIndex > -1) {
+        cart.items[existingItemIndex].quantity += quantity;
+      } else {
+        cart.items.push({ product: productId, quantity, size, color, price });
+      }
+    }
+
+    await cart.save();
+    cart = await cart.populate('items.product');
+    res.json(cart);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // @desc    Clear cart
 // @route   DELETE /api/cart
 // @access  Private
