@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../services/api';
 
@@ -56,7 +56,7 @@ export const CartProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   // Fetch cart from API (for authenticated users)
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/cart');
@@ -66,10 +66,10 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Merge guest cart items with backend cart
-  const mergeGuestCart = async (items) => {
+  const mergeGuestCart = useCallback(async (items) => {
     try {
       setLoading(true);
       const formattedItems = items.map(item => ({
@@ -87,10 +87,10 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchCart]);
 
   // Internal sync function for debounced updates
-  const syncQuantityWithBackend = async (itemId, quantity, previousCart) => {
+  const syncQuantityWithBackend = useCallback(async (itemId, quantity, previousCart) => {
     try {
       await api.put(`/cart/${itemId}`, { quantity });
       // NOTE: We don't necessarily want to call setCart(response.data) here 
@@ -100,10 +100,10 @@ export const CartProvider = ({ children }) => {
       console.error('Sync failed, reverting:', apiError);
       setCart(previousCart);
     }
-  };
+  }, []);
 
   // Add item to cart
-  const addToCart = async (product, quantity = 1, variant = null) => {
+  const addToCart = useCallback(async (product, quantity = 1, variant = null) => {
     try {
       if (!product) return false;
       const productId = product._id || product.id;
@@ -162,10 +162,10 @@ export const CartProvider = ({ children }) => {
       console.error('Error adding to cart:', error);
       return false;
     }
-  };
+  }, [isAuthenticated, cart]);
 
   // Update cart item quantity
-  const updateCartItem = (itemId, quantity) => {
+  const updateCartItem = useCallback((itemId, quantity) => {
     if (quantity < 1) return;
 
     // 1. CAPTURE CURRENT STATE for potential revert
@@ -198,10 +198,10 @@ export const CartProvider = ({ children }) => {
       setCart(updatedCart);
       localStorage.setItem('cart', JSON.stringify(updatedCart));
     }
-  };
+  }, [isAuthenticated, cart, syncQuantityWithBackend]);
 
   // Remove item from cart
-  const removeFromCart = async (itemId) => {
+  const removeFromCart = useCallback(async (itemId) => {
     try {
       if (isAuthenticated) {
         const previousCart = { ...cart };
@@ -233,10 +233,10 @@ export const CartProvider = ({ children }) => {
       console.error('Error removing from cart:', error);
       return false;
     }
-  };
+  }, [isAuthenticated, cart]);
 
   // Remove multiple items from cart
-  const removeMultipleFromCart = async (itemIds) => {
+  const removeMultipleFromCart = useCallback(async (itemIds) => {
     if (!itemIds || itemIds.length === 0) return true;
 
     try {
@@ -270,10 +270,10 @@ export const CartProvider = ({ children }) => {
       console.error('Error removing multiple items:', error);
       return false;
     }
-  };
+  }, [isAuthenticated, cart, fetchCart]);
 
   // Clear cart
-  const clearCart = async () => {
+  const clearCart = useCallback(async () => {
     try {
       if (isAuthenticated) {
         await api.delete('/cart');
@@ -286,19 +286,25 @@ export const CartProvider = ({ children }) => {
       console.error('Error clearing cart:', error);
       return false;
     }
-  };
+  }, [isAuthenticated]);
 
   // Calculate cart totals
-  const getCartTotal = () => {
+  const getCartTotal = useCallback(() => {
+    if (!cart || !cart.items) return 0;
     return cart.items.reduce(
-      (total, item) => total + (item.price || item.product?.price || 0) * item.quantity,
+      (total, item) => {
+        const itemPrice = item?.price || item?.product?.price || 0;
+        const itemQuantity = item?.quantity || 0;
+        return total + (itemPrice * itemQuantity);
+      },
       0
     );
-  };
+  }, [cart]);
 
-  const getCartCount = () => {
-    return cart.items.reduce((count, item) => count + item.quantity, 0);
-  };
+  const getCartCount = useCallback(() => {
+    if (!cart || !cart.items) return 0;
+    return cart.items.reduce((count, item) => count + (item?.quantity || 0), 0);
+  }, [cart]);
 
   const value = {
     cart,

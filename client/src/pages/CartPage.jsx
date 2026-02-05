@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiTrash2, FiMinus, FiPlus, FiArrowRight, FiShoppingBag } from 'react-icons/fi';
 
 const CartPage = () => {
-  const { cart, removeFromCart, updateCartItem, removeMultipleFromCart, getCartTotal, loading } = useCart();
+  const { cart, removeFromCart, updateCartItem, getCartTotal, loading } = useCart();
   const navigate = useNavigate();
-  const [subtotal, setSubtotal] = useState(0);
-  const [selectedItems, setSelectedItems] = useState([]);
 
-  useEffect(() => {
-    setSubtotal(getCartTotal());
-  }, [cart, getCartTotal]);
+  const subtotal = getCartTotal();
 
   const handleUpdateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -21,31 +17,6 @@ const CartPage = () => {
   const handleRemove = async (itemId) => {
     if (window.confirm('Are you sure you want to remove this item?')) {
       await removeFromCart(itemId);
-      setSelectedItems(prev => prev.filter(id => id !== itemId));
-    }
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedItems.length === cart.items.length) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(cart.items.map(item => item._id));
-    }
-  };
-
-  const toggleSelectItem = (itemId) => {
-    setSelectedItems(prev =>
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
-    );
-  };
-
-  const handleBulkRemove = async () => {
-    if (selectedItems.length === 0) return;
-    if (window.confirm(`Are you sure you want to remove ${selectedItems.length} selected items?`)) {
-      await removeMultipleFromCart(selectedItems);
-      setSelectedItems([]);
     }
   };
 
@@ -96,47 +67,9 @@ const CartPage = () => {
           <div className="flex flex-col lg:flex-row gap-16 mt-8">
             {/* Cart Items List */}
             <div className="flex-grow">
-              {/* Table Action Bar */}
-              <div className="flex justify-between items-center mb-6 py-4 px-6 bg-white rounded-lg shadow-sm border border-gray-100">
-                <div className="flex items-center gap-4">
-                  <div
-                    className="flex items-center justify-center cursor-pointer group"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSelectAll();
-                    }}
-                  >
-                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${selectedItems.length === cart.items.length && cart.items.length > 0
-                      ? 'bg-secondary border-secondary'
-                      : 'border-gray-300 group-hover:border-secondary'
-                      }`}>
-                      {selectedItems.length === cart.items.length && cart.items.length > 0 && <FiCheck className="text-white" size={14} />}
-                    </div>
-                    <span className="ml-3 text-sm font-medium text-gray-600">
-                      {selectedItems.length === cart.items.length ? 'Deselect All' : 'Select All'}
-                    </span>
-                  </div>
-                  {selectedItems.length > 0 && (
-                    <span className="text-sm text-gray-400">
-                      {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''} selected
-                    </span>
-                  )}
-                </div>
-
-                {selectedItems.length > 0 && (
-                  <button
-                    onClick={handleBulkRemove}
-                    className="flex items-center gap-2 text-red-500 hover:text-red-700 font-semibold text-sm transition-colors py-1 px-3 rounded-md hover:bg-red-50"
-                  >
-                    <FiTrash2 size={16} /> Remove Selected
-                  </button>
-                )}
-              </div>
-
               {/* Table Header (Desktop) */}
               <div className="hidden sm:grid grid-cols-12 gap-4 pb-4 border-b border-gray-300 text-sm font-semibold text-gray-400 uppercase tracking-wider px-6">
-                <div className="col-span-1"></div>
-                <div className="col-span-5">Product</div>
+                <div className="col-span-6">Product</div>
                 <div className="col-span-2 text-center">Price</div>
                 <div className="col-span-2 text-center">Quantity</div>
                 <div className="col-span-2 text-right">Total</div>
@@ -144,36 +77,20 @@ const CartPage = () => {
 
               <div className="divide-y divide-gray-200">
                 {cart.items.map((item) => {
+                  if (!item) return null;
                   const product = item.product || {};
                   const price = item.price || product.price || 0;
                   const itemTotal = price * item.quantity;
                   const itemId = item._id;
-                  const isSelected = selectedItems.includes(itemId);
+                  if (!itemId) return null;
 
                   return (
                     <div
                       key={itemId}
                       className="py-8 grid grid-cols-1 sm:grid-cols-12 gap-6 items-center group px-6 transition-colors"
-                      style={{ backgroundColor: isSelected ? 'rgba(165, 42, 42, 0.05)' : 'transparent' }}
                     >
-                      {/* Selection Checkbox */}
-                      <div className="col-span-1 flex justify-start items-center">
-                        <div
-                          className={`w-5 h-5 rounded border flex items-center justify-center cursor-pointer transition-all ${isSelected
-                            ? 'bg-secondary border-secondary'
-                            : 'border-gray-300 hover:border-secondary'
-                            }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleSelectItem(itemId);
-                          }}
-                        >
-                          {isSelected && <FiCheck className="text-white" size={14} />}
-                        </div>
-                      </div>
-
                       {/* Product Info */}
-                      <div className="col-span-1 sm:col-span-5 flex gap-6">
+                      <div className="col-span-1 sm:col-span-6 flex gap-6">
                         <Link to={`/products/${product._id}`} className="w-24 h-32 flex-shrink-0 bg-gray-100 rounded-sm overflow-hidden shadow-sm relative">
                           <img
                             src={product.images && product.images[0]?.url ? product.images[0].url : '/placeholder.jpg'}
