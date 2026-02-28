@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useCurrency } from '../context/CurrencyContext';
 import './Navbar.css';
 import api from '../services/api';
 import ConfirmModal from './ConfirmModal';
@@ -13,6 +14,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();
+  const { currencies, selectedCurrency, changeCurrency } = useCurrency();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeCategory, setActiveCategory] = useState(null);
@@ -70,11 +72,12 @@ const Navbar = () => {
             </div>
             <div className="tagline">Where tradition meets transformation</div>
             <div className="currency-selector">
-              <select>
-                <option>Australian Dollar (AUD)</option>
-                <option>US Dollar (USD)</option>
-                <option>Euro (EUR)</option>
-                <option>Nepali Rupee (NPR)</option>
+              <select value={selectedCurrency} onChange={(e) => changeCurrency(e.target.value)}>
+                {Object.entries(currencies).map(([code, info]) => (
+                  <option key={code} value={code}>
+                    {info.name} ({code.toUpperCase()})
+                  </option>
+                ))}
               </select>
             </div>
           </div>

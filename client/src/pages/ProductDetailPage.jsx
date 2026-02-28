@@ -12,6 +12,7 @@ import { FaFacebook, FaTwitter, FaPinterest, FaWhatsapp } from 'react-icons/fa';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const ProductDetailPage = () => {
@@ -19,6 +20,7 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isAuthenticated, user } = useAuth();
+  const { formatPrice } = useCurrency();
 
   const [product, setProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
@@ -278,10 +280,10 @@ const ProductDetailPage = () => {
 
             {/* Price */}
             <div className="flex items-center gap-4 mb-8">
-              <span className="text-3xl font-semibold text-secondary">${currentPrice.toLocaleString()}</span>
+              <span className="text-3xl font-semibold text-secondary">{formatPrice(currentPrice)}</span>
               {discount > 0 && (
                 <>
-                  <span className="text-2xl text-gray-500 line-through">${originalPrice.toLocaleString()}</span>
+                  <span className="text-2xl text-gray-500 line-through">{formatPrice(originalPrice)}</span>
                   <span className="bg-secondary text-white px-3 py-1 rounded-full text-sm font-semibold">{discount}% OFF</span>
                 </>
               )}
@@ -494,7 +496,7 @@ const ProductDetailPage = () => {
                 <div className="p-4">
                   <h4 className="text-base font-semibold text-on-surface mb-2 truncate">{p.name}</h4>
                   <div className="flex items-center gap-2 text-lg font-semibold text-secondary">
-                    ${(p.price || 0).toFixed(2)}
+                    {formatPrice(p.price || 0)}
                     {p.discount > 0 && <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full">{p.discount}% OFF</span>}
                   </div>
                 </div>
@@ -512,7 +514,7 @@ const ProductDetailPage = () => {
               <img src={mainImage?.url || product.images[0]?.url} alt={product.name} className="w-[60px] h-[60px] object-cover rounded-md" />
               <div>
                 <h4 className="text-base font-semibold text-on-surface mb-1 hidden sm:block">{product.name}</h4>
-                <span className="text-lg font-semibold text-secondary">${currentPrice.toLocaleString()}</span>
+                <span className="text-lg font-semibold text-secondary">{formatPrice(currentPrice)}</span>
               </div>
             </div>
             <button

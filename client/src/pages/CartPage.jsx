@@ -1,13 +1,17 @@
 import React, { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiTrash2, FiMinus, FiPlus, FiArrowRight, FiShoppingBag } from 'react-icons/fi';
 
 const CartPage = () => {
   const { cart, removeFromCart, updateCartItem, getCartTotal, loading } = useCart();
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
   const subtotal = getCartTotal();
+  const shipping = subtotal > 0 && subtotal < 100 ? 15 : 0;
+  const total = subtotal + shipping;
 
   const handleUpdateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -119,7 +123,7 @@ const CartPage = () => {
 
                       {/* Price */}
                       <div className="col-span-1 sm:col-span-2 sm:text-center text-lg font-medium text-gray-600 hidden sm:block">
-                        ${price.toLocaleString()}
+                        {formatPrice(price)}
                       </div>
 
                       {/* Quantity */}
@@ -145,7 +149,7 @@ const CartPage = () => {
                       {/* Total */}
                       <div className="col-span-1 sm:col-span-2 sm:text-right font-bold text-lg text-secondary flex items-center justify-between sm:block">
                         <span className="sm:hidden text-gray-500 font-normal">Total:</span>
-                        ${itemTotal.toLocaleString()}
+                        {formatPrice(itemTotal)}
                       </div>
                     </div>
                   );
@@ -161,17 +165,24 @@ const CartPage = () => {
                 <div className="space-y-4 mb-6 pb-6 border-b border-gray-100">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="font-medium text-on-surface">${subtotal.toLocaleString()}</span>
+                    <span className="font-medium text-on-surface">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Shipping Estimate</span>
-                    <span className="text-sm italic text-gray-400">Calculated at checkout</span>
+                    <span>Shipping</span>
+                    <span className="font-medium text-on-surface">
+                      {shipping > 0 ? formatPrice(shipping) : <span className="text-secondary font-bold">FREE</span>}
+                    </span>
                   </div>
+                  {shipping > 0 && (
+                    <p className="text-[10px] text-gray-400 mt-1 italic">
+                      Add {formatPrice(100 - subtotal)} more for FREE shipping
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-between font-bold text-2xl mb-8 text-on-surface items-center">
                   <span>Total</span>
-                  <span className="text-secondary">${subtotal.toLocaleString()}</span>
+                  <span className="text-secondary">{formatPrice(total)}</span>
                 </div>
 
                 <button
