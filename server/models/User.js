@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema(
       state: String,
       country: String,
       zipCode: String,
+      phone: String,
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,

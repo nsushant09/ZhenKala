@@ -132,7 +132,10 @@ const Navbar = () => {
                     <Link to="/profile">Profile</Link>
                     <Link to="/orders">My Orders</Link>
                     {user?.role === 'admin' && (
-                      <Link to="/admin">Admin Dashboard</Link>
+                      <>
+                        <Link to="/admin">Admin Dashboard</Link>
+                        <Link to="/admin/settings">Merchant Settings</Link>
+                      </>
                     )}
                     <button onClick={confirmLogout}>Logout</button>
                   </div>

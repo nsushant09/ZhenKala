@@ -45,17 +45,17 @@ const AdminDashboard = () => {
             <p className="text-gray-500 text-sm">Manage customer accounts, roles, and permissions.</p>
           </Link>
 
-          {/* Settings Card (Placeholder) */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 opacity-70 cursor-not-allowed">
+          {/* Settings Card */}
+          <Link to="/admin/settings" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gray-50 text-gray-600 rounded-lg">
+              <div className="p-3 bg-red-50 text-red-600 rounded-lg group-hover:bg-red-100 transition-colors">
                 <FiSettings size={24} />
               </div>
-              <span className="text-xs font-semibold text-gray-500 uppercase">Soon</span>
+              <span className="text-xs font-semibold text-gray-500 uppercase">Manage</span>
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Settings</h3>
-            <p className="text-gray-500 text-sm">Site configuration, email settings, and global parameters.</p>
-          </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Merchant Settings</h3>
+            <p className="text-gray-500 text-sm">Update bank details, business info, and invoice parameters.</p>
+          </Link>
         </div>
 
         {/* Quick Stats Placeholder */}

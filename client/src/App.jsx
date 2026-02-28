@@ -32,6 +32,7 @@ import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminProductForm from './pages/admin/AdminProductForm';
+import AdminMerchantSettings from './pages/admin/AdminMerchantSettings';
 
 // Components
 import Navbar from './components/Navbar';
@@ -157,6 +158,15 @@ function App() {
                       element={
                         <AdminRoute>
                           <AdminUsers />
+                        </AdminRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/admin/settings"
+                      element={
+                        <AdminRoute>
+                          <AdminMerchantSettings />
                         </AdminRoute>
                       }
                     />
