@@ -6,6 +6,8 @@ const {
   updateCartItem,
   removeFromCart,
   clearCart,
+  mergeCart,
+  syncCart,
 } = require('../controllers/cartController');
 const { protect } = require('../middleware/auth');
 
@@ -13,6 +15,9 @@ router.route('/')
   .get(protect, getCart)
   .post(protect, addToCart)
   .delete(protect, clearCart);
+
+router.post('/merge', protect, mergeCart);
+router.post('/sync', protect, syncCart);
 
 router.route('/:productId')
   .put(protect, updateCartItem)

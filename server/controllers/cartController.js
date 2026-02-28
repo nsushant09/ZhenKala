@@ -60,8 +60,8 @@ exports.addToCart = async (req, res) => {
     const existingItemIndex = cart.items.findIndex(
       (item) =>
         item.product.toString() === productId &&
-        item.size == size &&
-        item.color == color
+        (item.size == size || (!item.size && !size)) &&
+        (item.color == color || (!item.color && !color))
     );
 
     if (existingItemIndex > -1) {
@@ -154,6 +154,60 @@ exports.removeFromCart = async (req, res) => {
   }
 };
 
+// @desc    Sync cart (Full Replace)
+// @route   POST /api/cart/sync
+// @access  Private
+exports.syncCart = async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items)) {
+      return res.status(400).json({ message: 'Invalid items data' });
+    }
+
+    let cart = await Cart.findOne({ user: req.user._id });
+    if (!cart) {
+      cart = new Cart({ user: req.user._id, items: [] });
+    }
+
+    const validatedItems = [];
+
+    for (const item of items) {
+      const { productId, quantity, size, color } = item;
+
+      const product = await Product.findById(productId);
+      if (!product) continue;
+
+      let stockAvailable = product.stock;
+      let price = product.price;
+
+      if (size || color) {
+        const variant = product.variants.find(v =>
+          (v.size == size || (!v.size && !size)) &&
+          (v.color == color || (!v.color && !color))
+        );
+        if (variant) {
+          stockAvailable = variant.stock;
+          price = variant.price;
+        }
+      }
+
+      const validQuantity = Math.min(Math.max(1, quantity), stockAvailable);
+      if (validQuantity > 0) {
+        validatedItems.push({ product: productId, quantity: validQuantity, size, color, price });
+      }
+    }
+
+    cart.items = validatedItems;
+    await cart.save();
+    cart = await cart.populate('items.product');
+    res.json(cart);
+  } catch (error) {
+    console.error('Error in syncCart:', error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // @desc    Merge guest cart
 // @route   POST /api/cart/merge
 // @access  Private
@@ -170,40 +224,67 @@ exports.mergeCart = async (req, res) => {
       cart = new Cart({ user: req.user._id, items: [] });
     }
 
+    console.log(`Merging ${items.length} items for user ${req.user._id}`);
+
     for (const item of items) {
       const { productId, quantity, size, color } = item;
 
-      // Basic validation for each item
+      // 1. Validate Product
       const product = await Product.findById(productId);
-      if (!product) continue;
+      if (!product) {
+        console.warn(`Product ${productId} not found during merge, skipping.`);
+        continue;
+      }
 
+      // 2. Determine Variant & Stock
+      let stockAvailable = product.stock;
       let price = product.price;
+
       if (size || color) {
         const variant = product.variants.find(v =>
           (v.size == size || (!v.size && !size)) &&
           (v.color == color || (!v.color && !color))
         );
-        if (variant) price = variant.price;
+        if (variant) {
+          stockAvailable = variant.stock;
+          price = variant.price;
+        }
       }
 
+      // 3. Find if item already exists in user's cart
       const existingItemIndex = cart.items.findIndex(
         (ci) =>
           ci.product.toString() === productId &&
-          ci.size == size &&
-          ci.color == color
+          (ci.size == size || (!ci.size && !size)) &&
+          (ci.color == color || (!ci.color && !color))
       );
 
       if (existingItemIndex > -1) {
-        cart.items[existingItemIndex].quantity += quantity;
+        // Calculate total quantity
+        const totalQuantity = cart.items[existingItemIndex].quantity + quantity;
+
+        // Cap at stock available
+        cart.items[existingItemIndex].quantity = Math.min(totalQuantity, stockAvailable);
+        cart.items[existingItemIndex].price = price; // Sync latest price
+        console.log(`Updated existing item ${productId} (variant: ${size}/${color}) quantity to ${cart.items[existingItemIndex].quantity}`);
       } else {
-        cart.items.push({ product: productId, quantity, size, color, price });
+        // Add as new item, but respect stock
+        const validQuantity = Math.min(quantity, stockAvailable);
+        if (validQuantity > 0) {
+          cart.items.push({ product: productId, quantity: validQuantity, size, color, price });
+          console.log(`Added new item ${productId} (variant: ${size}/${color}) with quantity ${validQuantity}`);
+        } else {
+          console.warn(`Item ${productId} (variant: ${size}/${color}) skipped. Stock: ${stockAvailable}, Requested: ${quantity}`);
+        }
       }
     }
 
+    console.log(`Final merged cart for user ${req.user._id} has ${cart.items.length} items`);
     await cart.save();
     cart = await cart.populate('items.product');
     res.json(cart);
   } catch (error) {
+    console.error('Error in mergeCart:', error);
     res.status(400).json({ message: error.message });
   }
 };

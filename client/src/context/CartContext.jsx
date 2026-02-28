@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, useRef, useCallback } from 'react';
+import React, { createContext, useReducer, useEffect, useContext, useRef, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../services/api';
 
@@ -12,303 +12,303 @@ export const useCart = () => {
   return context;
 };
 
-export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState({ items: [] });
-  const [loading, setLoading] = useState(false);
-  const { isAuthenticated } = useAuth();
+// --- REDUCER ARCHITECTURE ---
 
-  // Tracking debounce timeouts for each item
-  const debounceTimers = useRef({});
+const initialState = {
+  items: [],
+  loading: false,
+  initialized: false,
+  localVersion: 0, // Incremented on every local user action
+  lastSyncedVersion: 0, // The localVersion that was last successfully accepted by the server
+};
 
-  // Load cart from localStorage for guest users or from API for logged-in users
-  useEffect(() => {
-    const handleAuthChange = async () => {
-      if (isAuthenticated) {
-        // Check for guest cart items to merge
-        const localCart = localStorage.getItem('cart');
-        if (localCart) {
-          const parsedLocalCart = JSON.parse(localCart);
-          if (parsedLocalCart.items && parsedLocalCart.items.length > 0) {
-            await mergeGuestCart(parsedLocalCart.items);
-          } else {
-            fetchCart();
-          }
-          localStorage.removeItem('cart');
-        } else {
-          fetchCart();
-        }
+function cartReducer(state, action) {
+  switch (action.type) {
+    case 'INIT_CART':
+      return {
+        ...state,
+        items: action.payload || [],
+        initialized: true,
+      };
+
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+
+    case 'OPTIMISTIC_UPDATE': {
+      const { itemId, quantity, product, variant, isNew } = action.payload;
+      let newItems;
+
+      if (isNew) {
+        newItems = [...state.items, {
+          _id: itemId,
+          product,
+          quantity,
+          size: variant?.size,
+          color: variant?.color,
+          price: variant?.price || product.price
+        }];
       } else {
-        const localCart = localStorage.getItem('cart');
-        if (localCart) {
-          setCart(JSON.parse(localCart));
-        } else {
-          setCart({ items: [] });
-        }
+        newItems = state.items.map(item =>
+          item._id === itemId ? { ...item, quantity } : item
+        );
       }
-    };
 
-    handleAuthChange();
+      return {
+        ...state,
+        items: newItems,
+        localVersion: state.localVersion + 1
+      };
+    }
 
-    // Cleanup timers on unmount
-    return () => {
-      Object.values(debounceTimers.current).forEach(clearTimeout);
-    };
+    case 'OPTIMISTIC_REMOVE':
+      return {
+        ...state,
+        items: state.items.filter(item => item._id !== action.payload),
+        localVersion: state.localVersion + 1
+      };
+
+    case 'OPTIMISTIC_CLEAR':
+      return {
+        ...state,
+        items: [],
+        localVersion: state.localVersion + 1
+      };
+
+    case 'SYNC_WITH_SERVER': {
+      const { serverCart, syncedVersion } = action.payload;
+
+      // BI-DIRECTIONAL CONFLICT RESOLUTION:
+      // If our local version has moved past the version that triggered this sync,
+      // we only adopt server values for items we haven't touched recently.
+
+      const isStale = state.localVersion > syncedVersion;
+
+      if (!isStale) {
+        return {
+          ...state,
+          items: serverCart.items || [],
+          lastSyncedVersion: syncedVersion
+        };
+      }
+
+      // --- Bi-directional Merge (Stale State) ---
+      // Goal: Keep local quantities for anything touched, but adopt server metadata (prices/ids).
+      // Crucially: Don't drop items that exist locally but haven't reached the server yet.
+
+      const localItems = [...state.items];
+      const serverItems = serverCart.items || [];
+
+      const mergedItems = serverItems.map(serverItem => {
+        const siId = serverItem.product?._id || serverItem.product?.id || serverItem.product;
+
+        // Find if we have a local version of this item
+        const localIdx = localItems.findIndex(li => {
+          const liId = li.product?._id || li.product?.id || li.product;
+          return liId === siId && li.size === serverItem.size && li.color === serverItem.color;
+        });
+
+        if (localIdx > -1) {
+          const localItem = localItems[localIdx];
+          localItems.splice(localIdx, 1); // Remove from pool so we don't duplicate
+          return { ...serverItem, quantity: localItem.quantity }; // Keep local intent, server metadata
+        }
+        return serverItem; // Server only item (from another session)
+      });
+
+      // Add back any items that were ONLY in local state (newly added)
+      return {
+        ...state,
+        items: [...mergedItems, ...localItems],
+        lastSyncedVersion: syncedVersion
+      };
+    }
+
+    default:
+      return state;
+  }
+}
+
+// --- PROVIDER ---
+
+export const CartProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(cartReducer, initialState);
+  const { isAuthenticated } = useAuth();
+  const syncTimerRef = useRef(null);
+  const stateRef = useRef(state);
+
+  // Keep stateRef fresh for callbacks without closure staleness
+  useEffect(() => {
+    stateRef.current = state;
+    if (state.initialized) {
+      localStorage.setItem('cart', JSON.stringify({ items: state.items, version: state.localVersion }));
+    }
+  }, [state]);
+
+  // --- API SYNC LOGIC ---
+
+  const refreshCart = useCallback(async (silent = false) => {
+    if (!isAuthenticated) return;
+    try {
+      if (!silent) dispatch({ type: 'SET_LOADING', payload: true });
+      const response = await api.get('/cart');
+      dispatch({
+        type: 'SYNC_WITH_SERVER',
+        payload: { serverCart: response.data, syncedVersion: stateRef.current.localVersion }
+      });
+    } catch (error) {
+      console.error('[CartContext] Fetch failed:', error);
+    } finally {
+      if (!silent) dispatch({ type: 'SET_LOADING', payload: false });
+    }
   }, [isAuthenticated]);
 
-  // Fetch cart from API (for authenticated users)
-  const fetchCart = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/cart');
-      setCart(response.data);
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const syncToBackend = useCallback(async () => {
+    if (!isAuthenticated) return;
 
-  // Merge guest cart items with backend cart
-  const mergeGuestCart = useCallback(async (items) => {
+    // Capture the exact intent we are syncing
+    const versionAtStart = stateRef.current.localVersion;
+    const itemsToSync = stateRef.current.items;
+
     try {
-      setLoading(true);
-      const formattedItems = items.map(item => ({
-        productId: item.product._id || item.product.id,
+      const formattedItems = itemsToSync.map(item => ({
+        productId: item.product?._id || item.product?.id || item.product,
         quantity: item.quantity,
         size: item.size,
         color: item.color
       }));
 
-      const response = await api.post('/cart/merge', { items: formattedItems });
-      setCart(response.data);
+      // Use the sync endpoint to synchronize current state exactly as intended
+      const response = await api.post('/cart/sync', { items: formattedItems });
+
+      dispatch({
+        type: 'SYNC_WITH_SERVER',
+        payload: { serverCart: response.data, syncedVersion: versionAtStart }
+      });
     } catch (error) {
-      console.error('Error merging cart:', error);
-      fetchCart(); // Fallback to just fetching existing cart
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchCart]);
-
-  // Internal sync function for debounced updates
-  const syncQuantityWithBackend = useCallback(async (itemId, quantity, previousCart) => {
-    try {
-      await api.put(`/cart/${itemId}`, { quantity });
-      // NOTE: We don't necessarily want to call setCart(response.data) here 
-      // if another update has happened locally in the meantime.
-      // Instead, we just trust the local state unless there's an error.
-    } catch (apiError) {
-      console.error('Sync failed, reverting:', apiError);
-      setCart(previousCart);
-    }
-  }, []);
-
-  // Add item to cart
-  const addToCart = useCallback(async (product, quantity = 1, variant = null) => {
-    try {
-      if (!product) return false;
-      const productId = product._id || product.id;
-
-      if (isAuthenticated) {
-        const payload = {
-          productId,
-          quantity,
-          size: variant?.size,
-          color: variant?.color
-        };
-        const response = await api.post('/cart', payload);
-        setCart(response.data);
-      } else {
-        // Guest cart logic
-        const existingItemIndex = cart.items.findIndex(
-          (item) =>
-            (item.product._id === productId || item.product.id === productId) &&
-            item.size === variant?.size &&
-            item.color === variant?.color
-        );
-
-        let updatedCart;
-        if (existingItemIndex > -1) {
-          updatedCart = {
-            ...cart,
-            items: cart.items.map((item, index) =>
-              index === existingItemIndex
-                ? { ...item, quantity: item.quantity + quantity } // Price update logic optionally here
-                : item
-            ),
-          };
-        } else {
-          // Prepare new item
-          const newItem = {
-            product: product,
-            quantity,
-            size: variant?.size,
-            color: variant?.color,
-            price: variant?.price || product.price,
-            // Generate a temp ID for frontend key
-            _id: 'guest_' + Date.now() + Math.random()
-          };
-
-          updatedCart = {
-            ...cart,
-            items: [...cart.items, newItem],
-          };
-        }
-
-        setCart(updatedCart);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
-      }
-      return true;
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      return false;
-    }
-  }, [isAuthenticated, cart]);
-
-  // Update cart item quantity
-  const updateCartItem = useCallback((itemId, quantity) => {
-    if (quantity < 1) return;
-
-    // 1. CAPTURE CURRENT STATE for potential revert
-    const previousCart = { ...cart };
-
-    // 2. OPTIMISTIC UPDATE (Instant UI feedback)
-    setCart(prev => ({
-      ...prev,
-      items: prev.items.map(item =>
-        item._id === itemId ? { ...item, quantity } : item
-      )
-    }));
-
-    if (isAuthenticated) {
-      // 3. DEBOUNCED SYNC
-      if (debounceTimers.current[itemId]) {
-        clearTimeout(debounceTimers.current[itemId]);
-      }
-
-      debounceTimers.current[itemId] = setTimeout(() => {
-        syncQuantityWithBackend(itemId, quantity, previousCart);
-        delete debounceTimers.current[itemId];
-      }, 500); // 500ms debounce
-    } else {
-      // Guest mode - update local storage immediately
-      const updatedItems = cart.items.map((item) =>
-        (item._id === itemId) ? { ...item, quantity } : item
-      );
-      const updatedCart = { ...cart, items: updatedItems };
-      setCart(updatedCart);
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-    }
-  }, [isAuthenticated, cart, syncQuantityWithBackend]);
-
-  // Remove item from cart
-  const removeFromCart = useCallback(async (itemId) => {
-    try {
-      if (isAuthenticated) {
-        const previousCart = { ...cart };
-
-        // Optimistic Remove
-        setCart(prev => ({
-          ...prev,
-          items: prev.items.filter(item => item._id !== itemId)
-        }));
-
-        try {
-          await api.delete(`/cart/${itemId}`);
-        } catch (apiError) {
-          console.error('Remove failed, reverting:', apiError);
-          setCart(previousCart);
-          return false;
-        }
-      } else {
-        // Use _id (frontend generated for guest)
-        const updatedCart = {
-          ...cart,
-          items: cart.items.filter((item) => item._id !== itemId),
-        };
-        setCart(updatedCart);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
-      }
-      return true;
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-      return false;
-    }
-  }, [isAuthenticated, cart]);
-
-  // Remove multiple items from cart
-  const removeMultipleFromCart = useCallback(async (itemIds) => {
-    if (!itemIds || itemIds.length === 0) return true;
-
-    try {
-      if (isAuthenticated) {
-        const previousCart = { ...cart };
-
-        // Optimistic Remove All selected
-        setCart(prev => ({
-          ...prev,
-          items: prev.items.filter(item => !itemIds.includes(item._id))
-        }));
-
-        try {
-          // Perform parallel deletes
-          await Promise.all(itemIds.map(id => api.delete(`/cart/${id}`)));
-        } catch (apiError) {
-          console.error('Bulk remove failed, fetching fresh cart:', apiError);
-          fetchCart(); // Re-fetch to be safe if some failed
-          return false;
-        }
-      } else {
-        const updatedCart = {
-          ...cart,
-          items: cart.items.filter((item) => !itemIds.includes(item._id)),
-        };
-        setCart(updatedCart);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
-      }
-      return true;
-    } catch (error) {
-      console.error('Error removing multiple items:', error);
-      return false;
-    }
-  }, [isAuthenticated, cart, fetchCart]);
-
-  // Clear cart
-  const clearCart = useCallback(async () => {
-    try {
-      if (isAuthenticated) {
-        await api.delete('/cart');
-      } else {
-        localStorage.removeItem('cart');
-      }
-      setCart({ items: [] });
-      return true;
-    } catch (error) {
-      console.error('Error clearing cart:', error);
-      return false;
+      console.error('[CartContext] Sync failed:', error);
+      // Wait for next trigger or manual refresh
     }
   }, [isAuthenticated]);
 
-  // Calculate cart totals
-  const getCartTotal = useCallback(() => {
-    if (!cart || !cart.items) return 0;
-    return cart.items.reduce(
-      (total, item) => {
-        const itemPrice = item?.price || item?.product?.price || 0;
-        const itemQuantity = item?.quantity || 0;
-        return total + (itemPrice * itemQuantity);
-      },
-      0
+  const triggerSync = useCallback(() => {
+    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    syncTimerRef.current = setTimeout(syncToBackend, 800); // 800ms group delay
+  }, [syncToBackend]);
+
+  // Init logic: Merge guest -> Auth or just Load Local
+  useEffect(() => {
+    const initialize = async () => {
+      const localData = localStorage.getItem('cart');
+      let localCart = { items: [] };
+      try {
+        if (localData) localCart = JSON.parse(localData);
+      } catch (e) {
+        console.error('Local cart corrupted');
+      }
+
+      if (isAuthenticated) {
+        if (localCart.items && localCart.items.length > 0) {
+          try {
+            dispatch({ type: 'SET_LOADING', payload: true });
+            const formattedItems = localCart.items.map(item => ({
+              productId: item.product?._id || item.product?.id || item.product,
+              quantity: item.quantity,
+              size: item.size,
+              color: item.color
+            }));
+            const response = await api.post('/cart/merge', { items: formattedItems });
+            dispatch({ type: 'INIT_CART', payload: response.data.items });
+            localStorage.removeItem('cart');
+          } catch (e) {
+            refreshCart();
+          } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+          }
+        } else {
+          refreshCart();
+        }
+      } else {
+        dispatch({ type: 'INIT_CART', payload: localCart.items || [] });
+      }
+    };
+    initialize();
+  }, [isAuthenticated, refreshCart]);
+
+  // --- EXPOSED ACTIONS ---
+
+  const addToCart = useCallback(async (product, quantity = 1, variant = null) => {
+    const productId = product._id || product.id;
+
+    const existingItem = stateRef.current.items.find(item =>
+      (item.product?._id || item.product?.id || item.product) === productId &&
+      item.size === variant?.size &&
+      item.color === variant?.color
     );
-  }, [cart]);
+
+    if (existingItem) {
+      dispatch({
+        type: 'OPTIMISTIC_UPDATE',
+        payload: { itemId: existingItem._id, quantity: existingItem.quantity + quantity }
+      });
+    } else {
+      const tempId = 'temp_' + Date.now();
+      dispatch({
+        type: 'OPTIMISTIC_UPDATE',
+        payload: { itemId: tempId, quantity, product, variant, isNew: true }
+      });
+    }
+
+    if (isAuthenticated) triggerSync();
+    return true;
+  }, [isAuthenticated, triggerSync]);
+
+  const updateCartItem = useCallback((itemId, quantity) => {
+    if (quantity < 1) return;
+    dispatch({ type: 'OPTIMISTIC_UPDATE', payload: { itemId, quantity } });
+    if (isAuthenticated) triggerSync();
+  }, [isAuthenticated, triggerSync]);
+
+  const removeFromCart = useCallback(async (itemId) => {
+    dispatch({ type: 'OPTIMISTIC_REMOVE', payload: itemId });
+    if (isAuthenticated) triggerSync();
+    return true;
+  }, [isAuthenticated, triggerSync]);
+
+  const removeMultipleFromCart = useCallback(async (itemIds) => {
+    if (!itemIds?.length) return true;
+    itemIds.forEach(id => dispatch({ type: 'OPTIMISTIC_REMOVE', payload: id }));
+    if (isAuthenticated) triggerSync();
+    return true;
+  }, [isAuthenticated, triggerSync]);
+
+  const clearCart = useCallback(async () => {
+    dispatch({ type: 'OPTIMISTIC_CLEAR' });
+    if (isAuthenticated) {
+      try {
+        await api.delete('/cart');
+      } catch (e) {
+        console.error('Server clear failed');
+        refreshCart();
+      }
+    } else {
+      localStorage.removeItem('cart');
+    }
+  }, [isAuthenticated, refreshCart]);
+
+  const getCartTotal = useCallback(() => {
+    return state.items.reduce((total, item) => {
+      const price = item.price || item.product?.price || 0;
+      return total + (price * item.quantity);
+    }, 0);
+  }, [state.items]);
 
   const getCartCount = useCallback(() => {
-    if (!cart || !cart.items) return 0;
-    return cart.items.reduce((count, item) => count + (item?.quantity || 0), 0);
-  }, [cart]);
+    return state.items.reduce((count, item) => count + item.quantity, 0);
+  }, [state.items]);
 
-  const value = {
-    cart,
-    loading,
+  const value = useMemo(() => ({
+    cart: { items: state.items },
+    loading: state.loading,
     addToCart,
     updateCartItem,
     removeFromCart,
@@ -316,7 +316,8 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getCartTotal,
     getCartCount,
-  };
+    refreshCart
+  }), [state.items, state.loading, addToCart, updateCartItem, removeFromCart, removeMultipleFromCart, clearCart, getCartTotal, getCartCount, refreshCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
