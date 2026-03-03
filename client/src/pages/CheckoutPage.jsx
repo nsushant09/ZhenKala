@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import api from '../services/api';
@@ -23,18 +23,19 @@ const PaymentIcons = {
   'PayPal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
   'Union Pay': 'https://upload.wikimedia.org/wikipedia/commons/1/1b/UnionPay_logo.svg',
   'American Express': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
-  'Alipay': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Alipay_logo.svg',
-  'WeChat Pay': 'https://upload.wikimedia.org/wikipedia/commons/a/af/WeChat-Pay.svg'
+  'Alipay': 'https://upload.wikimedia.org/wikipedia/en/thumb/d/dd/Alipay_logo_%282024%29.svg/960px-Alipay_logo_%282024%29.svg.png?_=20240609043243',
+  'WeChat Pay': 'https://brandlogos.net/wp-content/uploads/2023/09/wechat_pay-logo_brandlogos.net_3mmfw-512x152.png'
 };
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cart, getCartTotal, clearCart } = useCart();
   const { formatPrice, selectedCurrency } = useCurrency();
 
-  const subtotal = getCartTotal();
-  const shippingPrice = subtotal > 0 && subtotal < 100 ? 15 : 0;
-  const totalPrice = subtotal + shippingPrice;
+  const [subtotal, setSubtotal] = useState(getCartTotal());
+  const [shippingPrice, setShippingPrice] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
 
   // States
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment
@@ -45,14 +46,54 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [clientSecret, setClientSecret] = useState('');
+  const [intentDetails, setIntentDetails] = useState(null);
   const [createdOrderId, setCreatedOrderId] = useState(null);
+  const [isResumedOrder, setIsResumedOrder] = useState(false);
   const [config, setConfig] = useState({
     stripePublicKey: STRIPE_PUBLIC_KEY,
     paypalClientId: PAYPAL_CLIENT_ID
   });
 
+  const calculateTotals = useCallback((baseSubtotal) => {
+    const shipping = baseSubtotal > 0 && baseSubtotal < 100 ? 15 : 0;
+    setSubtotal(baseSubtotal);
+    setShippingPrice(shipping);
+    setTotalPrice(baseSubtotal + shipping);
+  }, []);
+
+  const handlePaymentRedirect = useCallback(async (params) => {
+    const status = params.get('redirect_status');
+    const piId = params.get('payment_intent');
+    const orderId = params.get('orderId');
+
+    if (!orderId || !piId) return;
+
+    if (status === 'succeeded') {
+      try {
+        setLoading(true);
+        await api.put(`/orders/${orderId}/pay`, {
+          id: piId,
+          status: 'succeeded',
+          update_time: new Date().toISOString()
+        });
+        clearCart();
+        navigate(`/orders/${orderId}?success=true`);
+      } catch (err) {
+        setError('Payment confirmed but we couldn\'t update your order status. Please contact support.');
+      } finally {
+        setLoading(false);
+      }
+    } else if (status === 'failed' || status === 'canceled') {
+      setError('Payment failed or was cancelled. Please select a different method or try again.');
+    }
+  }, [navigate, clearCart]);
+
   useEffect(() => {
-    if (cart.items.length === 0) {
+    const queryParams = new URLSearchParams(location.search);
+    const resumeOrderId = queryParams.get('orderId');
+    const fromRedirect = queryParams.get('from_redirect') === 'true';
+
+    if (!resumeOrderId && cart.items.length === 0 && !fromRedirect) {
       navigate('/cart');
       return;
     }
@@ -60,27 +101,48 @@ const CheckoutPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch profile
-        const { data: profile } = await api.get('/users/profile');
-        if (profile.address) {
-          setShippingAddress(prev => ({
-            ...prev,
-            ...profile.address,
-            phone: profile.address.phone || prev.phone || ''
-          }));
-        }
-
         // Fetch payment config
         const { data: paymentConfig } = await api.get('/payments/config');
         setConfig(paymentConfig);
+
+        if (resumeOrderId) {
+          // Resume existing order
+          const { data: order } = await api.get(`/orders/${resumeOrderId}`);
+          if (order.isPaid) {
+            navigate(`/orders/${resumeOrderId}`);
+            return;
+          }
+          setCreatedOrderId(order._id);
+          setShippingAddress(order.shippingAddress);
+          calculateTotals(order.itemsPrice);
+          setIsResumedOrder(true);
+          setStep(2);
+
+          // If coming back from a Stripe redirect
+          if (fromRedirect) {
+            handlePaymentRedirect(queryParams);
+          }
+        } else {
+          // New order flow, fetch profile
+          const { data: profile } = await api.get('/users/profile');
+          if (profile.address) {
+            setShippingAddress(prev => ({
+              ...prev,
+              ...profile.address,
+              phone: profile.address.phone || prev.phone || ''
+            }));
+          }
+          calculateTotals(getCartTotal());
+        }
       } catch (err) {
         console.error('Error fetching checkout data:', err);
+        setError('Failed to load order details.');
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [cart.items.length, navigate]);
+  }, [cart.items.length, navigate, location.search, calculateTotals, getCartTotal]);
 
   // Dynamic Stripe Promise
   const [stripeInstance, setStripeInstance] = useState(null);
@@ -95,7 +157,7 @@ const CheckoutPage = () => {
     setShippingAddress(prev => ({ ...prev, [name]: value }));
   };
 
-  // Step 1: Confirm Shipping & Create Order Intent
+  // Step 1: Confirm Shipping & Create Order 
   const goToPayment = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -114,7 +176,7 @@ const CheckoutPage = () => {
           color: item.color
         })),
         shippingAddress,
-        paymentMethod: 'processing', // Temporary status
+        paymentMethod: 'processing',
         itemsPrice: subtotal,
         shippingPrice,
         totalPrice,
@@ -123,32 +185,86 @@ const CheckoutPage = () => {
 
       const { data: order } = await api.post('/orders', orderData);
       setCreatedOrderId(order._id);
-
-      // Fetch Stripe Client Secret
-      const { data: paymentIntent } = await api.post('/payments/create-payment-intent', {
-        amount: totalPrice,
-        currency: selectedCurrency.toLowerCase(),
-        metadata: { orderId: order._id }
-      });
-
-      setClientSecret(paymentIntent.clientSecret);
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to initialize payment.');
+      setError(err.response?.data?.message || 'Failed to create order.');
     } finally {
       setLoading(false);
     }
   };
+
+  // Handle Stripe Intent when method changes
+  useEffect(() => {
+    if (step !== 2 || !paymentMethod || paymentMethod === 'PayPal') {
+      setClientSecret('');
+      return;
+    }
+
+    const createIntent = async () => {
+      setLoading(true);
+      setError('');
+      setClientSecret(''); // Reset while loading
+      try {
+        let amount = totalPrice;
+        let currency = selectedCurrency.toLowerCase();
+
+        // Specific handling for Alipay/WeChat Pay currency requirements
+        if (paymentMethod === 'Alipay' || paymentMethod === 'WeChat Pay') {
+          if (currency !== 'cny' && currency !== 'eur') {
+            try {
+              const res = await fetch(`https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api/USD_CNY.json`);
+              const data = await res.json();
+              const rate = data.rate || 7.2;
+              amount = totalPrice * rate;
+              currency = 'cny';
+            } catch (err) {
+              amount = totalPrice * 7.2;
+              currency = 'cny';
+            }
+          }
+        }
+
+        const { data: intentData } = await api.post('/payments/create-payment-intent', {
+          amount: amount,
+          currency: currency,
+          paymentMethodType: paymentMethod,
+          metadata: { orderId: createdOrderId }
+        });
+
+        setIntentDetails(intentData);
+        setClientSecret(intentData.clientSecret);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to initialize gateway.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    createIntent();
+  }, [paymentMethod, step, createdOrderId, totalPrice, selectedCurrency]);
 
   const handlePaymentSuccess = async () => {
     await clearCart();
     navigate(`/orders/${createdOrderId}?success=true`);
   };
 
+  const getDisplayAmount = () => {
+    if (intentDetails && intentDetails.currency.toUpperCase() === 'CNY') {
+      return `¥ ${(intentDetails.amount / 100).toFixed(2)}`;
+    }
+    return formatPrice(totalPrice);
+  };
+
   return (
     <div className="checkout-container">
       <div className="checkout-layout">
         <div className="checkout-form-section">
+          {error && (
+            <div className="bg-red-600/10 border border-red-600/50 text-red-600 p-4 rounded-lg mb-8 text-center font-medium animate-pulse">
+              {error}
+            </div>
+          )}
+
           {step === 1 ? (
             <>
               <h2 className="section-title garamond">Shipping Details</h2>
@@ -177,13 +293,51 @@ const CheckoutPage = () => {
           ) : (
             <>
               <h2 className="section-title garamond">Select Payment Method</h2>
-              <div className="payment-options mb-8">
-                {Object.keys(PaymentIcons).map((method) => (
-                  <label key={method} className={`payment-card ${paymentMethod === method ? 'active' : ''}`}>
-                    <input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} />
-                    <div className="payment-info"><img src={PaymentIcons[method]} alt={method} className="method-logo" /></div>
-                  </label>
-                ))}
+              <div className="payment-categories space-y-6">
+                {/* Cards Section */}
+                <div className="payment-category">
+                  <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Credit / Debit Cards</h4>
+                  <div className="payment-options-grid">
+                    {['Visa', 'MasterCard', 'American Express', 'Union Pay'].map((method) => (
+                      <label key={method} className={`payment-card ${paymentMethod === method ? 'active' : ''}`}>
+                        <input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} />
+                        <div className="payment-info">
+                          <img src={PaymentIcons[method]} alt={method} className="method-logo h-6" />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Wallets Section */}
+                <div className="payment-category">
+                  <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Digital Wallets</h4>
+                  <div className="payment-options-grid">
+                    {['Apple Pay', 'Google Pay', 'PayPal'].map((method) => (
+                      <label key={method} className={`payment-card ${paymentMethod === method ? 'active' : ''}`}>
+                        <input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} />
+                        <div className="payment-info">
+                          <img src={PaymentIcons[method]} alt={method} className="method-logo h-6" />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Regional Section */}
+                <div className="payment-category">
+                  <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Regional Methods</h4>
+                  <div className="payment-options-grid">
+                    {['Alipay', 'WeChat Pay'].map((method) => (
+                      <label key={method} className={`payment-card ${paymentMethod === method ? 'active' : ''}`}>
+                        <input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} />
+                        <div className="payment-info">
+                          <img src={PaymentIcons[method]} alt={method} className="method-logo h-6" />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {paymentMethod === 'PayPal' && (
@@ -197,21 +351,27 @@ const CheckoutPage = () => {
                 </PayPalScriptProvider>
               )}
 
-              {(paymentMethod && paymentMethod !== 'PayPal') && stripeInstance && (
+              {(paymentMethod && paymentMethod !== 'PayPal') && stripeInstance && clientSecret && (
                 <Elements stripe={stripeInstance} options={{ clientSecret }}>
                   <StripePaymentForm
-                    amount={formatPrice(totalPrice)}
+                    amount={getDisplayAmount()}
                     orderId={createdOrderId}
+                    selectedMethod={paymentMethod}
                     onSuccess={handlePaymentSuccess}
                     onError={setError}
                   />
                 </Elements>
               )}
 
-              <button onClick={() => setStep(1)} className="back-btn mt-4">Edit Shipping Details</button>
+              {loading && !clientSecret && paymentMethod && paymentMethod !== 'PayPal' && (
+                <div className="p-12 text-center text-gray-400">
+                  Initializing secure connection for {paymentMethod}...
+                </div>
+              )}
+
+              {!isResumedOrder && <button onClick={() => setStep(1)} className="back-btn mt-4">Edit Shipping Details</button>}
             </>
           )}
-          {error && <div className="error-message">{error}</div>}
         </div>
 
         <div className="checkout-summary-section">

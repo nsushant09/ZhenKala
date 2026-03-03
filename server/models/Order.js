@@ -120,6 +120,11 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    currency: {
+      type: String,
+      required: true,
+      default: 'USD',
+    },
   },
   {
     timestamps: true,

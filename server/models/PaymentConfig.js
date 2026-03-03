@@ -1,15 +1,16 @@
 const mongoose = require('mongoose');
+const { encrypt, decrypt } = require('../utils/encryption');
 
 const paymentConfigSchema = new mongoose.Schema(
     {
         stripe: {
             publicKey: { type: String, default: '' },
-            secretKey: { type: String, default: '' },
+            secretKey: { type: String, default: '' }, // This will be encrypted
             enabled: { type: Boolean, default: true },
         },
         paypal: {
             clientId: { type: String, default: '' },
-            secret: { type: String, default: '' },
+            secret: { type: String, default: '' }, // This will be encrypted
             mode: { type: String, enum: ['sandbox', 'live'], default: 'sandbox' },
             enabled: { type: Boolean, default: true },
         },
@@ -37,5 +38,22 @@ const paymentConfigSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
+
+// Decrypt secrets after fetching from DB
+paymentConfigSchema.post('init', function (doc) {
+    if (doc.stripe?.secretKey) doc.stripe.secretKey = decrypt(doc.stripe.secretKey);
+    if (doc.paypal?.secret) doc.paypal.secret = decrypt(doc.paypal.secret);
+});
+
+// Encrypt secrets before saving to DB
+paymentConfigSchema.pre('save', function (next) {
+    if (this.isModified('stripe.secretKey') && this.stripe.secretKey) {
+        this.stripe.secretKey = encrypt(this.stripe.secretKey);
+    }
+    if (this.isModified('paypal.secret') && this.paypal.secret) {
+        this.paypal.secret = encrypt(this.paypal.secret);
+    }
+    next();
+});
 
 module.exports = mongoose.model('PaymentConfig', paymentConfigSchema);

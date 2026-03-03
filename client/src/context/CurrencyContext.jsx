@@ -14,7 +14,7 @@ export const useCurrency = () => {
 // Only supports 31 national currencies, no crypto.
 const BASE_URL = 'https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api';
 
-const SUPPORTED_CURRENCIES = {
+export const SUPPORTED_CURRENCIES = {
     USD: { name: 'US Dollar', symbol: '$' },
     EUR: { name: 'Euro', symbol: '€' },
     GBP: { name: 'British Pound', symbol: '£' },

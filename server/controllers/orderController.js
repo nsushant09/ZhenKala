@@ -14,6 +14,7 @@ exports.createOrder = async (req, res) => {
       taxPrice,
       shippingPrice,
       totalPrice,
+      currency,
     } = req.body;
 
     if (orderItems && orderItems.length === 0) {
@@ -51,6 +52,7 @@ exports.createOrder = async (req, res) => {
       taxPrice,
       shippingPrice,
       totalPrice,
+      currency,
     });
 
     // Update product stock
@@ -107,6 +109,11 @@ exports.updateOrderToPaid = async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
+
+    if (req.body.itemsPrice) order.itemsPrice = req.body.itemsPrice;
+    if (req.body.shippingPrice) order.shippingPrice = req.body.shippingPrice;
+    if (req.body.totalPrice) order.totalPrice = req.body.totalPrice;
+    if (req.body.currency) order.currency = req.body.currency;
 
     order.isPaid = true;
     order.paidAt = Date.now();

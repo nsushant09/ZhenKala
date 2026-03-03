@@ -1,15 +1,30 @@
 import React, { useState } from 'react';
-import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
+import { useStripe, useElements, PaymentElement, ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import api from '../../services/api';
 
-const StripePaymentForm = ({ amount, orderId, onSuccess, onError }) => {
+const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const isWallet = selectedMethod === 'Apple Pay' || selectedMethod === 'Google Pay';
 
+    const onConfirm = async (event) => {
+        // Handle confirm for Express Checkout (Apple/Google Pay)
+        const { error: confirmError } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: `${window.location.origin}/checkout?orderId=${orderId}&from_redirect=true`,
+            },
+        });
+
+        if (confirmError) {
+            onError(confirmError.message);
+        }
+    };
+
+    const handleSubmit = async (event) => {
+        if (event) event.preventDefault();
         if (!stripe || !elements) return;
 
         setLoading(true);
@@ -17,8 +32,7 @@ const StripePaymentForm = ({ amount, orderId, onSuccess, onError }) => {
         const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                // Return URL for redirection if needed
-                return_url: `${window.location.origin}/orders/${orderId}?success=true`,
+                return_url: `${window.location.origin}/checkout?orderId=${orderId}&from_redirect=true`,
             },
             redirect: 'if_required',
         });
@@ -27,14 +41,13 @@ const StripePaymentForm = ({ amount, orderId, onSuccess, onError }) => {
             onError(error.message);
             setLoading(false);
         } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-            // Mark order as paid on our backend
             try {
                 await api.put(`/orders/${orderId}/pay`, {
                     id: paymentIntent.id,
                     status: paymentIntent.status,
                     update_time: new Date().toISOString(),
                     email_address: paymentIntent.receipt_email || '',
-                    paymentMethod: 'Card / Digital Wallet'
+                    paymentMethod: selectedMethod || 'Card / Digital Wallet'
                 });
                 onSuccess();
             } catch (err) {
@@ -44,16 +57,30 @@ const StripePaymentForm = ({ amount, orderId, onSuccess, onError }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="stripe-form">
-            <PaymentElement />
-            <button
-                type="submit"
-                disabled={!stripe || loading}
-                className="place-order-btn mt-4"
-            >
-                {loading ? 'Processing...' : `Pay ${amount}`}
-            </button>
-        </form>
+        <div className="stripe-form-container">
+            {isWallet ? (
+                <ExpressCheckoutElement onConfirm={onConfirm} options={{
+                    wallets: {
+                        applePay: selectedMethod === 'Apple Pay' ? 'always' : 'never',
+                        googlePay: selectedMethod === 'Google Pay' ? 'always' : 'never',
+                    }
+                }} />
+            ) : (
+                <form onSubmit={handleSubmit} className="stripe-form">
+                    <PaymentElement options={{
+                        layout: 'tabs',
+                        business: { name: 'ZhenKala' }
+                    }} />
+                    <button
+                        type="submit"
+                        disabled={!stripe || loading}
+                        className="place-order-btn mt-6 w-full"
+                    >
+                        {loading ? 'Processing...' : `Pay ${amount}`}
+                    </button>
+                </form>
+            )}
+        </div>
     );
 };
 

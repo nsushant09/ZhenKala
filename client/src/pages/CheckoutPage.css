@@ -84,11 +84,19 @@
 }
 
 /* Payment Options */
-.payment-options {
+.payment-category {
+    margin-bottom: 2rem;
+}
+
+.payment-options-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 1rem;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
+}
+
+.tracking-widest {
+    letter-spacing: 0.1em;
 }
 
 .payment-card {
