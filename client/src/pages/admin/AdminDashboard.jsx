@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiBox, FiShoppingBag, FiUsers, FiSettings } from 'react-icons/fi';
+import { FiBox, FiShoppingBag, FiUsers, FiSettings, FiCreditCard } from 'react-icons/fi';
 
 const AdminDashboard = () => {
   return (
@@ -8,7 +8,7 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Products Card */}
           <Link to="/admin/products" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
             <div className="flex items-center justify-between mb-4">
@@ -55,6 +55,18 @@ const AdminDashboard = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">Merchant Settings</h3>
             <p className="text-gray-500 text-sm">Update bank details, business info, and invoice parameters.</p>
+          </Link>
+
+          {/* Payment Gateway Card */}
+          <Link to="/admin/payment" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-100 transition-colors">
+                <FiCreditCard size={24} />
+              </div>
+              <span className="text-xs font-semibold text-gray-500 uppercase">Manage</span>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Payment Gateways</h3>
+            <p className="text-gray-500 text-sm">Configure Stripe, PayPal, Alipay, WeChat Pay and other API keys.</p>
           </Link>
         </div>
 

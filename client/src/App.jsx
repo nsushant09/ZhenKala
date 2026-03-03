@@ -33,6 +33,7 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminProductForm from './pages/admin/AdminProductForm';
 import AdminMerchantSettings from './pages/admin/AdminMerchantSettings';
+import PaymentSettings from './pages/admin/PaymentSettings';
 
 // Components
 import Navbar from './components/Navbar';
@@ -167,6 +168,15 @@ function App() {
                       element={
                         <AdminRoute>
                           <AdminMerchantSettings />
+                        </AdminRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/admin/payment"
+                      element={
+                        <AdminRoute>
+                          <PaymentSettings />
                         </AdminRoute>
                       }
                     />

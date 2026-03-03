@@ -61,6 +61,15 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
+// Virtual for full name
+userSchema.virtual('name').get(function () {
+  return `${this.firstName} ${this.lastName}`;
+});
+
+// Ensure virtuals are serialized
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
+
 // Compare password method
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);

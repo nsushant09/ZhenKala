@@ -43,6 +43,7 @@ function cartReducer(state, action) {
           _id: itemId,
           product,
           quantity,
+          variantId: variant?._id || variant?.id,
           size: variant?.size,
           color: variant?.color,
           price: variant?.price || product.price

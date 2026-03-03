@@ -26,9 +26,18 @@ exports.createOrder = async (req, res) => {
       if (!product) {
         return res.status(404).json({ message: `Product ${item.name} not found` });
       }
-      if (product.stock < item.quantity) {
+
+      let availableStock = product.stock;
+      if (item.variant && product.variants && product.variants.length > 0) {
+        const variant = product.variants.id(item.variant);
+        if (variant) {
+          availableStock = variant.stock;
+        }
+      }
+
+      if (availableStock < item.quantity) {
         return res.status(400).json({
-          message: `Insufficient stock for ${item.name}. Available: ${product.stock}`
+          message: `Insufficient stock for ${item.name}${item.size ? ` (${item.size})` : ''}. Available: ${availableStock}`
         });
       }
     }
@@ -46,9 +55,18 @@ exports.createOrder = async (req, res) => {
 
     // Update product stock
     for (let item of orderItems) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.quantity },
-      });
+      const product = await Product.findById(item.product);
+      if (product) {
+        if (item.variant && product.variants && product.variants.length > 0) {
+          const variant = product.variants.id(item.variant);
+          if (variant) {
+            variant.stock -= item.quantity;
+          }
+        } else {
+          product.stock -= item.quantity;
+        }
+        await product.save(); // Triggers pre-save hook to sync base stock
+      }
     }
 
     res.status(201).json(order);
@@ -62,7 +80,7 @@ exports.createOrder = async (req, res) => {
 // @access  Private
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
+    const order = await Order.findById(req.params.id).populate('user', 'firstName lastName email');
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
@@ -128,7 +146,7 @@ exports.getMyOrders = async (req, res) => {
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
-      .populate('user', 'id name email')
+      .populate('user', 'id firstName lastName email')
       .sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {

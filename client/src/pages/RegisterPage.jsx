@@ -15,7 +15,8 @@ const RegisterPage = () => {
     city: '',
     state: '',
     country: 'Nepal',
-    zipCode: ''
+    zipCode: '',
+    phone: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +43,8 @@ const RegisterPage = () => {
         city: formData.city,
         state: formData.state,
         country: formData.country,
-        zipCode: formData.zipCode
+        zipCode: formData.zipCode,
+        phone: formData.phone
       }
     };
 
@@ -136,6 +138,7 @@ const RegisterPage = () => {
                 placeholder="123 Sacred Path"
                 value={formData.street}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -149,8 +152,24 @@ const RegisterPage = () => {
                   placeholder="Kathmandu"
                   value={formData.city}
                   onChange={handleChange}
+                  required
                 />
               </div>
+              <div className="form-group">
+                <label htmlFor="state">State / Province</label>
+                <input
+                  type="text"
+                  id="state"
+                  className="form-control"
+                  placeholder="Bagmati"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
               <div className="form-group">
                 <label htmlFor="zipCode">Zip Code</label>
                 <input
@@ -160,8 +179,33 @@ const RegisterPage = () => {
                   placeholder="44600"
                   value={formData.zipCode}
                   onChange={handleChange}
+                  required
                 />
               </div>
+              <div className="form-group">
+                <label htmlFor="country">Country</label>
+                <input
+                  type="text"
+                  id="country"
+                  className="form-control"
+                  placeholder="Nepal"
+                  value={formData.country}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="phone">Phone Number</label>
+              <input
+                type="tel"
+                id="phone"
+                className="form-control"
+                placeholder="+977 1234567890"
+                value={formData.phone}
+                onChange={handleChange}
+              />
             </div>
 
             <button type="submit" className="btn-form-primary" disabled={isLoading}>

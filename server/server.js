@@ -24,6 +24,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const testimonialRoutes = require('./routes/testimonialRoutes');
 const merchantRoutes = require('./routes/merchantRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const paymentConfigRoutes = require('./routes/paymentConfigRoutes');
 const path = require('path');
 
 // Use routes
@@ -37,6 +38,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/merchant-details', merchantRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/payment-settings', paymentConfigRoutes);
 
 // Make uploads folder static
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));

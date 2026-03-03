@@ -7,7 +7,7 @@ const { generateToken } = require('../middleware/auth');
 // @access  Public
 exports.registerUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role } = req.body;
+    const { firstName, lastName, email, password, role, address } = req.body;
 
     const userExists = await User.findOne({ email });
 
@@ -21,6 +21,7 @@ exports.registerUser = async (req, res) => {
       email,
       password,
       role: role || 'user',
+      address,
     });
 
     if (user) {
@@ -30,6 +31,7 @@ exports.registerUser = async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        address: user.address,
         token: generateToken(user._id),
       });
     } else {
@@ -56,6 +58,7 @@ exports.loginUser = async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        address: user.address,
         token: generateToken(user._id),
       });
     } else {

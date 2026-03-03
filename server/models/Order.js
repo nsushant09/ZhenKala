@@ -14,6 +14,9 @@ const orderSchema = new mongoose.Schema(
           ref: 'Product',
           required: true,
         },
+        variant: {
+          type: mongoose.Schema.Types.ObjectId,
+        },
         name: {
           type: String,
           required: true,
@@ -31,6 +34,8 @@ const orderSchema = new mongoose.Schema(
           type: Number,
           required: true,
         },
+        size: String,
+        color: String,
       },
     ],
     shippingAddress: {
@@ -62,7 +67,7 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ['Apple Pay', 'Google Pay', 'MasterCard', 'Visa', 'PayPal', 'Union Pay', 'American Express', 'stripe', 'cod'],
+      enum: ['Apple Pay', 'Google Pay', 'MasterCard', 'Visa', 'PayPal', 'Union Pay', 'American Express', 'stripe', 'cod', 'processing', 'Card / Digital Wallet'],
     },
     paymentResult: {
       id: String,
