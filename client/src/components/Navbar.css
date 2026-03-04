@@ -26,88 +26,148 @@
   font-size: 14px;
 }
 
-/* Premium Google Translate Theme Alignment */
-#google_translate_element {
-  display: flex;
-  flex-direction: row;
+/* Advanced Language Selector Styles */
+.language-selector-advanced {
+  position: relative;
+  z-index: 1000;
 }
 
-.goog-te-gadget-simple {
-  display: inline-block;
-  background-color: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  cursor: pointer !important;
-  font-family: var(--font-secondary);
+.lang-toggle-btn {
   display: flex !important;
   align-items: center;
-}
-
-.goog-te-menu-value {
-  color: var(--color-on-secondary-light) !important;
-  text-decoration: none !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: 14px !important;
-  /* Slightly smaller to match elegant top bar */
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--color-on-secondary-light);
+  cursor: pointer;
+  padding: 6px 0;
+  font-family: var(--font-primary);
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: color 0.2s ease;
+  transition: var(--transition-fast);
 }
 
-.goog-te-menu-value:hover,
-.goog-te-menu-value:hover span {
-  color: white !important;
+.lang-toggle-btn:hover {
+  color: white;
 }
 
-.goog-te-menu-value span {
-  color: inherit !important;
-  font-family: inherit !important;
+.globe-icon {
+  font-size: 16px;
+  opacity: 0.8;
 }
 
-/* Hide all non-essential decorators */
-.goog-te-gadget-icon,
-.goog-te-menu-value img,
-.goog-te-menu-value span[style*="color: rgb(118, 118, 118)"],
-.goog-te-menu-value span[style*="color: #767676"],
-.goog-te-menu-value span[style*="color: rgb(155, 155, 155)"],
-.goog-te-menu-value span:nth-child(3),
-.goog-te-menu-value span:nth-child(5) {
-  display: none !important;
+.chevron-icon {
+  font-size: 12px;
+  transition: transform 0.3s ease;
 }
 
-.goog-te-menu-value span:first-child {
-  border: none !important;
+.chevron-icon.rotate {
+  transform: rotate(180deg);
 }
 
-.goog-te-gadget {
-  background-color: transparent !important;
-  border: none !important;
+.lang-dropdown-advanced {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  min-width: 400px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 24px;
+  margin-top: 0;
+  /* Remove margin to eliminate the gap */
+  padding-top: 24px;
+  animation: slideDownFade 0.3s ease-out;
+  border: 1px solid rgba(165, 42, 42, 0.1);
 }
 
-/* Hide original top bar and prevent body shift */
-body {
-  top: 0 !important;
+/* Invisible Bridge to keep the menu open when moving mouse between button and menu */
+.lang-dropdown-advanced::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: 0;
+  width: 100%;
+  height: 15px;
+  background: transparent;
 }
 
-.goog-te-banner-frame {
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.lang-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px 16px;
+  background: #fdfaf5;
+  border: 1px solid #f0e6d6;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.lang-option:hover {
+  background: #fff;
+  border-color: var(--color-secondary);
+  box-shadow: 0 4px 12px rgba(165, 42, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.lang-option.active {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+
+.lang-option.active .lang-native,
+.lang-option.active .lang-name-en {
+  color: white;
+}
+
+.lang-native {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-on-background);
+  margin-bottom: 2px;
+}
+
+.lang-name-en {
+  font-size: 11px;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Ensure Google Translate elements are truly invisible but functional */
+.goog-te-banner-frame,
+.skiptranslate:not(.language-selector-advanced *) {
   display: none !important;
   visibility: hidden !important;
 }
 
-/* Specifically hide the attribution but keep the menu visible */
-.goog-logo-link {
-  display: none !important;
+body {
+  top: 0 !important;
 }
 
-.goog-te-gadget {
-  height: 28px !important;
-  overflow: hidden !important;
-}
-
-/* Ensure the menu iframe is visible if it appears */
 iframe.goog-te-menu-frame {
-  z-index: 999999 !important;
+  display: none !important;
 }
 
 .tagline {

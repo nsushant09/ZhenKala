@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX } from 'react-icons/fi';
+import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX, FiGlobe, FiChevronDown } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -8,10 +8,38 @@ import './Navbar.css';
 import api from '../services/api';
 import ConfirmModal from './ConfirmModal';
 
+const languages = [
+  { code: 'en', name: 'English', native: 'English' },
+  { code: 'zh-CN', name: 'Chinese (Simplified)', native: '中文 (简体)' },
+  { code: 'zh-TW', name: 'Chinese (Traditional)', native: '中文 (繁體)' },
+  { code: 'ne', name: 'Nepali', native: 'नेपाली' },
+  { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
+  { code: 'ja', name: 'Japanese', native: '日本語' },
+  { code: 'fr', name: 'French', native: 'Français' },
+  { code: 'de', name: 'German', native: 'Deutsch' },
+  { code: 'es', name: 'Spanish', native: 'Español' },
+  { code: 'it', name: 'Italian', native: 'Italiano' },
+];
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState('English');
+  const closeTimeoutRef = useRef(null);
+
+  const handleLangEnter = () => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    setIsLangOpen(true);
+  };
+
+  const handleLangLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsLangOpen(false);
+    }, 200); // 200ms delay for smooth UX
+  };
+
   const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();
   const { currencies, selectedCurrency, changeCurrency } = useCurrency();
@@ -62,7 +90,6 @@ const Navbar = () => {
         {
           pageLanguage: 'en',
           autoDisplay: false,
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
         },
         'google_translate_element'
       );
@@ -79,15 +106,62 @@ const Navbar = () => {
     addGoogleTranslateScript();
   }, []);
 
+  const handleLanguageChange = (lang) => {
+    setCurrentLang(lang.name);
+    setIsLangOpen(false);
+
+    // Robust Communication with Google Translate
+    const triggerTranslation = () => {
+      const googleSelect = document.querySelector('.goog-te-combo');
+      if (googleSelect) {
+        googleSelect.value = lang.code;
+        googleSelect.dispatchEvent(new Event('change'));
+      } else {
+        // Retry a few times in case Google hasn't finished rendering the element
+        setTimeout(triggerTranslation, 200);
+      }
+    };
+    triggerTranslation();
+  };
+
   return (
     <>
       {/* Top Bar */}
       <div className="navbar-top">
-        <div className="px-16">
+        <div className="px-16 px-md-4">
           <div className="navbar-top-content">
-            <div className="language-selector">
-              <div id="google_translate_element"></div>
+            <div
+              className="language-selector-advanced"
+              onMouseEnter={handleLangEnter}
+              onMouseLeave={handleLangLeave}
+            >
+              <button className="lang-toggle-btn">
+                <FiGlobe className="globe-icon" />
+                <span className="current-lang-text">{currentLang}</span>
+                <FiChevronDown className={`chevron-icon ${isLangOpen ? 'rotate' : ''}`} />
+              </button>
+
+              {isLangOpen && (
+                <div className="lang-dropdown-advanced">
+                  <div className="lang-grid">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => handleLanguageChange(lang)}
+                        className={`lang-option ${currentLang === lang.name ? 'active' : ''}`}
+                      >
+                        <span className="lang-native">{lang.native}</span>
+                        <span className="lang-name-en">{lang.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Actual Google element is hidden but functional */}
+              <div id="google_translate_element" style={{ visibility: 'hidden', position: 'absolute', zIndex: -1 }}></div>
             </div>
+
             <div className="tagline">Where tradition meets transformation</div>
             <div className="currency-selector">
               <select value={selectedCurrency} onChange={(e) => changeCurrency(e.target.value)}>
