@@ -144,6 +144,25 @@ exports.updateOrderToPaid = async (req, res) => {
   }
 };
 
+// @desc    Update order to failed
+// @route   PUT /api/orders/:id/fail
+// @access  Private
+exports.updateOrderToFailed = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.orderStatus = 'checkout failed';
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // @desc    Get logged in user orders
 // @route   GET /api/orders/myorders
 // @access  Private

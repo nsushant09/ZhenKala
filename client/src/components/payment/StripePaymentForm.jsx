@@ -19,6 +19,7 @@ const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError
         });
 
         if (confirmError) {
+            await api.put(`/orders/${orderId}/fail`);
             onError(confirmError.message);
         }
     };
@@ -38,6 +39,7 @@ const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError
         });
 
         if (error) {
+            await api.put(`/orders/${orderId}/fail`);
             onError(error.message);
             setLoading(false);
         } else if (paymentIntent && paymentIntent.status === 'succeeded') {

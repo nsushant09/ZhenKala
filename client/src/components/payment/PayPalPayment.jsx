@@ -34,7 +34,8 @@ const PayPalPayment = ({ amount, orderId, onSuccess, onError }) => {
                         onError('Payment captured but failed to update order.');
                     }
                 }}
-                onError={(err) => {
+                onError={async (err) => {
+                    await api.put(`/orders/${orderId}/fail`);
                     onError('PayPal Payment Error: ' + err.toString());
                 }}
             />

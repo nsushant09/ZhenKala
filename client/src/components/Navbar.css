@@ -26,6 +26,90 @@
   font-size: 14px;
 }
 
+/* Premium Google Translate Theme Alignment */
+#google_translate_element {
+  display: flex;
+  flex-direction: row;
+}
+
+.goog-te-gadget-simple {
+  display: inline-block;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  font-family: var(--font-secondary);
+  display: flex !important;
+  align-items: center;
+}
+
+.goog-te-menu-value {
+  color: var(--color-on-secondary-light) !important;
+  text-decoration: none !important;
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  /* Slightly smaller to match elegant top bar */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.2s ease;
+}
+
+.goog-te-menu-value:hover,
+.goog-te-menu-value:hover span {
+  color: white !important;
+}
+
+.goog-te-menu-value span {
+  color: inherit !important;
+  font-family: inherit !important;
+}
+
+/* Hide all non-essential decorators */
+.goog-te-gadget-icon,
+.goog-te-menu-value img,
+.goog-te-menu-value span[style*="color: rgb(118, 118, 118)"],
+.goog-te-menu-value span[style*="color: #767676"],
+.goog-te-menu-value span[style*="color: rgb(155, 155, 155)"],
+.goog-te-menu-value span:nth-child(3),
+.goog-te-menu-value span:nth-child(5) {
+  display: none !important;
+}
+
+.goog-te-menu-value span:first-child {
+  border: none !important;
+}
+
+.goog-te-gadget {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Hide original top bar and prevent body shift */
+body {
+  top: 0 !important;
+}
+
+.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Specifically hide the attribution but keep the menu visible */
+.goog-logo-link {
+  display: none !important;
+}
+
+.goog-te-gadget {
+  height: 28px !important;
+  overflow: hidden !important;
+}
+
+/* Ensure the menu iframe is visible if it appears */
+iframe.goog-te-menu-frame {
+  z-index: 999999 !important;
+}
+
 .tagline {
   color: var(--color-on-secondary-light);
   font-size: 16px;

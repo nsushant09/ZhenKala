@@ -1,13 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiTrash2, FiMinus, FiPlus, FiArrowRight, FiShoppingBag } from 'react-icons/fi';
+import ConfirmModal from '../components/ConfirmModal';
 
 const CartPage = () => {
   const { cart, removeFromCart, updateCartItem, getCartTotal, loading } = useCart();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
 
   const subtotal = getCartTotal();
   const shipping = subtotal > 0 && subtotal < 100 ? 15 : 0;
@@ -18,9 +22,16 @@ const CartPage = () => {
     await updateCartItem(itemId, newQuantity);
   };
 
-  const handleRemove = async (itemId) => {
-    if (window.confirm('Are you sure you want to remove this item?')) {
-      await removeFromCart(itemId);
+  const handleRemoveClick = (itemId) => {
+    setItemToRemove(itemId);
+    setShowRemoveModal(true);
+  };
+
+  const confirmRemove = async () => {
+    if (itemToRemove) {
+      await removeFromCart(itemToRemove);
+      setShowRemoveModal(false);
+      setItemToRemove(null);
     }
   };
 
@@ -112,7 +123,7 @@ const CartPage = () => {
                             </div>
                           </div>
                           <button
-                            onClick={() => handleRemove(itemId)}
+                            onClick={() => handleRemoveClick(itemId)}
                             className="text-gray-400 hover:text-secondary transition-colors duration-300 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider w-fit group/remove"
                           >
                             <FiTrash2 size={12} className="group-hover/remove:text-secondary" /> Remove Item
@@ -206,6 +217,15 @@ const CartPage = () => {
           </div>
         )}
       </div>
+      <ConfirmModal
+        isOpen={showRemoveModal}
+        onClose={() => setShowRemoveModal(false)}
+        onConfirm={confirmRemove}
+        title="Remove Item"
+        message="Are you sure you want to remove this item from your cart?"
+        confirmText="Remove"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

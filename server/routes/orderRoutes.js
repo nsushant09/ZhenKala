@@ -4,6 +4,7 @@ const {
   createOrder,
   getOrderById,
   updateOrderToPaid,
+  updateOrderToFailed,
   getMyOrders,
   getAllOrders,
   updateOrderStatus,
@@ -22,6 +23,9 @@ router.route('/:id')
 
 router.route('/:id/pay')
   .put(protect, updateOrderToPaid);
+
+router.route('/:id/fail')
+  .put(protect, updateOrderToFailed);
 
 router.route('/:id/status')
   .put(protect, admin, updateOrderStatus);

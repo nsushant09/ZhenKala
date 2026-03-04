@@ -151,9 +151,9 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                             disabled={isAdding}
                         >
                             {isAdding ? (
-                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span translate="no" className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                             ) : (
-                                <><span>+</span> Cart</>
+                                <><span className="text-lg">+</span> <span className="font-medium">Cart</span></>
                             )}
                         </button>
                     </div>

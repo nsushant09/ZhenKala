@@ -85,7 +85,7 @@ exports.handleStripeWebhook = async (req, res) => {
             if (failOrderId) {
                 const order = await Order.findById(failOrderId);
                 if (order) {
-                    order.orderStatus = 'cancelled'; // or leave as pending
+                    order.orderStatus = 'checkout failed';
                     await order.save();
                 }
             }

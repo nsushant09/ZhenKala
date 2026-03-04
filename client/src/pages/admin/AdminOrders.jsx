@@ -88,6 +88,7 @@ const AdminOrders = () => {
       case 'shipped': return 'bg-purple-500/10 text-purple-500';
       case 'delivered': return 'bg-green-500/10 text-green-500';
       case 'cancelled': return 'bg-red-500/10 text-red-500';
+      case 'checkout failed': return 'bg-orange-500/10 text-orange-500';
       default: return 'bg-gray-500/10 text-gray-500';
     }
   };
@@ -136,6 +137,7 @@ const AdminOrders = () => {
             <option value="shipped">Shipped</option>
             <option value="delivered">Delivered</option>
             <option value="cancelled">Cancelled</option>
+            <option value="checkout failed">Checkout Failed</option>
           </select>
         </div>
 
@@ -263,6 +265,7 @@ const AdminOrders = () => {
                   <option value="shipped">Shipped</option>
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
+                  <option value="checkout failed">Checkout Failed</option>
                 </select>
               </div>
 

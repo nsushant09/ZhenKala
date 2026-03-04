@@ -54,7 +54,7 @@ const OrderDetailPage = () => {
   return (
     <div className="order-receipt-container">
       {isSuccess && (
-        <div className="success-banner no-print">
+        <div className="success-banner">
           <FiCheckCircle className="success-icon" />
           <div className="success-text">
             <h1>Thank You!</h1>
@@ -64,7 +64,7 @@ const OrderDetailPage = () => {
       )}
 
       {!order.isPaid && !isSuccess ? (
-        <div className="payment-warning-banner no-print failed-state">
+        <div className="payment-warning-banner failed-state">
           <div className="warning-content">
             <h3 className="text-red-600">❌ Payment Failed</h3>
             <p>Your transaction could not be completed at this time. To complete your order, please pick a different payment method.</p>
@@ -77,49 +77,51 @@ const OrderDetailPage = () => {
       ) : (
         <>
           <div className={`invoice-box ${!order.isPaid ? 'unpaid-watermark' : ''}`} id="invoice">
-            {order.isPaid && (
-              <div className="payment-confirmed-info-box">
-                <div className="confirmed-icon">
-                  <FiShield />
-                </div>
-                <div className="confirmed-details">
-                  <h4>Payment Confirmed</h4>
-                  <p>Transaction ID: {order.paymentResult?.id?.toUpperCase()}</p>
-                  <p>Verified on {new Date(order.paidAt).toLocaleDateString()} {new Date(order.paidAt).toLocaleTimeString()}</p>
-                </div>
-              </div>
-            )}
 
-            <header className="invoice-header">
-              <div className="invoice-logo">
+            {/* LOGO TOP */}
+            <header className="invoice-header-premium">
+              <div className="invoice-logo-top">
                 <img src="/LogoRed.svg" alt="ZhenKala" />
                 <p className="tagline">Authentic Himalayan Art</p>
-              </div>
-              <div className="invoice-meta">
-                <h1>{order.isPaid ? 'INVOICE' : 'PROFORMA INVOICE'}</h1>
-                <p><strong>Order ID:</strong> {order._id.toUpperCase()}</p>
-                <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}</p>
-                <p><strong>Status:</strong> <span className={`status-pill ${order.orderStatus}`}>{order.orderStatus.toUpperCase()}</span></p>
-                <p><strong>Currency:</strong> {order.currency || 'USD'}</p>
+                <div className="merchant-sub-meta">
+                  <span>{merchant?.contactEmail}</span>
+                  <span className="dot">•</span>
+                  <span>{merchant?.contactPhone}</span>
+                </div>
               </div>
             </header>
 
-            <div className="invoice-billing-grid">
-              <div className="billing-col">
-                <h3>FROM</h3>
-                <p className="business-name">{merchant?.businessName || 'ZhenKala'}</p>
-                <p className="business-address">{merchant?.address}</p>
-                <p>{merchant?.contactEmail}</p>
-                <p>{merchant?.contactPhone}</p>
-                {merchant?.taxId && <p><strong>Tax ID:</strong> {merchant.taxId}</p>}
-              </div>
-              <div className="billing-col">
+            {/* INVOICE HEADER ROW */}
+            <div className="invoice-header-row">
+              {/* LEFT: SHIP TO */}
+              <div className="ship-to-section">
                 <h3>SHIP TO</h3>
-                <p><strong>{order.user?.firstName} {order.user?.lastName}</strong></p>
-                <p>{order.shippingAddress.street}</p>
-                <p>{order.shippingAddress.city}, {order.shippingAddress.state}, {order.shippingAddress.zipCode}</p>
-                <p>{order.shippingAddress.country}</p>
-                <p>Phone: {order.shippingAddress.phone}</p>
+                <div className="address-block">
+                  <p className="recipient-name">{order.user?.firstName} {order.user?.lastName}</p>
+                  <p>{order.shippingAddress.street}</p>
+                  <p>{order.shippingAddress.city}, {order.shippingAddress.state}, {order.shippingAddress.zipCode}</p>
+                  <p>{order.shippingAddress.country}</p>
+                  <p className="phone">Phone: {order.shippingAddress.phone}</p>
+                </div>
+              </div>
+
+              {/* RIGHT: INVOICE DETAILS */}
+              <div className="invoice-details-section">
+                <h1 className="invoice-title">{order.isPaid ? 'INVOICE' : 'PROFORMA INVOICE'}</h1>
+
+                <div className="meta-grid">
+                  <p><strong>Order ID:</strong> <span>{order._id.toUpperCase()}</span></p>
+                  <p><strong>Date:</strong> <span>{new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}</span></p>
+                  <p><strong>Status:</strong> <span className={`status-pill ${order.orderStatus.replace(/\s+/g, '-')}`}>{order.orderStatus.toUpperCase()}</span></p>
+                  <p><strong>Currency:</strong> <span>{order.currency || 'USD'}</span></p>
+                </div>
+
+                {order.isPaid && (
+                  <div className="payment-confirmation-meta">
+                    <p><strong>Transaction ID:</strong> <span>{order.paymentResult?.id?.toUpperCase()}</span></p>
+                    <p><strong>Paid On:</strong> <span>{new Date(order.paidAt).toLocaleDateString()} {new Date(order.paidAt).toLocaleTimeString()}</span></p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -153,30 +155,6 @@ const OrderDetailPage = () => {
             </div>
 
             <div className="invoice-footer-grid">
-              <div className="payment-info-col">
-                <h3>PAYMENT INFO</h3>
-                <div className="payment-method-badge">
-                  <FiCreditCard /> {order.paymentMethod}
-                </div>
-                {order.isPaid ? (
-                  <p className="payment-status paid">PAID via {order.paymentMethod}</p>
-                ) : (
-                  <div className="payment-status unpaid-container">
-                    <p className="unpaid-text">PAYMENT PENDING</p>
-                    <p className="unpaid-subtext">This is not a final invoice until payment is received.</p>
-                  </div>
-                )}
-
-                {merchant?.bankDetails?.accountNumber && (
-                  <div className="bank-details-box">
-                    <h4>Bank Transfer Details</h4>
-                    <p><strong>Bank:</strong> {merchant.bankDetails.bankName}</p>
-                    <p><strong>Account:</strong> {merchant.bankDetails.accountNumber}</p>
-                    <p><strong>Name:</strong> {merchant.bankDetails.accountName}</p>
-                    {merchant.bankDetails.swiftCode && <p><strong>SWIFT:</strong> {merchant.bankDetails.swiftCode}</p>}
-                  </div>
-                )}
-              </div>
               <div className="totals-col">
                 <div className="total-row">
                   <span>Subtotal</span>

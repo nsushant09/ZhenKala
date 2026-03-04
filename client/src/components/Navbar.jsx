@@ -55,6 +55,28 @@ const Navbar = () => {
       }
     };
     fetchCategories();
+
+    // Google Translate Initialization
+    window.googleTranslateElementInit = () => {
+      new window.google.translate.TranslateElement(
+        {
+          pageLanguage: 'en',
+          autoDisplay: false,
+          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+        },
+        'google_translate_element'
+      );
+    };
+
+    const addGoogleTranslateScript = () => {
+      if (document.querySelector('script[src*="translate.google.com"]')) return;
+      const script = document.createElement('script');
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.body.appendChild(script);
+    };
+
+    addGoogleTranslateScript();
   }, []);
 
   return (
@@ -64,11 +86,7 @@ const Navbar = () => {
         <div className="px-16">
           <div className="navbar-top-content">
             <div className="language-selector">
-              <select>
-                <option>English</option>
-                <option>Nepali</option>
-                <option>中文</option>
-              </select>
+              <div id="google_translate_element"></div>
             </div>
             <div className="tagline">Where tradition meets transformation</div>
             <div className="currency-selector">

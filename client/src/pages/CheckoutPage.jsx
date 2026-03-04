@@ -84,6 +84,7 @@ const CheckoutPage = () => {
         setLoading(false);
       }
     } else if (status === 'failed' || status === 'canceled') {
+      await api.put(`/orders/${orderId}/fail`);
       setError('Payment failed or was cancelled. Please select a different method or try again.');
     }
   }, [navigate, clearCart]);
