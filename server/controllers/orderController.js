@@ -99,12 +99,14 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
+const { sendOrderConfirmationEmail } = require('../utils/emailService');
+
 // @desc    Update order to paid
 // @route   PUT /api/orders/:id/pay
 // @access  Private
 exports.updateOrderToPaid = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate('user', 'firstName lastName email');
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
@@ -115,6 +117,7 @@ exports.updateOrderToPaid = async (req, res) => {
     if (req.body.totalPrice) order.totalPrice = req.body.totalPrice;
     if (req.body.currency) order.currency = req.body.currency;
 
+    const previouslyPaid = order.isPaid;
     order.isPaid = true;
     order.paidAt = Date.now();
     order.orderStatus = 'processing';
@@ -129,6 +132,12 @@ exports.updateOrderToPaid = async (req, res) => {
     };
 
     const updatedOrder = await order.save();
+
+    // Send confirmation email only if it wasn't already paid (prevent duplicate emails)
+    if (!previouslyPaid) {
+      await sendOrderConfirmationEmail(updatedOrder);
+    }
+
     res.json(updatedOrder);
   } catch (error) {
     res.status(400).json({ message: error.message });

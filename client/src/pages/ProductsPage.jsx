@@ -119,7 +119,7 @@ const ProductsPage = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 border-b border-gray-200 pb-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-serif text-primary mb-2 capitalize">
+            <h1 className="text-3xl md:text-4xl font-secondary text-primary mb-2 capitalize">
               {filters.category === 'all' ? 'All Products' : filters.category}
             </h1>
             <p className="text-gray-500">
@@ -184,7 +184,7 @@ const ProductsPage = () => {
 
             {/* Categories */}
             <div className="mb-8">
-              <h3 className="text-lg font-serif border-b border-gray-200 pb-2 mb-4">Categories</h3>
+              <h3 className="text-lg font-secondary border-b border-gray-200 pb-2 mb-4">Categories</h3>
               <div className="space-y-1">
                 <div
                   className={`py-2 px-2 rounded-md cursor-pointer transition-colors ${filters.category === 'all'
@@ -201,7 +201,7 @@ const ProductsPage = () => {
 
             {/* Price Range */}
             <div className="mb-8">
-              <h3 className="text-lg font-serif border-b border-gray-200 pb-2 mb-4">Price Range</h3>
+              <h3 className="text-lg font-secondary border-b border-gray-200 pb-2 mb-4">Price Range</h3>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2">
                   <input

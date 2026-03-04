@@ -230,224 +230,214 @@ const AdminProductForm = () => {
     const smallInputClasses = "w-full bg-white border border-gray-300 rounded px-2 py-1 text-gray-900 focus:ring-1 focus:ring-secondary outline-none";
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="p-12 bg-background min-h-screen font-primary">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                        <Link to="/admin/products" className="text-gray-500 hover:text-gray-700">
+                <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-12 border-b border-secondary/10 pb-8 gap-6">
+                    <div className="flex items-center gap-6">
+                        <Link to="/admin/products" className="text-secondary hover:opacity-70 transition-opacity">
                             <FiArrowLeft size={24} />
                         </Link>
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            {isEditMode ? 'Edit Product' : 'Add New Product'}
-                        </h1>
+                        <div>
+                            <h1 className="text-5xl font-secondary text-gray-800 garamond italic mb-1">
+                                {isEditMode ? 'Refine Creation' : 'Manifest Art'}
+                            </h1>
+                            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+                                {isEditMode ? 'Evolving the essence of your collection' : 'Bringing new energy into the physical realm'}
+                            </p>
+                        </div>
                     </div>
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="flex items-center gap-2 bg-secondary text-white px-6 py-2.5 rounded-lg hover:bg-opacity-90 transition-colors shadow-sm font-medium"
+                        className="flex items-center gap-3 bg-secondary text-white px-10 py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 shadow-2xl shadow-secondary/10 transition-all active:scale-95 disabled:opacity-50"
                     >
-                        <FiSave />
-                        {loading ? 'Saving...' : 'Save Product'}
+                        {loading ? 'Transmuting...' : <><FiSave /> Seal Manifestation</>}
                     </button>
                 </div>
 
                 {error && (
-                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-                        <p>{error}</p>
+                    <div className="mb-8 p-4 bg-red-50 text-red-600 border border-red-100 rounded-sm text-[10px] font-bold uppercase tracking-widest flex items-center gap-3">
+                        <FiInfo size={16} /> {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-12">
                     {/* Main Info Card */}
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-700 border-b pb-2">
-                            <FiLayers /> Basic Information
-                        </div>
+                    <div className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
+                        <h3 className="text-2xl font-secondary text-gray-800 garamond mb-8 pb-4 border-b border-secondary/5 italic font-medium">Primordial Details</h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="md:col-span-2 space-y-2">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-[10px]">Appellation (Name)</label>
                                 <input
                                     type="text"
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className={inputClasses}
+                                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all"
                                     required
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Lineage (Category)</label>
                                 <select
                                     name="category"
                                     value={formData.category}
                                     onChange={handleChange}
-                                    className={inputClasses}
+                                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all appearance-none"
                                     required
                                 >
-                                    <option value="">Select Category</option>
+                                    <option value="">Select Lineage</option>
                                     {categories.map(cat => (
                                         <option key={cat._id} value={cat._id}>{cat.name}</option>
                                     ))}
                                 </select>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Echoes (Tags)</label>
                                 <input
                                     type="text"
                                     name="tags"
                                     value={formData.tags}
                                     onChange={handleChange}
                                     placeholder="e.g. thangka, gold, handmade"
-                                    className={inputClasses}
+                                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all"
                                 />
                             </div>
 
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description (HTML Supported)</label>
+                            <div className="md:col-span-2 space-y-2">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Narrative (Description)</label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
                                     onChange={handleChange}
-                                    rows="6"
-                                    className={`${inputClasses} font-mono text-sm`}
-                                    placeholder="<p>Product description...</p>"
+                                    rows="8"
+                                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all leading-relaxed"
+                                    placeholder="The story of this creation..."
                                 ></textarea>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-6 mt-6 border-t pt-4">
-                            <label className="flex items-center gap-2 cursor-pointer">
+                        <div className="flex items-center gap-10 mt-10 pt-8 border-t border-secondary/5">
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center transition-all ${formData.isFeatured ? 'bg-secondary border-secondary' : 'bg-white border-gray-200 group-hover:border-secondary'}`}>
+                                    {formData.isFeatured && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                </div>
                                 <input
                                     type="checkbox"
                                     name="isFeatured"
                                     checked={formData.isFeatured}
                                     onChange={handleChange}
-                                    className="w-5 h-5 text-secondary rounded focus:ring-secondary"
+                                    className="hidden"
                                 />
-                                <span className="text-gray-700 font-medium">Featured Product</span>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">Ascended (Featured)</span>
                             </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
+
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center transition-all ${formData.isActive ? 'bg-secondary border-secondary' : 'bg-white border-gray-200 group-hover:border-secondary'}`}>
+                                    {formData.isActive && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                </div>
                                 <input
                                     type="checkbox"
                                     name="isActive"
                                     checked={formData.isActive}
                                     onChange={handleChange}
-                                    className="w-5 h-5 text-secondary rounded focus:ring-secondary"
+                                    className="hidden"
                                 />
-                                <span className="text-gray-700 font-medium">Active (Visible)</span>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">Luminous (Active)</span>
                             </label>
                         </div>
                     </div>
 
-
-
-                    {/* Variants Generator & Manager */}
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center justify-between mb-4 border-b pb-2">
-                            <div className="flex items-center gap-2 text-lg font-semibold text-gray-700">
-                                <FiLayers /> Product Variants
-                            </div>
-                        </div>
-
-                        {/* GENERATOR REMOVED */}
-
-                        {/* Variants Table */}
-                        <div className="flex justify-between items-center mb-2">
-                            <h4 className="text-sm font-bold text-gray-700 uppercase">Active Variants</h4>
+                    {/* Variants Manager */}
+                    <div className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
+                        <div className="flex justify-between items-baseline mb-10 border-b border-secondary/5 pb-6">
+                            <h3 className="text-3xl font-secondary text-gray-800 garamond italic">Manifestations (Variants)</h3>
                             <button
                                 type="button"
                                 onClick={addVariant}
-                                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md transition-colors"
+                                className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-secondary hover:opacity-70 transition-opacity"
                             >
-                                <FiPlus /> Add Manual Row
+                                <FiPlus /> New Manifestation
                             </button>
                         </div>
 
                         {variants.length === 0 ? (
-                            <p className="text-gray-500 italic text-sm p-4 text-center border border-dashed rounded-lg">No variants generated yet. Use the generator above or add manually.</p>
+                            <div className="p-20 text-center border border-dashed border-secondary/10 rounded-sm">
+                                <p className="text-[11px] text-gray-400 italic font-medium">No manifestations have been recorded yet.</p>
+                            </div>
                         ) : (
-                            <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-gray-50 text-gray-700 uppercase font-medium border-b border-gray-200">
-                                        <tr>
-                                            <th className="px-4 py-3">Size</th>
-                                            <th className="px-4 py-3">Color</th>
-                                            <th className="px-4 py-3">Original Price ($)</th>
-                                            <th className="px-4 py-3">Discount (%)</th>
-                                            <th className="px-4 py-3">Selling Price ($)</th>
-                                            <th className="px-4 py-3">Stock</th>
-                                            <th className="px-4 py-3 text-right">Actions</th>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-separate border-spacing-y-2">
+                                    <thead>
+                                        <tr className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                                            <th className="px-4 pb-4">Dimension (Size)</th>
+                                            <th className="px-4 pb-4">Spectrum (Color)</th>
+                                            <th className="px-4 pb-4">Essence ($)</th>
+                                            <th className="px-4 pb-4">Grace (%)</th>
+                                            <th className="px-4 pb-4">Manifested ($)</th>
+                                            <th className="px-4 pb-4">Vitality (Stock)</th>
+                                            <th className="px-4 pb-4 text-right">Rituals</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 bg-white">
+                                    <tbody>
                                         {variants.map((variant, index) => (
-                                            <tr key={index} className="hover:bg-gray-50">
-                                                <td className="px-4 py-2">
+                                            <tr key={index} className="bg-white group">
+                                                <td className="px-4 py-4 first:rounded-l-sm">
                                                     <input
                                                         type="text"
                                                         value={variant.size || ''}
                                                         onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
+                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-full"
                                                         placeholder="Size"
-                                                        className={smallInputClasses}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-4">
                                                     <input
                                                         type="text"
                                                         value={variant.color || ''}
                                                         onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
+                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-full"
                                                         placeholder="Color"
-                                                        className={smallInputClasses}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-4">
                                                     <input
                                                         type="number"
                                                         value={variant.originalPrice || ''}
                                                         onChange={(e) => handleVariantChange(index, 'originalPrice', parseFloat(e.target.value) || 0)}
-                                                        className={smallInputClasses}
-                                                        style={{ width: '100px' }}
-                                                        placeholder="Orig"
+                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-20"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-4">
                                                     <input
                                                         type="number"
                                                         value={variant.discount}
                                                         onChange={(e) => handleVariantChange(index, 'discount', parseFloat(e.target.value) || 0)}
-                                                        className={smallInputClasses}
-                                                        style={{ width: '80px' }}
+                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-16"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        value={variant.price}
-                                                        readOnly
-                                                        className={`${smallInputClasses} bg-gray-50 text-gray-500`}
-                                                        style={{ width: '100px' }}
-                                                    />
+                                                <td className="px-4 py-4 font-bold text-gray-800 text-sm">
+                                                    {variant.price}
                                                 </td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-4">
                                                     <input
                                                         type="number"
                                                         value={variant.stock}
                                                         onChange={(e) => handleVariantChange(index, 'stock', parseInt(e.target.value) || 0)}
-                                                        className={smallInputClasses}
-                                                        style={{ width: '80px' }}
+                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-16"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2 text-right">
+                                                <td className="px-4 py-4 text-right last:rounded-r-sm">
                                                     <button
                                                         type="button"
                                                         onClick={() => removeVariant(index)}
-                                                        className="text-red-400 hover:text-red-600 transition-colors p-1"
+                                                        className="text-gray-300 hover:text-red-500 transition-colors"
                                                     >
-                                                        <FiTrash2 />
+                                                        <FiTrash2 size={16} />
                                                     </button>
                                                 </td>
                                             </tr>
@@ -459,108 +449,79 @@ const AdminProductForm = () => {
                     </div>
 
                     {/* Images Card */}
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center justify-between mb-4 border-b pb-2">
-                            <div className="flex items-center gap-2 text-lg font-semibold text-gray-700">
-                                <FiImage /> Product Images
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <label className="flex items-center gap-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-md transition-colors cursor-pointer">
-                                    <FiUpload /> {uploading ? 'Uploading...' : 'Upload Image'}
-                                    <input
-                                        type="file"
-                                        onChange={uploadFileHandler}
-                                        className="hidden"
-                                        accept="image/*"
-                                        disabled={uploading}
-                                    />
+                    <div className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
+                        <div className="flex justify-between items-baseline mb-10 border-b border-secondary/5 pb-6">
+                            <h3 className="text-3xl font-secondary text-gray-800 garamond italic">Visual Essences (Images)</h3>
+                            <div className="flex gap-6">
+                                <label className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-secondary hover:opacity-70 transition-opacity cursor-pointer">
+                                    <FiUpload /> {uploading ? 'Transmuting...' : 'Upload Image'}
+                                    <input type="file" onChange={uploadFileHandler} className="hidden" accept="image/*" disabled={uploading} />
                                 </label>
                                 <button
                                     type="button"
                                     onClick={addImage}
-                                    className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md transition-colors"
+                                    className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-secondary hover:opacity-70 transition-opacity"
                                 >
-                                    <FiPlus /> Add URL
+                                    <FiPlus /> External Source
                                 </button>
                             </div>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {images.map((img, index) => (
-                                <div key={index} className="flex gap-4 items-start bg-gray-50 p-4 rounded-lg border border-gray-200 group">
-                                    <div className="w-24 h-24 bg-white rounded-md border border-gray-300 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                                <div key={index} className="flex gap-6 p-6 bg-white rounded-sm border border-secondary/5 group relative transition-all hover:shadow-xl hover:shadow-secondary/5">
+                                    <div className="w-32 h-32 bg-background flex items-center justify-center overflow-hidden rounded-sm shrink-0 border border-secondary/5">
                                         {img.url ? (
-                                            <img src={img.url} alt="Preview" className="w-full h-full object-cover" onError={(e) => e.target.src = 'https://placehold.co/100?text=Error'} />
+                                            <img src={img.url} alt="Preview" className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-700" />
                                         ) : (
-                                            <FiImage className="text-gray-300 text-3xl" />
+                                            <FiImage className="text-gray-200 text-4xl" />
                                         )}
                                     </div>
 
-                                    <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="md:col-span-2">
-                                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Image URL</label>
+                                    <div className="flex-grow space-y-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Source Path</label>
                                             <input
                                                 type="text"
                                                 value={img.url}
                                                 onChange={(e) => handleImageChange(index, 'url', e.target.value)}
-                                                placeholder="https://..."
-                                                className={smallInputClasses}
+                                                className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-[10px]"
+                                                placeholder="URL"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Alt Text</label>
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Description</label>
                                             <input
                                                 type="text"
                                                 value={img.alt}
                                                 onChange={(e) => handleImageChange(index, 'alt', e.target.value)}
-                                                placeholder="Description"
-                                                className={smallInputClasses}
+                                                className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-[10px]"
+                                                placeholder="Alt text"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Linked Color</label>
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Spectrum (Linked Color)</label>
                                             <select
                                                 value={img.color || ''}
                                                 onChange={(e) => handleImageChange(index, 'color', e.target.value)}
-                                                className={smallInputClasses}
+                                                className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-[10px] appearance-none"
                                             >
-                                                <option value="">All / None</option>
+                                                <option value="">Full Range / None</option>
                                                 {uniqueColors.map(c => <option key={c} value={c}>{c}</option>)}
                                             </select>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-2 pt-6">
-                                        <button
-                                            type="button"
-                                            onClick={() => moveImage(index, 'up')}
-                                            disabled={index === 0}
-                                            className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                                        >
-                                            ▲
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeImage(index)}
-                                            className="text-red-400 hover:text-red-600 transition-colors"
-                                        >
-                                            <FiTrash2 />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => moveImage(index, 'down')}
-                                            disabled={index === images.length - 1}
-                                            className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                                        >
-                                            ▼
-                                        </button>
+                                    <div className="absolute top-4 right-4 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button type="button" onClick={() => moveImage(index, 'up')} disabled={index === 0} className="text-gray-300 hover:text-secondary disabled:opacity-0"><FiRefreshCw size={12} className="rotate-90" /></button>
+                                        <button type="button" onClick={() => removeImage(index)} className="text-gray-300 hover:text-red-500"><FiTrash2 size={12} /></button>
+                                        <button type="button" onClick={() => moveImage(index, 'down')} disabled={index === images.length - 1} className="text-gray-300 hover:text-secondary disabled:opacity-0"><FiRefreshCw size={12} className="-rotate-90" /></button>
                                     </div>
                                 </div>
                             ))}
-                            {images.length === 0 && <p className="text-gray-500 italic text-center py-4">No images added. Upload or add a URL.</p>}
+                            {images.length === 0 && <p className="text-gray-400 italic text-center py-10 col-span-2 text-sm">No visual essences have been bound yet.</p>}
                         </div>
                     </div>
-
                 </form>
             </div>
         </div>

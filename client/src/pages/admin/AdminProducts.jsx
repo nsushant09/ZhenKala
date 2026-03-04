@@ -67,152 +67,150 @@ const AdminProducts = () => {
   };
 
   return (
-    <div className="p-6 bg-primary min-h-screen">
+    <div className="p-12 bg-background min-h-screen font-primary">
       <div className="max-w-7xl mx-auto">
         <Link
           to="/admin"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-secondary font-bold text-[10px] uppercase tracking-widest mb-10 hover:opacity-70 transition-opacity"
         >
-          <FiArrowLeft /> Back to Dashboard
+          <FiArrowLeft /> Back to Sanctuary
         </Link>
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-12 border-b border-secondary/10 pb-6 gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-            <p className="text-gray-500 text-sm">
-              Manage your product catalog
+            <h1 className="text-5xl font-secondary text-gray-800 garamond italic mb-1">Artistic Inventory</h1>
+            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+              Curating the collection of sacred objects
             </p>
           </div>
 
           <Link
             to="/admin/products/new"
-            className="flex items-center gap-2 bg-secondary text-white px-5 py-2.5 rounded-lg hover:bg-opacity-90 shadow-sm  w-fit"
+            className="flex items-center gap-3 bg-secondary text-white px-8 py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 shadow-xl shadow-secondary/10 transition-all hover:-translate-y-1 active:scale-95 w-fit"
           >
-            <FiPlus /> Add Product
+            <FiPlus size={14} /> Manifest New Art
           </Link>
         </div>
 
         {/* Filters */}
-        <div className="bg-surface p-4 rounded-xl shadow-lg border border-black/10 mb-6">
+        <div className="bg-white/40 backdrop-blur-md p-6 rounded-sm border border-secondary/5 mb-10 shadow-sm max-w-xl">
           <form
             onSubmit={handleSearch}
-            className="relative flex-grow max-w-md"
+            className="relative"
           >
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Search by collection name..."
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
-              className="w-full pl-4 pr-10 py-2 bg-primary border border-black/10 rounded-lg text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all"
+              className="w-full pl-4 pr-12 py-3 bg-white border border-gray-100 rounded-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-secondary transition-all"
             />
             <button
               type="submit"
-              className="absolute right-0 top-0 bottom-0 px-3 text-gray-400 hover:text-secondary transition-colors"
+              className="absolute right-0 top-0 bottom-0 px-4 text-gray-300 hover:text-secondary transition-colors"
             >
-              <FiSearch size={20} />
+              <FiSearch size={18} />
             </button>
           </form>
         </div>
 
         {/* Product Table */}
-        <div className="bg-surface rounded-xl shadow-lg border border-black/10 overflow-hidden">
+        <div className="bg-white/60 backdrop-blur-lg rounded-sm border border-secondary/5 overflow-hidden shadow-2xl">
           {loading ? (
-            <div className="p-12 text-center text-gray-400">
-              Loading products...
+            <div className="p-32 text-center">
+              <div className="animate-pulse flex flex-col items-center">
+                <div className="w-12 h-12 bg-secondary/10 rounded-full mb-4"></div>
+                <p className="garamond italic text-xl text-gray-400">Restoring the scrolls...</p>
+              </div>
             </div>
           ) : products.length === 0 ? (
-            <div className="p-12 text-center text-gray-400">
-              No products found.
+            <div className="p-32 text-center">
+              <p className="garamond italic text-xl text-gray-400">The gallery currently holds no such creations.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-primary text-black uppercase text-xs font-semibold tracking-wider border-b border-black/10">
+                <thead className="bg-secondary text-white uppercase text-[10px] font-bold tracking-[0.2em]">
                   <tr>
-                    <th className="px-6 py-4">ID</th>
-                    <th className="px-6 py-4">Image</th>
-                    <th className="px-6 py-4">Product Name</th>
-                    <th className="px-6 py-4">Category</th>
-                    <th className="px-6 py-4">Original Price</th>
-                    <th className="px-6 py-4">Selling Price</th>
-                    <th className="px-6 py-4">Stock</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-8 py-5">Ref</th>
+                    <th className="px-8 py-5">Visual</th>
+                    <th className="px-8 py-5">Creation Name</th>
+                    <th className="px-8 py-5">Collection</th>
+                    <th className="px-8 py-5">Essence (Cost)</th>
+                    <th className="px-8 py-5">Value (Sale)</th>
+                    <th className="px-8 py-5">Manifestation (Stock)</th>
+                    <th className="px-8 py-5 text-right">Actions</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-primary-light/10">
+                <tbody className="divide-y divide-secondary/5 font-primary">
                   {products.map((product) => (
                     <tr
                       key={product._id}
-                      className="hover:bg-black/5 transition-colors"
+                      className="hover:bg-white/40 transition-colors group"
                     >
-                      <td className="px-6 py-3 font-mono text-xs text-gray-500">
+                      <td className="px-8 py-6 font-mono text-[11px] text-gray-400 uppercase">
                         {product._id.substring(product._id.length - 6)}
                       </td>
 
-                      <td className="px-6 py-3">
-                        <div className="w-12 h-12 rounded-lg bg-white overflow-hidden border border-black/10">
+                      <td className="px-8 py-6">
+                        <div className="w-14 h-18 bg-white p-1 border border-gray-100 shadow-sm overflow-hidden group-hover:scale-105 transition-transform duration-500">
                           <img
-                            src={
-                              product.images[0]?.url ||
-                              'https://placehold.co/100?text=No+Img'
-                            }
+                            src={product.images[0]?.url || 'https://placehold.co/100?text=No+Img'}
                             alt={product.name}
                             className="w-full h-full object-cover"
                           />
                         </div>
                       </td>
 
-                      <td className="px-6 py-3 font-medium text-black">
+                      <td className="px-8 py-6 font-bold text-gray-800 text-sm">
                         {product.name}
                       </td>
 
-                      <td className="px-6 py-3 text-gray-400">
-                        {product.category?.name || 'Uncategorized'}
+                      <td className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        {product.category?.name || 'Sacred Misc.'}
                       </td>
 
-                      <td className="px-6 py-3 text-gray-400 line-through">
+                      <td className="px-8 py-6 text-gray-400 text-xs line-through italic">
                         {product.originalPrice ? `$${product.originalPrice.toLocaleString()}` : '-'}
                       </td>
 
-                      <td className="px-6 py-3 font-medium text-black">
+                      <td className="px-8 py-6 font-bold text-secondary text-sm">
                         ${product.price.toLocaleString()}
                       </td>
 
-                      <td className="px-6 py-3">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${product.stock > 0
-                            ? 'bg-green-500/10 text-green-400'
-                            : 'bg-red-500/10 text-red-400'
-                            }`}
-                        >
-                          {product.stock > 0
-                            ? `${product.stock} in stock`
-                            : 'Out of Stock'}
-                        </span>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
+                            {product.stock > 0 ? `${product.stock} Units` : 'Vanished'}
+                          </span>
+                        </div>
                       </td>
 
-                      <td className="px-6 py-3 text-right flex items-center justify-end gap-3">
-                        <Link
-                          to={`/admin/products/${product._id}/edit`}
-                          className="text-blue-400 hover:text-blue-300 transition-colors p-1"
-                          title="Edit"
-                        >
-                          <FiEdit2 size={18} />
-                        </Link>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link
+                            to={`/admin/products/${product._id}/edit`}
+                            className="text-gray-400 hover:text-secondary transition-all p-2 rounded-full hover:bg-secondary/5"
+                            title="Refine Creation"
+                          >
+                            <FiEdit2 size={16} />
+                          </Link>
 
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            initiateDelete(product);
-                          }}
-                          className="text-red-400 hover:text-red-300 transition-colors p-1"
-                          title="Delete"
-                        >
-                          <FiTrash2 size={18} />
-                        </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              initiateDelete(product);
+                            }}
+                            className="text-gray-400 hover:text-red-600 transition-all p-2 rounded-full hover:bg-red-50"
+                            title="Vanish Creation"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -223,27 +221,27 @@ const AdminProducts = () => {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 p-4 border-t border-primary-light/20">
+            <div className="flex justify-center items-center gap-6 p-8 border-t border-secondary/5 bg-white/40">
               <button
                 type="button"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-primary-light/30 rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-light/10 text-sm font-medium text-gray-300"
+                className="w-10 h-10 flex items-center justify-center border border-secondary/10 rounded-full disabled:opacity-20 hover:bg-secondary hover:text-white transition-all text-secondary"
               >
-                Previous
+                <FiArrowLeft size={14} />
               </button>
 
-              <span className="text-sm text-gray-400">
-                Page {page} of {totalPages}
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Cycle {page} of {totalPages}
               </span>
 
               <button
                 type="button"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 border border-primary-light/30 rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-light/10 text-sm font-medium text-gray-300"
+                className="w-10 h-10 flex items-center justify-center border border-secondary/10 rounded-full disabled:opacity-20 hover:bg-secondary hover:text-white transition-all text-secondary"
               >
-                Next
+                <FiArrowLeft size={14} className="rotate-180" />
               </button>
             </div>
           )}

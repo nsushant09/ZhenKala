@@ -90,114 +90,119 @@ const AdminUsers = () => {
   );
 
   return (
-    <div className="p-6 bg-primary min-h-screen">
+    <div className="p-12 bg-background min-h-screen font-primary">
       <div className="max-w-7xl mx-auto">
         <Link
           to="/admin"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-secondary font-bold text-[10px] uppercase tracking-widest mb-10 hover:opacity-70 transition-opacity"
         >
-          <FiArrowLeft /> Back to Dashboard
+          <FiArrowLeft /> Back to Sanctuary
         </Link>
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-12 border-b border-secondary/10 pb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-            <p className="text-gray-500 text-sm">
-              Manage customer accounts and administrative roles
+            <h1 className="text-5xl font-secondary text-gray-800 garamond italic mb-1">Art Patrons</h1>
+            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+              Managing the community of collectors and curators
             </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-surface p-4 rounded-xl shadow-lg border border-black/10 mb-6 flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-grow max-w-md w-full">
+        <div className="bg-white/40 backdrop-blur-md p-6 rounded-sm border border-secondary/5 mb-10 shadow-sm max-w-xl">
+          <div className="relative">
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search by patron name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-4 pr-10 py-2 bg-primary border border-black/10 rounded-lg text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all"
+              className="w-full pl-4 pr-10 py-3 bg-white border border-gray-100 rounded-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-secondary transition-all"
             />
-            <FiSearch className="absolute right-3 top-3 text-gray-400" size={18} />
+            <FiSearch className="absolute right-3 top-3.5 text-gray-300" size={16} />
           </div>
         </div>
 
         {/* Users Table */}
-        <div className="bg-surface rounded-xl shadow-lg border border-black/10 overflow-hidden">
+        <div className="bg-white/60 backdrop-blur-lg rounded-sm border border-secondary/5 overflow-hidden shadow-2xl">
           {loading ? (
-            <div className="p-12 text-center text-gray-400">
-              Loading users...
+            <div className="p-32 text-center">
+              <div className="animate-pulse flex flex-col items-center">
+                <div className="w-12 h-12 bg-secondary/10 rounded-full mb-4"></div>
+                <p className="garamond italic text-xl text-gray-400">Summoning the scrolls...</p>
+              </div>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="p-12 text-center text-gray-400">
-              No users found.
+            <div className="p-32 text-center">
+              <p className="garamond italic text-xl text-gray-400">No souls found in this registry.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-primary text-black uppercase text-xs font-semibold tracking-wider border-b border-black/10">
+                <thead className="bg-secondary text-white uppercase text-[10px] font-bold tracking-[0.2em]">
                   <tr>
-                    <th className="px-6 py-4">User</th>
-                    <th className="px-6 py-4">Email</th>
-                    <th className="px-6 py-4">Role</th>
-                    <th className="px-6 py-4">Joined</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-8 py-5">Patron</th>
+                    <th className="px-8 py-5">Electronic Mail</th>
+                    <th className="px-8 py-5">Dharma Role</th>
+                    <th className="px-8 py-5">Ascension Date</th>
+                    <th className="px-8 py-5 text-right">Actions</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-primary-light/10">
+                <tbody className="divide-y divide-secondary/5">
                   {filteredUsers.map((user) => (
                     <tr
                       key={user._id}
-                      className="hover:bg-black/5 transition-colors"
+                      className="hover:bg-white/40 transition-colors group"
                     >
-                      <td className="px-6 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
-                            <FiUser size={16} />
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg shadow-secondary/20 font-bold group-hover:scale-110 transition-transform">
+                            {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                           </div>
-                          <span className="font-medium text-black">
+                          <span className="font-bold text-gray-800 text-sm italic garamond text-lg">
                             {user.firstName} {user.lastName}
                           </span>
                         </div>
                       </td>
 
-                      <td className="px-6 py-3 text-gray-600">
+                      <td className="px-8 py-6 text-gray-500 text-sm">
                         {user.email}
                       </td>
 
-                      <td className="px-6 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-500/10 text-purple-600' : 'bg-blue-500/10 text-blue-600'}`}>
-                          {user.role.toUpperCase()}
+                      <td className="px-8 py-6">
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${user.role === 'admin' ? 'border-purple-200 text-purple-600 bg-purple-50' : 'border-secondary/20 text-secondary bg-secondary/5'}`}>
+                          {user.role === 'admin' ? 'Curator (Admin)' : 'Collector (User)'}
                         </span>
                       </td>
 
-                      <td className="px-6 py-3 text-gray-600 text-sm">
-                        {new Date(user.createdAt).toLocaleDateString()}
+                      <td className="px-8 py-6 text-gray-400 text-xs font-bold uppercase tracking-widest">
+                        {new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
 
-                      <td className="px-6 py-3 text-right flex items-center justify-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => openRoleModal(user)}
-                          className="text-blue-500 hover:text-blue-600 transition-colors p-1"
-                          title="Edit Role"
-                        >
-                          <FiEdit size={18} />
-                        </button>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => openRoleModal(user)}
+                            className="text-gray-400 hover:text-secondary hover:bg-secondary/5 transition-all p-2 rounded-full"
+                            title="Edit Role"
+                          >
+                            <FiEdit size={16} />
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUserToDelete(user);
-                            setShowDeleteModal(true);
-                          }}
-                          className="text-red-500 hover:text-red-600 transition-colors p-1"
-                          title="Delete User"
-                        >
-                          <FiTrash2 size={18} />
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserToDelete(user);
+                              setShowDeleteModal(true);
+                            }}
+                            className="text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all p-2 rounded-full"
+                            title="Vanish User"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

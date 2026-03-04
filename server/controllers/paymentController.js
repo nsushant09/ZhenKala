@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const PaymentConfig = require('../models/PaymentConfig');
 const stripeLib = require('stripe');
+const { sendOrderConfirmationEmail } = require('../utils/emailService');
 
 // Helper to get active configuration
 const getActiveConfig = async () => {
@@ -55,7 +56,7 @@ exports.handleStripeWebhook = async (req, res) => {
             // Extract order ID from metadata
             const orderId = paymentIntent.metadata.orderId;
             if (orderId) {
-                const order = await Order.findById(orderId);
+                const order = await Order.findById(orderId).populate('user', 'firstName lastName email');
                 if (order && !order.isPaid) {
                     order.isPaid = true;
                     order.paidAt = Date.now();
@@ -66,7 +67,11 @@ exports.handleStripeWebhook = async (req, res) => {
                         update_time: new Date().toISOString(),
                         email_address: paymentIntent.receipt_email || '',
                     };
-                    await order.save();
+                    const savedOrder = await order.save();
+
+                    // Send email
+                    await sendOrderConfirmationEmail(savedOrder);
+
                     console.log(`Order ${orderId} marked as PAID via Webhook.`);
                 }
             }
@@ -133,8 +138,7 @@ exports.createStripePaymentIntent = async (req, res) => {
         if (paymentMethodType === 'Alipay' || paymentMethodType === 'WeChat Pay') {
             intentOptions.payment_method_types = methodTypes;
         } else {
-            // Use explicit types to avoid Link prompts while keeping Card/Wallets
-            intentOptions.payment_method_types = ['card'];
+            intentOptions.automatic_payment_methods = { enabled: true };
         }
 
         const paymentIntent = await stripe.paymentIntents.create(intentOptions);

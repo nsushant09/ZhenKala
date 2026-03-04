@@ -313,7 +313,7 @@ const CheckoutPage = () => {
                 <div className="payment-category">
                   <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Digital Wallets</h4>
                   <div className="payment-options-grid">
-                    {['Apple Pay', 'Google Pay', 'PayPal'].map((method) => (
+                    {['PayPal'].map((method) => (
                       <label key={method} className={`payment-card ${paymentMethod === method ? 'active' : ''}`}>
                         <input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} />
                         <div className="payment-info">
