@@ -239,11 +239,11 @@ const AdminProductForm = () => {
                             <FiArrowLeft size={24} />
                         </Link>
                         <div>
-                            <h1 className="text-5xl font-secondary text-gray-800 garamond italic mb-1">
-                                {isEditMode ? 'Refine Creation' : 'Manifest Art'}
+                            <h1 className="text-5xl font-secondary text-gray-800 garamond mb-1">
+                                {isEditMode ? 'Edit Product' : 'Add Product'}
                             </h1>
                             <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-                                {isEditMode ? 'Evolving the essence of your collection' : 'Bringing new energy into the physical realm'}
+                                {isEditMode ? 'Modify existing product details' : 'Create a new product catalog entry'}
                             </p>
                         </div>
                     </div>
@@ -252,7 +252,7 @@ const AdminProductForm = () => {
                         disabled={loading}
                         className="flex items-center gap-3 bg-secondary text-white px-10 py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 shadow-2xl shadow-secondary/10 transition-all active:scale-95 disabled:opacity-50"
                     >
-                        {loading ? 'Transmuting...' : <><FiSave /> Seal Manifestation</>}
+                        {loading ? 'Saving...' : <><FiSave /> Save Product</>}
                     </button>
                 </div>
 
@@ -265,11 +265,11 @@ const AdminProductForm = () => {
                 <form onSubmit={handleSubmit} className="space-y-12">
                     {/* Main Info Card */}
                     <div className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
-                        <h3 className="text-2xl font-secondary text-gray-800 garamond mb-8 pb-4 border-b border-secondary/5 italic font-medium">Primordial Details</h3>
+                        <h3 className="text-2xl font-secondary text-gray-800 garamond mb-8 pb-4 border-b border-secondary/5 font-medium">Basic Information</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="md:col-span-2 space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-[10px]">Appellation (Name)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Product Name</label>
                                 <input
                                     type="text"
                                     name="name"
@@ -281,7 +281,7 @@ const AdminProductForm = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Lineage (Category)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Category</label>
                                 <select
                                     name="category"
                                     value={formData.category}
@@ -289,7 +289,7 @@ const AdminProductForm = () => {
                                     className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all appearance-none"
                                     required
                                 >
-                                    <option value="">Select Lineage</option>
+                                    <option value="">Select Category</option>
                                     {categories.map(cat => (
                                         <option key={cat._id} value={cat._id}>{cat.name}</option>
                                     ))}
@@ -297,7 +297,7 @@ const AdminProductForm = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Echoes (Tags)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tags</label>
                                 <input
                                     type="text"
                                     name="tags"
@@ -309,14 +309,14 @@ const AdminProductForm = () => {
                             </div>
 
                             <div className="md:col-span-2 space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Narrative (Description)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Description</label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
                                     onChange={handleChange}
                                     rows="8"
                                     className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all leading-relaxed"
-                                    placeholder="The story of this creation..."
+                                    placeholder="Detailed product description..."
                                 ></textarea>
                             </div>
                         </div>
@@ -333,7 +333,7 @@ const AdminProductForm = () => {
                                     onChange={handleChange}
                                     className="hidden"
                                 />
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">Ascended (Featured)</span>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">Featured</span>
                             </label>
 
                             <label className="flex items-center gap-3 cursor-pointer group">
@@ -347,7 +347,7 @@ const AdminProductForm = () => {
                                     onChange={handleChange}
                                     className="hidden"
                                 />
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">Luminous (Active)</span>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">Active</span>
                             </label>
                         </div>
                     </div>
@@ -355,32 +355,32 @@ const AdminProductForm = () => {
                     {/* Variants Manager */}
                     <div className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
                         <div className="flex justify-between items-baseline mb-10 border-b border-secondary/5 pb-6">
-                            <h3 className="text-3xl font-secondary text-gray-800 garamond italic">Manifestations (Variants)</h3>
+                            <h3 className="text-3xl font-secondary text-gray-800 garamond italic">Product Variants</h3>
                             <button
                                 type="button"
                                 onClick={addVariant}
                                 className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-secondary hover:opacity-70 transition-opacity"
                             >
-                                <FiPlus /> New Manifestation
+                                <FiPlus /> Add Variant
                             </button>
                         </div>
 
                         {variants.length === 0 ? (
                             <div className="p-20 text-center border border-dashed border-secondary/10 rounded-sm">
-                                <p className="text-[11px] text-gray-400 italic font-medium">No manifestations have been recorded yet.</p>
+                                <p className="text-[11px] text-gray-400 italic font-medium">No variants added yet.</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-separate border-spacing-y-2">
                                     <thead>
                                         <tr className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                                            <th className="px-4 pb-4">Dimension (Size)</th>
-                                            <th className="px-4 pb-4">Spectrum (Color)</th>
-                                            <th className="px-4 pb-4">Essence ($)</th>
-                                            <th className="px-4 pb-4">Grace (%)</th>
-                                            <th className="px-4 pb-4">Manifested ($)</th>
-                                            <th className="px-4 pb-4">Vitality (Stock)</th>
-                                            <th className="px-4 pb-4 text-right">Rituals</th>
+                                            <th className="px-4 pb-4">Size</th>
+                                            <th className="px-4 pb-4">Color</th>
+                                            <th className="px-4 pb-4">Orig. Price ($)</th>
+                                            <th className="px-4 pb-4">Discount (%)</th>
+                                            <th className="px-4 pb-4">Final Price ($)</th>
+                                            <th className="px-4 pb-4">Stock</th>
+                                            <th className="px-4 pb-4 text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -451,10 +451,10 @@ const AdminProductForm = () => {
                     {/* Images Card */}
                     <div className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
                         <div className="flex justify-between items-baseline mb-10 border-b border-secondary/5 pb-6">
-                            <h3 className="text-3xl font-secondary text-gray-800 garamond italic">Visual Essences (Images)</h3>
+                            <h3 className="text-3xl font-secondary text-gray-800 garamond">Product Images</h3>
                             <div className="flex gap-6">
                                 <label className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-secondary hover:opacity-70 transition-opacity cursor-pointer">
-                                    <FiUpload /> {uploading ? 'Transmuting...' : 'Upload Image'}
+                                    <FiUpload /> {uploading ? 'Uploading...' : 'Upload Image'}
                                     <input type="file" onChange={uploadFileHandler} className="hidden" accept="image/*" disabled={uploading} />
                                 </label>
                                 <button
@@ -462,7 +462,7 @@ const AdminProductForm = () => {
                                     onClick={addImage}
                                     className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-secondary hover:opacity-70 transition-opacity"
                                 >
-                                    <FiPlus /> External Source
+                                    <FiPlus /> Add Image URL
                                 </button>
                             </div>
                         </div>
@@ -480,7 +480,7 @@ const AdminProductForm = () => {
 
                                     <div className="flex-grow space-y-4">
                                         <div className="space-y-1">
-                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Source Path</label>
+                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Image URL</label>
                                             <input
                                                 type="text"
                                                 value={img.url}
@@ -490,7 +490,7 @@ const AdminProductForm = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Description</label>
+                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Alt Text</label>
                                             <input
                                                 type="text"
                                                 value={img.alt}
@@ -500,13 +500,13 @@ const AdminProductForm = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Spectrum (Linked Color)</label>
+                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Linked Color</label>
                                             <select
                                                 value={img.color || ''}
                                                 onChange={(e) => handleImageChange(index, 'color', e.target.value)}
                                                 className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-[10px] appearance-none"
                                             >
-                                                <option value="">Full Range / None</option>
+                                                <option value="">None</option>
                                                 {uniqueColors.map(c => <option key={c} value={c}>{c}</option>)}
                                             </select>
                                         </div>
@@ -519,7 +519,7 @@ const AdminProductForm = () => {
                                     </div>
                                 </div>
                             ))}
-                            {images.length === 0 && <p className="text-gray-400 italic text-center py-10 col-span-2 text-sm">No visual essences have been bound yet.</p>}
+                            {images.length === 0 && <p className="text-gray-400 italic text-center py-10 col-span-2 text-sm">No images added yet.</p>}
                         </div>
                     </div>
                 </form>

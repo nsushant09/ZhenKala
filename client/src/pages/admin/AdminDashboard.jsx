@@ -7,17 +7,17 @@ const AdminDashboard = () => {
     <div className="p-12 bg-background min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="mb-12 border-b border-secondary/10 pb-8">
-          <h1 className="text-5xl font-secondary text-gray-800 garamond mb-2 italic">Admin Sanctuary</h1>
-          <p className="text-secondary text-xs font-bold uppercase tracking-[0.3em] opacity-80">Overseeing the Art & Craft of ZhenKala</p>
+          <h1 className="text-5xl font-secondary text-gray-800 garamond mb-2">Admin Dashboard</h1>
+          <p className="text-secondary text-xs font-bold uppercase tracking-[0.3em] opacity-80">Management & Controls</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {[
-            { to: "/admin/products", icon: FiBox, title: "Artistic Inventory", desc: "Curate your collection of thangkas, handicrafts, and sacred objects.", label: "Curate" },
-            { to: "/admin/orders", icon: FiShoppingBag, title: "Order Flow", desc: "Monitor sacred acquisitions and track the journey of your products.", label: "Fulfill" },
-            { to: "/admin/users", icon: FiUsers, title: "Art Patrons", desc: "Manage your community of collectors and manage their access.", label: "Connect" },
-            { to: "/admin/settings", icon: FiSettings, title: "Business Essence", desc: "Refine your merchant details, banking, and invoice identity.", label: "Refine" },
-            { to: "/admin/payment", icon: FiCreditCard, title: "Gateway Portals", desc: "Oversee the digital flow of energy via Stripe, PayPal, and more.", label: "Flow" },
+            { to: "/admin/products", icon: FiBox, title: "Products", desc: "Manage inventory, update categories, and track stock levels.", label: "Inventory" },
+            { to: "/admin/orders", icon: FiShoppingBag, title: "Orders", desc: "Track customer orders, process payments, and manage shipping.", label: "Sales" },
+            { to: "/admin/users", icon: FiUsers, title: "Users", desc: "Manage user accounts, administrative roles, and permissions.", label: "Accounts" },
+            { to: "/admin/settings", icon: FiSettings, title: "Merchant Settings", desc: "Update business info, bank details, and invoice preferences.", label: "Settings" },
+            { to: "/admin/payment", icon: FiCreditCard, title: "Payments", desc: "Configure Stripe, PayPal, and manage payment gateways.", label: "Finances" },
           ].map((item, idx) => (
             <Link
               key={idx}
@@ -37,7 +37,7 @@ const AdminDashboard = () => {
               <p className="text-gray-500 text-sm leading-relaxed relative z-10">{item.desc}</p>
 
               <div className="mt-8 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
-                <span className="text-secondary font-bold text-[10px] uppercase tracking-widest border-b border-secondary pb-1">Enter Portal</span>
+                <span className="text-secondary font-bold text-[10px] uppercase tracking-widest border-b border-secondary pb-1">Manage</span>
               </div>
             </Link>
           ))}
@@ -46,15 +46,15 @@ const AdminDashboard = () => {
         {/* Overview Stats */}
         <div className="mt-24">
           <div className="flex items-baseline justify-between mb-10 border-b border-secondary/5 pb-4">
-            <h2 className="text-3xl font-secondary text-gray-800 garamond italic">Insight & Harmony</h2>
-            <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">Business Analytics</span>
+            <h2 className="text-3xl font-secondary text-gray-800 garamond">Overview Stats</h2>
+            <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">Analytics</span>
           </div>
 
           <div className="bg-white/20 backdrop-blur-md p-16 rounded-sm border border-secondary/5 text-center text-gray-400">
             <div className="max-w-md mx-auto">
               <div className="w-16 h-[1px] bg-secondary/20 mx-auto mb-8"></div>
-              <p className="italic garamond text-xl text-gray-500 mb-2">"Vision is the art of seeing things invisible."</p>
-              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-300">Statistics will appear as your collection grows</p>
+              <p className="text-lg text-gray-500 mb-2 font-medium">No active data found.</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-300">Statistics will appear here as you begin receiving orders.</p>
             </div>
           </div>
         </div>

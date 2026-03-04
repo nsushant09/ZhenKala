@@ -62,6 +62,7 @@ const CartPage = () => {
             <Link
               to="/products"
               className="inline-flex items-center gap-3 bg-secondary text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-opacity-90 transition-all hover:scale-105 duration-300 shadow-xl"
+              style={{ color: "white" }}
             >
               Explore Collection <FiArrowRight />
             </Link>
@@ -112,9 +113,9 @@ const CartPage = () => {
                           </div>
                           <button
                             onClick={() => handleRemove(itemId)}
-                            className="text-gray-400 hover:text-secondary transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider w-fit"
+                            className="text-gray-400 hover:text-secondary transition-colors duration-300 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider w-fit group/remove"
                           >
-                            <FiTrash2 size={12} /> Remove Item
+                            <FiTrash2 size={12} className="group-hover/remove:text-secondary" /> Remove Item
                           </button>
                         </div>
                       </div>

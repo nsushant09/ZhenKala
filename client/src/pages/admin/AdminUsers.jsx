@@ -96,15 +96,15 @@ const AdminUsers = () => {
           to="/admin"
           className="inline-flex items-center gap-2 text-secondary font-bold text-[10px] uppercase tracking-widest mb-10 hover:opacity-70 transition-opacity"
         >
-          <FiArrowLeft /> Back to Sanctuary
+          <FiArrowLeft /> Back to Dashboard
         </Link>
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-12 border-b border-secondary/10 pb-6 gap-4">
           <div>
-            <h1 className="text-5xl font-secondary text-gray-800 garamond italic mb-1">Art Patrons</h1>
+            <h1 className="text-5xl font-secondary text-gray-800 garamond mb-1">User Management</h1>
             <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-              Managing the community of collectors and curators
+              Manage registered user accounts and permissions
             </p>
           </div>
         </div>
@@ -114,7 +114,7 @@ const AdminUsers = () => {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search by patron name or email..."
+              placeholder="Search by name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-4 pr-10 py-3 bg-white border border-gray-100 rounded-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-secondary transition-all"
@@ -129,22 +129,22 @@ const AdminUsers = () => {
             <div className="p-32 text-center">
               <div className="animate-pulse flex flex-col items-center">
                 <div className="w-12 h-12 bg-secondary/10 rounded-full mb-4"></div>
-                <p className="garamond italic text-xl text-gray-400">Summoning the scrolls...</p>
+                <p className="garamond text-xl text-gray-400">Loading users...</p>
               </div>
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-32 text-center">
-              <p className="garamond italic text-xl text-gray-400">No souls found in this registry.</p>
+              <p className="garamond text-xl text-gray-400">No users found.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-secondary text-white uppercase text-[10px] font-bold tracking-[0.2em]">
                   <tr>
-                    <th className="px-8 py-5">Patron</th>
-                    <th className="px-8 py-5">Electronic Mail</th>
-                    <th className="px-8 py-5">Dharma Role</th>
-                    <th className="px-8 py-5">Ascension Date</th>
+                    <th className="px-8 py-5">User</th>
+                    <th className="px-8 py-5">Email Address</th>
+                    <th className="px-8 py-5">Access Role</th>
+                    <th className="px-8 py-5">Join Date</th>
                     <th className="px-8 py-5 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -160,7 +160,7 @@ const AdminUsers = () => {
                           <div className="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg shadow-secondary/20 font-bold group-hover:scale-110 transition-transform">
                             {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                           </div>
-                          <span className="font-bold text-gray-800 text-sm italic garamond text-lg">
+                          <span className="font-bold text-gray-800 text-sm">
                             {user.firstName} {user.lastName}
                           </span>
                         </div>
@@ -172,7 +172,7 @@ const AdminUsers = () => {
 
                       <td className="px-8 py-6">
                         <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${user.role === 'admin' ? 'border-purple-200 text-purple-600 bg-purple-50' : 'border-secondary/20 text-secondary bg-secondary/5'}`}>
-                          {user.role === 'admin' ? 'Curator (Admin)' : 'Collector (User)'}
+                          {user.role === 'admin' ? 'Administrator' : 'General User'}
                         </span>
                       </td>
 
@@ -198,7 +198,7 @@ const AdminUsers = () => {
                               setShowDeleteModal(true);
                             }}
                             className="text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all p-2 rounded-full"
-                            title="Vanish User"
+                            title="Delete User"
                           >
                             <FiTrash2 size={16} />
                           </button>

@@ -73,15 +73,15 @@ const AdminProducts = () => {
           to="/admin"
           className="inline-flex items-center gap-2 text-secondary font-bold text-[10px] uppercase tracking-widest mb-10 hover:opacity-70 transition-opacity"
         >
-          <FiArrowLeft /> Back to Sanctuary
+          <FiArrowLeft /> Back to Dashboard
         </Link>
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-12 border-b border-secondary/10 pb-6 gap-6">
           <div>
-            <h1 className="text-5xl font-secondary text-gray-800 garamond italic mb-1">Artistic Inventory</h1>
+            <h1 className="text-5xl font-secondary text-gray-800 garamond mb-1">Product Catalog</h1>
             <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-              Curating the collection of sacred objects
+              Manage the collection of store products
             </p>
           </div>
 
@@ -89,7 +89,7 @@ const AdminProducts = () => {
             to="/admin/products/new"
             className="flex items-center gap-3 bg-secondary text-white px-8 py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 shadow-xl shadow-secondary/10 transition-all hover:-translate-y-1 active:scale-95 w-fit"
           >
-            <FiPlus size={14} /> Manifest New Art
+            <FiPlus size={14} /> Add New Product
           </Link>
         </div>
 
@@ -101,17 +101,12 @@ const AdminProducts = () => {
           >
             <input
               type="text"
-              placeholder="Search by collection name..."
+              placeholder="Search by product name..."
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="w-full pl-4 pr-12 py-3 bg-white border border-gray-100 rounded-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-secondary transition-all"
             />
-            <button
-              type="submit"
-              className="absolute right-0 top-0 bottom-0 px-4 text-gray-300 hover:text-secondary transition-colors"
-            >
-              <FiSearch size={18} />
-            </button>
+            <FiSearch className="absolute right-4 top-3.5 text-gray-300" size={18} />
           </form>
         </div>
 
@@ -121,25 +116,25 @@ const AdminProducts = () => {
             <div className="p-32 text-center">
               <div className="animate-pulse flex flex-col items-center">
                 <div className="w-12 h-12 bg-secondary/10 rounded-full mb-4"></div>
-                <p className="garamond italic text-xl text-gray-400">Restoring the scrolls...</p>
+                <p className="garamond text-xl text-gray-400">Loading products...</p>
               </div>
             </div>
           ) : products.length === 0 ? (
             <div className="p-32 text-center">
-              <p className="garamond italic text-xl text-gray-400">The gallery currently holds no such creations.</p>
+              <p className="garamond text-xl text-gray-400">No products found in the database.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-secondary text-white uppercase text-[10px] font-bold tracking-[0.2em]">
                   <tr>
-                    <th className="px-8 py-5">Ref</th>
-                    <th className="px-8 py-5">Visual</th>
-                    <th className="px-8 py-5">Creation Name</th>
-                    <th className="px-8 py-5">Collection</th>
-                    <th className="px-8 py-5">Essence (Cost)</th>
-                    <th className="px-8 py-5">Value (Sale)</th>
-                    <th className="px-8 py-5">Manifestation (Stock)</th>
+                    <th className="px-8 py-5">Ref ID</th>
+                    <th className="px-8 py-5">Image</th>
+                    <th className="px-8 py-5">Product Name</th>
+                    <th className="px-8 py-5">Category</th>
+                    <th className="px-8 py-5">Original Price</th>
+                    <th className="px-8 py-5">Sale Price</th>
+                    <th className="px-8 py-5">Stock Level</th>
                     <th className="px-8 py-5 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -169,10 +164,10 @@ const AdminProducts = () => {
                       </td>
 
                       <td className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                        {product.category?.name || 'Sacred Misc.'}
+                        {product.category?.name || 'General'}
                       </td>
 
-                      <td className="px-8 py-6 text-gray-400 text-xs line-through italic">
+                      <td className="px-8 py-6 text-gray-400 text-xs line-through">
                         {product.originalPrice ? `$${product.originalPrice.toLocaleString()}` : '-'}
                       </td>
 
@@ -184,7 +179,7 @@ const AdminProducts = () => {
                         <div className="flex items-center gap-2">
                           <span className={`w-1.5 h-1.5 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
-                            {product.stock > 0 ? `${product.stock} Units` : 'Vanished'}
+                            {product.stock > 0 ? `${product.stock} Units` : 'Out of Stock'}
                           </span>
                         </div>
                       </td>
@@ -194,7 +189,7 @@ const AdminProducts = () => {
                           <Link
                             to={`/admin/products/${product._id}/edit`}
                             className="text-gray-400 hover:text-secondary transition-all p-2 rounded-full hover:bg-secondary/5"
-                            title="Refine Creation"
+                            title="Edit Product"
                           >
                             <FiEdit2 size={16} />
                           </Link>
@@ -206,7 +201,7 @@ const AdminProducts = () => {
                               initiateDelete(product);
                             }}
                             className="text-gray-400 hover:text-red-600 transition-all p-2 rounded-full hover:bg-red-50"
-                            title="Vanish Creation"
+                            title="Delete Product"
                           >
                             <FiTrash2 size={16} />
                           </button>
@@ -232,7 +227,7 @@ const AdminProducts = () => {
               </button>
 
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                Cycle {page} of {totalPages}
+                Page {page} of {totalPages}
               </span>
 
               <button

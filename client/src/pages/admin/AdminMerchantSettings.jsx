@@ -73,9 +73,9 @@ const AdminMerchantSettings = () => {
     return (
         <div className="p-12 bg-background min-h-screen font-primary">
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-5xl font-secondary text-gray-800 garamond italic mb-2">Business Essence</h1>
+                <h1 className="text-5xl font-secondary text-gray-800 garamond mb-2">Merchant Settings</h1>
                 <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-12 border-b border-secondary/10 pb-6">
-                    Refining the merchant identity and flow of energy
+                    Manage business profile and payment reception details
                 </p>
 
                 {message && (
@@ -88,10 +88,10 @@ const AdminMerchantSettings = () => {
                 <form onSubmit={handleSubmit} className="space-y-12">
                     {/* General Info */}
                     <div className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
-                        <h3 className="text-2xl font-secondary text-gray-800 garamond mb-8 pb-4 border-b border-secondary/5 italic font-medium">General Presence</h3>
+                        <h3 className="text-2xl font-secondary text-gray-800 garamond mb-8 pb-4 border-b border-secondary/5 font-medium">Business Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Business Identity</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Business Name</label>
                                 <input
                                     type="text"
                                     name="businessName"
@@ -101,7 +101,7 @@ const AdminMerchantSettings = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Taxation Reference (PAN/VAT)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tax ID (PAN/VAT)</label>
                                 <input
                                     type="text"
                                     name="taxId"
@@ -111,7 +111,7 @@ const AdminMerchantSettings = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Direct Correspondence (Email)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contact Email</label>
                                 <input
                                     type="email"
                                     name="contactEmail"
@@ -121,7 +121,7 @@ const AdminMerchantSettings = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Voice Connection (Phone)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contact Phone</label>
                                 <input
                                     type="text"
                                     name="contactPhone"
@@ -131,7 +131,7 @@ const AdminMerchantSettings = () => {
                                 />
                             </div>
                             <div className="md:col-span-2 space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Physical Sanctuary (Address)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Business Address</label>
                                 <textarea
                                     name="address"
                                     value={details.address || ''}
@@ -146,13 +146,13 @@ const AdminMerchantSettings = () => {
                     {/* Bank Info */}
                     <div className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
                         <div className="flex justify-between items-baseline mb-8 pb-4 border-b border-secondary/5">
-                            <h3 className="text-2xl font-secondary text-gray-800 garamond italic font-medium">Sacred Transfers (Bank Details)</h3>
-                            <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">Used for manual flow</span>
+                            <h3 className="text-2xl font-secondary text-gray-800 garamond font-medium">Bank Details</h3>
+                            <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">For offline/manual payments</span>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Trustee (Account Holder)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Account Holder</label>
                                 <input
                                     type="text"
                                     name="bankDetails.accountName"
@@ -162,7 +162,7 @@ const AdminMerchantSettings = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Identity Number (Account #)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Account Number</label>
                                 <input
                                     type="text"
                                     name="bankDetails.accountNumber"
@@ -172,7 +172,7 @@ const AdminMerchantSettings = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">The Vault (Bank Name)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bank Name</label>
                                 <input
                                     type="text"
                                     name="bankDetails.bankName"
@@ -182,7 +182,7 @@ const AdminMerchantSettings = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Domain of Origin (SWIFT Code)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">SWIFT Code</label>
                                 <input
                                     type="text"
                                     name="bankDetails.swiftCode"
@@ -192,7 +192,7 @@ const AdminMerchantSettings = () => {
                                 />
                             </div>
                             <div className="md:col-span-2 space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Global Passport (IBAN)</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">IBAN</label>
                                 <input
                                     type="text"
                                     name="bankDetails.iban"
@@ -210,7 +210,7 @@ const AdminMerchantSettings = () => {
                             disabled={saving}
                             className="px-12 py-5 bg-secondary text-white rounded-sm font-bold text-[10px] uppercase tracking-[0.3em] hover:bg-opacity-95 shadow-2xl shadow-secondary/20 transition-all active:scale-95 disabled:opacity-50"
                         >
-                            {saving ? 'Transmuting...' : 'Seal Changes'}
+                            {saving ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>
                 </form>

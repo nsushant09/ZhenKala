@@ -88,14 +88,14 @@ const PaymentSettings = () => {
                     to="/admin"
                     className="inline-flex items-center gap-2 text-secondary font-bold text-[10px] uppercase tracking-widest mb-10 hover:opacity-70 transition-opacity"
                 >
-                    <FiArrowLeft /> Back to Sanctuary
+                    <FiArrowLeft /> Back to Dashboard
                 </Link>
 
                 <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-12 border-b border-secondary/10 pb-8 gap-6">
                     <div>
-                        <h1 className="text-5xl font-secondary text-gray-800 garamond italic mb-1">Gateway Portals</h1>
+                        <h1 className="text-5xl font-secondary text-gray-800 garamond mb-1">Payment Gateways</h1>
                         <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-                            Managing the digital flow of prosperity and energy
+                            Configure payment providers and business details
                         </p>
                     </div>
                     <button
@@ -103,13 +103,13 @@ const PaymentSettings = () => {
                         disabled={saving}
                         className="flex items-center gap-3 bg-secondary text-white px-10 py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 shadow-2xl shadow-secondary/10 transition-all active:scale-95 disabled:opacity-50"
                     >
-                        {saving ? 'Transmuting...' : <><FiSave /> Seal Gateways</>}
+                        {saving ? 'Saving...' : <><FiSave /> Save Settings</>}
                     </button>
                 </div>
 
                 {success && (
                     <div className="mb-8 p-4 bg-green-50 text-green-600 border border-green-100 rounded-sm text-[10px] font-bold uppercase tracking-widest flex items-center gap-3">
-                        <FiCheckCircle size={16} /> Configuration Manifested Successfully
+                        <FiCheckCircle size={16} /> Configuration saved successfully
                     </div>
                 )}
 
@@ -124,23 +124,23 @@ const PaymentSettings = () => {
                     <div className="lg:col-span-1 space-y-4">
                         <a href="#stripe" className="flex items-center gap-4 p-5 bg-white/40 backdrop-blur-sm rounded-sm border border-secondary/5 hover:border-secondary/20 hover:bg-white transition-all group">
                             <FiCreditCard className="text-secondary opacity-50 group-hover:opacity-100" />
-                            <span className="text-[10px] font-bold text-gray-400 group-hover:text-gray-800 uppercase tracking-widest transition-colors">Stripe Terminal</span>
+                            <span className="text-[10px] font-bold text-gray-400 group-hover:text-gray-800 uppercase tracking-widest transition-colors">Stripe Settings</span>
                         </a>
                         <a href="#paypal" className="flex items-center gap-4 p-5 bg-white/40 backdrop-blur-sm rounded-sm border border-secondary/5 hover:border-secondary/20 hover:bg-white transition-all group">
                             <FiGlobe className="text-secondary opacity-50 group-hover:opacity-100" />
-                            <span className="text-[10px] font-bold text-gray-400 group-hover:text-gray-800 uppercase tracking-widest transition-colors">PayPal Gateway</span>
+                            <span className="text-[10px] font-bold text-gray-400 group-hover:text-gray-800 uppercase tracking-widest transition-colors">PayPal Settings</span>
                         </a>
                         <a href="#business" className="flex items-center gap-4 p-5 bg-white/40 backdrop-blur-sm rounded-sm border border-secondary/5 hover:border-secondary/20 hover:bg-white transition-all group">
                             <FiShield className="text-secondary opacity-50 group-hover:opacity-100" />
-                            <span className="text-[10px] font-bold text-gray-400 group-hover:text-gray-800 uppercase tracking-widest transition-colors">Entity Identity</span>
+                            <span className="text-[10px] font-bold text-gray-400 group-hover:text-gray-800 uppercase tracking-widest transition-colors">Business Settings</span>
                         </a>
 
                         <div className="p-8 bg-secondary/5 rounded-sm border border-secondary/10 mt-12">
                             <h4 className="text-[10px] font-bold text-secondary mb-4 flex items-center gap-2 uppercase tracking-widest">
                                 <FiShield /> Security Protocol
                             </h4>
-                            <p className="text-[11px] text-gray-500 leading-relaxed italic">
-                                Secret keys are sacred. Preserve them with care. The energy flow depends on your vigilance.
+                            <p className="text-[11px] text-gray-500 leading-relaxed">
+                                Secret keys are highly sensitive. Ensure they are kept secure and never shared publicly.
                             </p>
                         </div>
                     </div>
@@ -151,7 +151,7 @@ const PaymentSettings = () => {
                         <section id="stripe" className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
                             <div className="flex items-center justify-between mb-10 border-b border-secondary/5 pb-6">
                                 <div className="flex items-center gap-4 text-gray-800">
-                                    <h3 className="text-3xl font-secondary garamond italic">Stripe Manifestation</h3>
+                                    <h3 className="text-3xl font-secondary garamond">Stripe Configuration</h3>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input
@@ -185,8 +185,8 @@ const PaymentSettings = () => {
                                         className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm focus:outline-none focus:border-secondary transition-all text-sm font-mono text-gray-600"
                                     />
                                 </div>
-                                <div className="p-5 bg-secondary/[0.03] border border-secondary/5 rounded-sm text-[11px] text-gray-500 italic leading-relaxed">
-                                    Enabling this portal allows the reception of world commerce: <strong>Visa, MasterCard, Amex, and Digital Wallets</strong>.
+                                <div className="p-5 bg-secondary/[0.03] border border-secondary/5 rounded-sm text-[11px] text-gray-500 leading-relaxed">
+                                    Enabling Stripe allows you to accept <strong>Visa, MasterCard, American Express, and Digital Wallets</strong>.
                                 </div>
                             </div>
                         </section>
@@ -194,7 +194,7 @@ const PaymentSettings = () => {
                         {/* PayPal Section */}
                         <section id="paypal" className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
                             <div className="flex items-center justify-between mb-10 border-b border-secondary/5 pb-6">
-                                <h3 className="text-3xl font-secondary text-gray-800 garamond italic">PayPal Portal</h3>
+                                <h3 className="text-3xl font-secondary text-gray-800 garamond">PayPal Configuration</h3>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input
                                         type="checkbox"
@@ -214,12 +214,12 @@ const PaymentSettings = () => {
                                             onClick={(e) => { e.preventDefault(); handleInputChange('paypal', 'mode', mode); }}
                                             className={`flex-1 py-3 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all ${settings.paypal.mode === mode ? 'bg-secondary text-white shadow-lg shadow-secondary/20' : 'text-gray-400 hover:text-gray-600'}`}
                                         >
-                                            {mode} realm
+                                            {mode} mode
                                         </button>
                                     ))}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Portal ID (Client ID)</label>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Client ID</label>
                                     <input
                                         type="text"
                                         value={settings.paypal.clientId}
@@ -242,12 +242,12 @@ const PaymentSettings = () => {
                         {/* Entity Info Section */}
                         <section id="business" className="bg-white/40 backdrop-blur-md p-10 rounded-sm border border-secondary/5 shadow-sm">
                             <div className="flex items-center gap-4 mb-10 border-b border-secondary/5 pb-6">
-                                <h3 className="text-3xl font-secondary text-gray-800 garamond italic">Entity Identity</h3>
+                                <h3 className="text-3xl font-secondary text-gray-800 garamond">Business Information</h3>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Legal Consciousness (Business Name)</label>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Legal Business Name</label>
                                     <input
                                         type="text"
                                         value={settings.businessInfo.legalName}
@@ -256,7 +256,7 @@ const PaymentSettings = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Public Correspondence (Email)</label>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contact Email</label>
                                     <input
                                         type="email"
                                         value={settings.businessInfo.email}
@@ -265,10 +265,10 @@ const PaymentSettings = () => {
                                     />
                                 </div>
                                 <div className="md:col-span-2 space-y-6">
-                                    <h4 className="text-[11px] font-bold text-gray-800 uppercase tracking-widest border-l-2 border-secondary pl-4">Sacred Vault Reference (Manual Flow)</h4>
+                                    <h4 className="text-[11px] font-bold text-gray-800 uppercase tracking-widest border-l-2 border-secondary pl-4">Bank Details (Manual Payments)</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">The Sanctuary (Bank Name)</label>
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bank Name</label>
                                             <input
                                                 type="text"
                                                 value={settings.businessInfo.bankName}
@@ -277,7 +277,7 @@ const PaymentSettings = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Identity Number (Account #)</label>
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Account Number</label>
                                             <input
                                                 type="text"
                                                 value={settings.businessInfo.accountNumber}
