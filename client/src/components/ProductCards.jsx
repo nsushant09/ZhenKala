@@ -15,9 +15,9 @@ const ProductCards = ({ products = [] }) => {
     }
 
     return (
-        <div className="flex flex-wrap justify-center items-center gap-[16px] my-[32px]">
+        <div className="flex flex-wrap justify-center items-stretch gap-[16px] my-[32px]">
             {products.map((product, index) => (
-                <div key={product.id || index} className="flex justify-center">
+                <div key={product.id || index} className="flex justify-center h-full">
                     <ProductCard
                         id={product.id || product._id}
                         name={product.name}

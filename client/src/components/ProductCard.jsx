@@ -71,11 +71,11 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
         >
             <div className="bg-[#FCF9EC] rounded-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02] w-[300px] max-w-sm cursor-pointer group h-full flex flex-col">
                 {/* Image Container */}
-                <div className="relative aspect-[4/5] bg-gray-200">
+                <div className="relative w-full overflow-hidden aspect-[4/5] bg-gray-200">
                     <img
                         src={currentImage}
                         alt={name}
-                        className="w-full h-full object-cover transition-opacity duration-300"
+                        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                     />
 
                     {/* Badges */}
@@ -122,10 +122,10 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                 </div>
 
                 {/* Content Container */}
-                <div className="p-4 space-y-3 flex-grow flex flex-col justify-between">
-                    <div>
+                <div className="p-4 space-y-3 flex-grow flex flex-col">
+                    <div className="flex-grow">
                         {/* Product Name */}
-                        <h3 className="text-xl text-gray-900 truncate mb-1" title={name}>{name}</h3>
+                        <h3 className="text-xl text-gray-900 line-clamp-2 leading-tight min-h-[56px]" title={name}>{name}</h3>
                     </div>
 
                     {/* Price Section */}
