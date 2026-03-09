@@ -15,6 +15,7 @@ exports.createOrder = async (req, res) => {
       shippingPrice,
       totalPrice,
       currency,
+      estimatedDeliveryDate,
     } = req.body;
 
     if (orderItems && orderItems.length === 0) {
@@ -53,6 +54,7 @@ exports.createOrder = async (req, res) => {
       shippingPrice,
       totalPrice,
       currency,
+      estimatedDeliveryDate,
     });
 
     // Update product stock

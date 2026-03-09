@@ -456,7 +456,7 @@
 }
 
 .ship-to-section {
-    width: 50%;
+    width: 40%;
     background: #f8f9fa;
     padding: 1.5rem;
     border-radius: 8px;
@@ -486,7 +486,7 @@
 }
 
 .invoice-details-section {
-    width: 50%;
+    width: 60%;
     text-align: right;
     background: #fdfdfd;
     border: 1px solid #f0f0f0;

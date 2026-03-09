@@ -120,6 +120,9 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    estimatedDeliveryDate: {
+      type: Date,
+    },
     currency: {
       type: String,
       required: true,

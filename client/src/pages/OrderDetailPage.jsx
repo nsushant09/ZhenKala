@@ -114,6 +114,9 @@ const OrderDetailPage = () => {
                   <p><strong>Date:</strong> <span>{new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}</span></p>
                   <p><strong>Status:</strong> <span className={`status-pill ${order.orderStatus.replace(/\s+/g, '-')}`}>{order.orderStatus.toUpperCase()}</span></p>
                   <p><strong>Currency:</strong> <span>{order.currency || 'USD'}</span></p>
+                  {order.estimatedDeliveryDate && (
+                    <p><strong>Est. Delivery:</strong> <span>{new Date(order.estimatedDeliveryDate).toLocaleDateString(undefined, { dateStyle: 'long' })}</span></p>
+                  )}
                 </div>
 
                 {order.isPaid && (

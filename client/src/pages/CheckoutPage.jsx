@@ -42,6 +42,7 @@ const CheckoutPage = () => {
   const [shippingAddress, setShippingAddress] = useState({
     street: '', city: '', state: '', country: '', zipCode: '', phone: ''
   });
+  const [deliveryEstimate, setDeliveryEstimate] = useState(new Date());
   const [paymentMethod, setPaymentMethod] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -60,6 +61,17 @@ const CheckoutPage = () => {
     setShippingPrice(shipping);
     setTotalPrice(baseSubtotal + shipping);
   }, []);
+
+  useEffect(() => {
+    // Check if country is Nepal or zip code is a 5-digit Nepali postcode
+    // Nepali postcodes are 5 digits (e.g., 44600)
+    const isNepal = shippingAddress.country?.trim().toLowerCase() === 'nepal' ||
+      /^\d{5}$/.test(shippingAddress.zipCode?.trim());
+    const days = isNepal ? 5 : 15;
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    setDeliveryEstimate(date);
+  }, [shippingAddress.country, shippingAddress.zipCode]);
 
   const handlePaymentRedirect = useCallback(async (params) => {
     const status = params.get('redirect_status');
@@ -181,7 +193,8 @@ const CheckoutPage = () => {
         itemsPrice: subtotal,
         shippingPrice,
         totalPrice,
-        currency: selectedCurrency
+        currency: selectedCurrency,
+        estimatedDeliveryDate: deliveryEstimate
       };
 
       const { data: order } = await api.post('/orders', orderData);
@@ -390,6 +403,16 @@ const CheckoutPage = () => {
             <div className="summary-calculations">
               <div className="calc-row"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
               <div className="calc-row"><span>Shipping</span><span>{shippingPrice > 0 ? formatPrice(shippingPrice) : 'FREE'}</span></div>
+              <div className="calc-row delivery-estimate-row">
+                <span>Estimated Delivery</span>
+                <span>
+                  {deliveryEstimate.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
               <div className="calc-row total"><span>Total</span><span>{formatPrice(totalPrice)}</span></div>
             </div>
             <p className="secure-text">Secure Checkout - SSL Encrypted</p>

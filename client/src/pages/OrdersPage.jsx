@@ -70,6 +70,11 @@ const OrdersPage = () => {
                 <div className="order-price-info">
                   <span className="price-label">Total Amount</span>
                   <span className="price-value">{formatPrice(order.totalPrice)}</span>
+                  {order.estimatedDeliveryDate && (
+                    <div className="order-est-delivery">
+                      <FiTruck /> Est. Delivery: {new Date(order.estimatedDeliveryDate).toLocaleDateString()}
+                    </div>
+                  )}
                 </div>
               </div>
 
