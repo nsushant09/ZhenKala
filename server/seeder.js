@@ -12,7 +12,7 @@ const users = [
   {
     firstName: 'Admin',
     lastName: 'User',
-    email: 'admin@zhenkala.com',
+    email: 'contact.zhenkala@gmail.com',
     password: 'admin123',
     role: 'admin',
     address: {
@@ -648,7 +648,7 @@ const seedDatabase = async () => {
 
     console.log('✅ Database seeded successfully!');
     console.log('\n📧 Admin Login:');
-    console.log('   Email: admin@zhenkala.com');
+    console.log('   Email: contact.zhenkala@gmail.com');
     console.log('   Password: admin123');
     console.log('\n📧 Test User Login:');
     console.log('   Email: john@example.com');

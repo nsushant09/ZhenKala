@@ -78,7 +78,7 @@ const FAQPage = () => {
                 },
                 {
                     question: "Can I request a Traditional Silk Brocade frame?",
-                    answer: "Yes. We offer traditional silk mounting (Brocade) for those seeking an authentic Himalayan aesthetic. This process involves building frames from the outside in (outer, inner, and innermost frames) along with specialized curtains and ribbons. This traditional mounting is often more affordable and portable than glass framing, and it protects the painting's integrity. Please contact our curators at info@zhenkala.com to discuss your custom silk preferences."
+                    answer: "Yes. We offer traditional silk mounting (Brocade) for those seeking an authentic Himalayan aesthetic. This process involves building frames from the outside in (outer, inner, and innermost frames) along with specialized curtains and ribbons. This traditional mounting is often more affordable and portable than glass framing, and it protects the painting's integrity. Please contact our curators at contact.zhenkala@gmail.com to discuss your custom silk preferences."
                 },
                 {
                     question: "How do I care for my Thangka painting?",

@@ -27,7 +27,7 @@ const ContactPage = () => {
 
         // Simulate API call
         setTimeout(() => {
-            console.log('Sending message to: nsushant21@tbc.edu.np', formData);
+            console.log('Sending message to: contact.zhenkala@gmail.com', formData);
             setIsSubmitting(false);
             setSubmitted(true);
             setFormData({ firstName: '', lastName: '', email: '', message: '' });
@@ -155,7 +155,7 @@ const ContactPage = () => {
                                     <FiMail className="text-2xl text-secondary shrink-0 mt-1" />
                                     <div className="info-text">
                                         <h4 className="font-semibold text-base text-on-background mb-1 uppercase tracking-wide">Email Support</h4>
-                                        <a href="mailto:nsushant21@tbc.edu.np" className="text-gray-700 hover:text-secondary transition-colors">nsushant21@tbc.edu.np</a>
+                                        <a href="mailto:contact.zhenkala@gmail.com" className="text-gray-700 hover:text-secondary transition-colors">contact.zhenkala@gmail.com</a>
                                         <p className="text-gray-700 leading-relaxed">Inquiries & Custom Commissions</p>
                                     </div>
                                 </div>

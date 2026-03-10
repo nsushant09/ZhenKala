@@ -51,7 +51,7 @@ npm start
 
 ### Login Credentials:
 **Admin:**
-- Email: admin@zhenkala.com
+- Email: contact.zhenkala@gmail.com
 - Password: admin123
 
 **Test User:**

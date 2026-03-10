@@ -19,6 +19,7 @@ const AdminProductForm = () => {
         category: '',
         description: '',
         price: 0,
+        costPrice: 0,
         originalPrice: 0,
         discount: 0,
         stock: 0,
@@ -55,6 +56,7 @@ const AdminProductForm = () => {
                 category: data.category?._id || data.category,
                 description: data.description,
                 price: data.price,
+                costPrice: data.costPrice || 0,
                 originalPrice: data.originalPrice || 0,
                 discount: data.discount || 0,
                 stock: data.stock,
@@ -93,7 +95,7 @@ const AdminProductForm = () => {
     const addVariant = () => {
         setVariants([
             ...variants,
-            { size: '', color: '', price: 0, originalPrice: 0, stock: 10, discount: 0, isActive: true }
+            { size: '', color: '', price: 0, costPrice: 0, originalPrice: 0, stock: 10, discount: 0, isActive: true }
         ]);
     };
 
@@ -182,6 +184,7 @@ const AdminProductForm = () => {
                     finalFormData = {
                         ...finalFormData,
                         price: firstActive.price,
+                        costPrice: firstActive.costPrice,
                         originalPrice: firstActive.originalPrice || firstActive.price,
                         discount: firstActive.discount,
                         stock: variants.reduce((acc, v) => acc + (parseInt(v.stock) || 0), 0) // Total stock sum? Or first variant? User said "first active variant must have base price...". But Stock is usually SUM of variants.
@@ -297,6 +300,19 @@ const AdminProductForm = () => {
                             </div>
 
                             <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cost Price ($)</label>
+                                <input
+                                    type="number"
+                                    name="costPrice"
+                                    value={formData.costPrice}
+                                    onChange={handleChange}
+                                    placeholder="Manufacturing/Acquisition cost"
+                                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all"
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-2">
                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tags</label>
                                 <input
                                     type="text"
@@ -376,6 +392,7 @@ const AdminProductForm = () => {
                                         <tr className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
                                             <th className="px-4 pb-4">Size</th>
                                             <th className="px-4 pb-4">Color</th>
+                                            <th className="px-4 pb-4">Cost Price ($)</th>
                                             <th className="px-4 pb-4">Orig. Price ($)</th>
                                             <th className="px-4 pb-4">Discount (%)</th>
                                             <th className="px-4 pb-4">Final Price ($)</th>
@@ -402,6 +419,15 @@ const AdminProductForm = () => {
                                                         onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
                                                         className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-full"
                                                         placeholder="Color"
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <input
+                                                        type="number"
+                                                        value={variant.costPrice || ''}
+                                                        onChange={(e) => handleVariantChange(index, 'costPrice', parseFloat(e.target.value) || 0)}
+                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-20"
+                                                        placeholder="Cost"
                                                     />
                                                 </td>
                                                 <td className="px-4 py-4">

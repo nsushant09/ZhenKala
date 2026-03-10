@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiBox, FiShoppingBag, FiUsers, FiSettings, FiCreditCard } from 'react-icons/fi';
+import { FiBox, FiShoppingBag, FiUsers, FiSettings, FiCreditCard, FiTrendingUp } from 'react-icons/fi';
 
 const AdminDashboard = () => {
   return (
@@ -16,6 +16,7 @@ const AdminDashboard = () => {
             { to: "/admin/products", icon: FiBox, title: "Products", desc: "Manage inventory, update categories, and track stock levels.", label: "Inventory" },
             { to: "/admin/orders", icon: FiShoppingBag, title: "Orders", desc: "Track customer orders, process payments, and manage shipping.", label: "Sales" },
             { to: "/admin/users", icon: FiUsers, title: "Users", desc: "Manage user accounts, administrative roles, and permissions.", label: "Accounts" },
+            { to: "/admin/analytics", icon: FiTrendingUp, title: "Analytics", desc: "Assess business performance, track net profit, and analyze sales trends.", label: "Insights" },
             { to: "/admin/settings", icon: FiSettings, title: "Merchant Settings", desc: "Update business info, bank details, and invoice preferences.", label: "Settings" },
             { to: "/admin/payment", icon: FiCreditCard, title: "Payments", desc: "Configure Stripe, PayPal, and manage payment gateways.", label: "Finances" },
           ].map((item, idx) => (

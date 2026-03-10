@@ -61,10 +61,13 @@ const RefundPolicyPage = () => {
                                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center font-bold">4</div>
                                 <div>
                                     <h3 className="text-xl font-semibold mb-1 text-on-background">Collector Responsibility</h3>
-                                    <p className="text-gray-600">
+                                    <p className="text-gray-600 mb-2">
                                         The collector is responsible for all shipping and handling charges and assumes full responsibility
                                         for the item's safe return. We recommend professional packing and insurance as essential precautions
                                         for these sacred artifacts.
+                                    </p>
+                                    <p className="text-gray-600 font-semibold border-l-2 border-primary pl-3 bg-primary/10 py-1">
+                                        Please note: Original shipping costs are non-refundable and will be deducted from your total refund amount.
                                     </p>
                                 </div>
                             </div>
@@ -76,26 +79,30 @@ const RefundPolicyPage = () => {
                     </section>
 
                     <section className="mb-12">
-                        <h2 className="font-secondary text-3xl text-secondary mb-6 garamond pb-2 border-b border-gray-100">Refund Pathway</h2>
+                        <h2 className="font-secondary text-3xl text-secondary mb-6 garamond pb-2 border-b border-gray-100">Refund Pathway & Compensation</h2>
                         <p className="mb-6">
                             Before initiating a return, please connect with our curators via email at
-                            <a href="mailto:info@zhenkala.com" className="text-secondary font-semibold hover:underline ml-1">info@zhenkala.com</a>.
+                            <a href="mailto:contact.zhenkala@gmail.com" className="text-secondary font-semibold hover:underline ml-1">contact.zhenkala@gmail.com</a>.
                         </p>
 
                         <div className="bg-primary/10 p-8 rounded-sm border border-primary/20">
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-secondary mb-4">The Process</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-secondary mb-4">Refund Compensation Policy</h3>
                             <ul className="space-y-4 text-gray-700">
                                 <li className="flex gap-3">
                                     <span className="text-secondary font-bold">•</span>
-                                    <span>Once your return is approved, we will coordinate the return Logistics.</span>
+                                    <span><strong>Shipping Fees:</strong> For orders where a $15 shipping fee was paid, this amount is non-refundable as it covers the original dispatch logistics.</span>
                                 </li>
                                 <li className="flex gap-3">
                                     <span className="text-secondary font-bold">•</span>
-                                    <span>For non-faulty goods, the cost of return postage remains the responsibility of the collector.</span>
+                                    <span><strong>Free Delivery Compensation:</strong> If your order was eligible for free shipping, a flat rate of <strong>$30</strong> will be deducted from the original purchase price to compensate for the initial logistics and handling costs incurred by ZhenKala.</span>
                                 </li>
                                 <li className="flex gap-3">
                                     <span className="text-secondary font-bold">•</span>
-                                    <span>Upon receiving and inspecting the goods at our workshop, your refund will be processed via your original payment method within <span className="font-bold whitespace-nowrap">14 working days</span>.</span>
+                                    <span><strong>Return Postage:</strong> For non-faulty goods, the cost of return postage and tracking remains the sole responsibility of the collector.</span>
+                                </li>
+                                <li className="flex gap-3">
+                                    <span className="text-secondary font-bold">•</span>
+                                    <span><strong>Processing Time:</strong> Upon receiving and inspecting the goods at our workshop, your refund (minus applicable shipping deductions) will be processed via your original payment method within <span className="font-bold whitespace-nowrap">14 working days</span>.</span>
                                 </li>
                             </ul>
                         </div>

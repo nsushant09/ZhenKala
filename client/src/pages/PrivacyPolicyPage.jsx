@@ -51,7 +51,7 @@ const PrivacyPolicyPage = () => {
                         <p>
                             Should you change your mind after opting in, you may withdraw your consent for us to contact you
                             or for the continued collection of your information at any time. Please contact our
-                            Privacy Compliance Officer at <a href="mailto:info@zhenkala.com" className="text-secondary underline underline-offset-4">info@zhenkala.com</a>.
+                            Privacy Compliance Officer at <a href="mailto:contact.zhenkala@gmail.com" className="text-secondary underline underline-offset-4">contact.zhenkala@gmail.com</a>.
                         </p>
                     </section>
 
@@ -80,11 +80,14 @@ const PrivacyPolicyPage = () => {
                     </section>
 
                     <section className="mb-12">
-                        <h2 className="font-secondary text-3xl text-secondary mb-6 garamond pb-2 border-b border-gray-100">Section 5 - Third-Party Partnerships</h2>
+                        <h2 className="font-secondary text-3xl text-secondary mb-6 garamond pb-2 border-b border-gray-100">Section 5 - Third-Party Partnerships & Logistics</h2>
                         <p className="mb-4">
-                            In general, our trusted third-party partners (such as logistics and payment processors)
+                            In general, our trusted third-party partners (such as logistics carriers, fulfillment centers, and payment processors)
                             will only collect and use your information to the extent necessary to perform the services
                             they provide to us.
+                        </p>
+                        <p className="mb-4">
+                            To ensure the secure delivery of your sacred artifacts, your name, delivery address, and contact details are shared with our global logistics partners. In the event of a return, this data is also used to facilitate logistics and calculate applicable shipping compensation as outlined in our <a href="/refund-policy" className="text-secondary underline underline-offset-4">Refund Policy</a>.
                         </p>
                         <p>
                             However, these providers have their own independent privacy policies. We recommend reading
@@ -126,7 +129,7 @@ const PrivacyPolicyPage = () => {
                         <div className="max-w-xl mx-auto p-10 rounded-sm bg-primary/30 text-center border border-primary">
                             <p className="font-bold text-secondary uppercase tracking-[2px] text-xs mb-4">Privacy Compliance Officer</p>
                             <p className="text-xl text-on-background mb-2 garamond">ZhenKala</p>
-                            <a href="mailto:info@zhenkala.com" className="text-2xl text-secondary hover:underline transition-all garamond  font-medium">info@zhenkala.com</a>
+                            <a href="mailto:contact.zhenkala@gmail.com" className="text-2xl text-secondary hover:underline transition-all garamond  font-medium">contact.zhenkala@gmail.com</a>
 
                             <div className="mt-8 pt-8 border-t border-secondary/10 text-[10px] text-gray-400 uppercase tracking-widest font-bold">
                                 Effective February 2026

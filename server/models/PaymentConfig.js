@@ -25,7 +25,7 @@ const paymentConfigSchema = new mongoose.Schema(
         },
         businessInfo: {
             legalName: { type: String, default: 'ZhenKala Art & Handicrafts' },
-            email: { type: String, default: 'sales@zhenkala.com' },
+            email: { type: String, default: 'contact.zhenkala@gmail.com' },
             phone: { type: String, default: '' },
             address: { type: String, default: '' },
             bankName: { type: String, default: '' },

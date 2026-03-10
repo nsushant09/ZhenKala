@@ -34,6 +34,10 @@ const orderSchema = new mongoose.Schema(
           type: Number,
           required: true,
         },
+        costPrice: {
+          type: Number,
+          default: 0,
+        },
         size: String,
         color: String,
       },
@@ -127,6 +131,10 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
       default: 'USD',
+    },
+    actualShippingCost: {
+      type: Number,
+      default: 0,
     },
   },
   {

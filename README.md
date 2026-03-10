@@ -97,7 +97,7 @@ node seeder.js
 ```
 
 This will create:
-- An admin account (email: admin@zhenkala.com, password: admin123)
+- An admin account (email: contact.zhenkala@gmail.com, password: admin123)
 - A test user account (email: john@example.com, password: password123)
 - Sample products
 
@@ -140,7 +140,7 @@ The application will automatically open in your browser at `http://localhost:300
 ## 👤 Default Login Credentials
 
 **Admin Account:**
-- Email: admin@zhenkala.com
+- Email: contact.zhenkala@gmail.com
 - Password: admin123
 
 **Test User Account:**
@@ -286,7 +286,7 @@ This project is licensed under the MIT License.
 
 ## 📧 Support
 
-For support, email support@zhenkala.com or create an issue in the repository.
+For support, email contact.zhenkala@gmail.com or create an issue in the repository.
 
 ## 🙏 Acknowledgments
 

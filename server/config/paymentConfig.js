@@ -39,7 +39,7 @@ const paymentConfig = {
             branch: 'Thamel, Kathmandu'
         },
         contact: {
-            email: 'sales@zhenkala.com',
+            email: 'contact.zhenkala@gmail.com',
             phone: '+977-1-4XXXXXX',
             address: 'Thamel St, Kathmandu, Nepal'
         }

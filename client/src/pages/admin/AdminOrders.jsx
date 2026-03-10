@@ -23,6 +23,7 @@ const AdminOrders = () => {
   const [newStatus, setNewStatus] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [actualShippingCost, setActualShippingCost] = useState(0);
 
   useEffect(() => {
     fetchOrders();
@@ -44,6 +45,7 @@ const AdminOrders = () => {
     setSelectedOrder(order);
     setNewStatus(order.orderStatus);
     setTrackingNumber(order.trackingNumber || '');
+    setActualShippingCost(order.actualShippingCost || 0);
     setShowStatusModal(true);
   };
 
@@ -52,13 +54,14 @@ const AdminOrders = () => {
     try {
       await api.put(`/orders/${selectedOrder._id}/status`, {
         orderStatus: newStatus,
-        trackingNumber: trackingNumber
+        trackingNumber: trackingNumber,
+        actualShippingCost: parseFloat(actualShippingCost) || 0
       });
 
       // Update local state
       setOrders(orders.map(o =>
         o._id === selectedOrder._id
-          ? { ...o, orderStatus: newStatus, trackingNumber: trackingNumber }
+          ? { ...o, orderStatus: newStatus, trackingNumber: trackingNumber, actualShippingCost: parseFloat(actualShippingCost) || 0 }
           : o
       ));
 
@@ -276,6 +279,17 @@ const AdminOrders = () => {
                   placeholder="Enter tracking number if any..."
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Actual Shipping Cost ($)</label>
+                <input
+                  type="number"
+                  placeholder="Cost paid to courier..."
+                  value={actualShippingCost}
+                  onChange={(e) => setActualShippingCost(e.target.value)}
                   className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all"
                 />
               </div>

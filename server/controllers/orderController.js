@@ -22,7 +22,8 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: 'No order items' });
     }
 
-    // Check stock availability
+    // Check stock availability and capture cost price
+    const finalOrderItems = [];
     for (let item of orderItems) {
       const product = await Product.findById(item.product);
       if (!product) {
@@ -30,10 +31,13 @@ exports.createOrder = async (req, res) => {
       }
 
       let availableStock = product.stock;
+      let costPrice = product.costPrice || 0;
+
       if (item.variant && product.variants && product.variants.length > 0) {
         const variant = product.variants.id(item.variant);
         if (variant) {
           availableStock = variant.stock;
+          costPrice = variant.costPrice || product.costPrice || 0;
         }
       }
 
@@ -42,10 +46,15 @@ exports.createOrder = async (req, res) => {
           message: `Insufficient stock for ${item.name}${item.size ? ` (${item.size})` : ''}. Available: ${availableStock}`
         });
       }
+
+      finalOrderItems.push({
+        ...item,
+        costPrice: costPrice
+      });
     }
 
     const order = await Order.create({
-      orderItems,
+      orderItems: finalOrderItems,
       user: req.user._id,
       shippingAddress,
       paymentMethod,
@@ -196,11 +205,15 @@ exports.getAllOrders = async (req, res) => {
 // @access  Private/Admin
 exports.updateOrderStatus = async (req, res) => {
   try {
-    const { orderStatus, trackingNumber } = req.body;
+    const { orderStatus, trackingNumber, actualShippingCost } = req.body;
     const order = await Order.findById(req.params.id);
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (actualShippingCost !== undefined) {
+      order.actualShippingCost = actualShippingCost;
     }
 
     order.orderStatus = orderStatus;
@@ -216,5 +229,47 @@ exports.updateOrderStatus = async (req, res) => {
     res.json(updatedOrder);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// @desc    Get sales analytics
+// @route   GET /api/orders/analytics
+// @access  Private/Admin
+exports.getAnalytics = async (req, res) => {
+  try {
+    const orders = await Order.find({ isPaid: true });
+
+    let totalSales = 0;
+    let totalItemCost = 0;
+    let totalShippingRevenue = 0;
+    let totalActualShippingCost = 0;
+
+    orders.forEach(order => {
+      // We assume calculations are in USD base for analytics consistency if multiple currencies are used
+      // However, for simplicity now, we use the stored numeric values which reflect the charge.
+      // If the app uses multiple currencies, a more complex conversion logic would be needed here.
+      // For now, we assume standard amount stored in DB.
+
+      totalSales += order.totalPrice;
+      totalShippingRevenue += order.shippingPrice;
+      totalActualShippingCost += (order.actualShippingCost || 0);
+
+      order.orderItems.forEach(item => {
+        totalItemCost += (item.costPrice || 0) * item.quantity;
+      });
+    });
+
+    const netProfit = totalSales - totalItemCost - totalActualShippingCost;
+
+    res.json({
+      totalOrders: orders.length,
+      totalSales: Math.round(totalSales * 100) / 100,
+      totalItemCost: Math.round(totalItemCost * 100) / 100,
+      totalShippingRevenue: Math.round(totalShippingRevenue * 100) / 100,
+      totalActualShippingCost: Math.round(totalActualShippingCost * 100) / 100,
+      netProfit: Math.round(netProfit * 100) / 100
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

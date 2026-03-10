@@ -47,7 +47,7 @@ const Footer = () => {
             <h3 className="footer-title">Contact</h3>
             <ul className="footer-contact">
               <li>+977 9851012345</li>
-              <li>info@zhenkala.com</li>
+              <li>contact.zhenkala@gmail.com</li>
               <li>Thamel-12, Kathmandu, Nepal</li>
             </ul>
           </div>
