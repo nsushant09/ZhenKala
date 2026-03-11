@@ -29,7 +29,10 @@ const testimonialRoutes = require('./routes/testimonialRoutes');
 const merchantRoutes = require('./routes/merchantRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const paymentConfigRoutes = require('./routes/paymentConfigRoutes');
+const currencyRoutes = require('./routes/currencyRoutes'); // Add this
 const path = require('path');
+
+const { updateExchangeRates } = require('./controllers/currencyController'); // Import the job
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -43,6 +46,7 @@ app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/merchant-details', merchantRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/payment-settings', paymentConfigRoutes);
+app.use('/api/currencies', currencyRoutes);
 
 // Make uploads folder static
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
@@ -50,7 +54,11 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected Successfully'))
+  .then(() => {
+    console.log('✅ MongoDB Connected Successfully');
+    // Initialize exchange rates
+    updateExchangeRates();
+  })
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
 // Basic route

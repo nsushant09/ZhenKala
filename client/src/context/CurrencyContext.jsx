@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import api from '../services/api';
 
 const CurrencyContext = createContext();
 
@@ -10,104 +11,114 @@ export const useCurrency = () => {
     return context;
 };
 
-// New API: https://woxy-sensei.github.io/currency-api/
-// Only supports 31 national currencies, no crypto.
-const BASE_URL = 'https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api';
+// Common symbols mapping, defaults to code if not present
+export const CURRENCY_SYMBOLS = {
+    USD: '$', EUR: '€', GBP: '£', JPY: '¥', AUD: 'A$', CAD: 'C$',
+    CHF: 'Fr', CNY: '¥', SEK: 'kr', NZD: 'NZ$', SGD: 'S$',
+    HKD: 'HK$', INR: '₹', BRL: 'R$', ZAR: 'R', PHP: '₱',
+    IDR: 'Rp', MYR: 'RM', THB: '฿', TRY: '₺', MXN: '$',
+    KRW: '₩', ILS: '₪', ISK: 'kr', PLN: 'zł', DKK: 'kr',
+    NOK: 'kr', HUF: 'Ft', CZK: 'Kč', RON: 'lei', BGN: 'лв'
+};
 
+// Fallback supported currencies for UI stability
 export const SUPPORTED_CURRENCIES = {
     USD: { name: 'US Dollar', symbol: '$' },
     EUR: { name: 'Euro', symbol: '€' },
     GBP: { name: 'British Pound', symbol: '£' },
     JPY: { name: 'Japanese Yen', symbol: '¥' },
-    AUD: { name: 'Australian Dollar', symbol: 'A$' },
-    CAD: { name: 'Canadian Dollar', symbol: 'C$' },
-    CHF: { name: 'Swiss Franc', symbol: 'Fr' },
-    CNY: { name: 'Chinese Yuan', symbol: '¥' },
-    SEK: { name: 'Swedish Krona', symbol: 'kr' },
-    NZD: { name: 'New Zealand Dollar', symbol: 'NZ$' },
-    SGD: { name: 'Singapore Dollar', symbol: 'S$' },
-    HKD: { name: 'Hong Kong Dollar', symbol: 'HK$' },
-    INR: { name: 'Indian Rupee', symbol: '₹' },
-    BRL: { name: 'Brazilian Real', symbol: 'R$' },
-    ZAR: { name: 'South African Rand', symbol: 'R' },
-    PHP: { name: 'Philippine Peso', symbol: '₱' },
-    IDR: { name: 'Indonesian Rupiah', symbol: 'Rp' },
-    MYR: { name: 'Malaysian Ringgit', symbol: 'RM' },
-    THB: { name: 'Thai Baht', symbol: '฿' },
-    TRY: { name: 'Turkish Lira', symbol: '₺' },
-    MXN: { name: 'Mexican Peso', symbol: '$' },
-    KRW: { name: 'South Korean Won', symbol: '₩' },
-    ILS: { name: 'Israeli New Shekel', symbol: '₪' },
-    ISK: { name: 'Icelandic Króna', symbol: 'kr' },
-    PLN: { name: 'Polish Złoty', symbol: 'zł' },
-    DKK: { name: 'Danish Krone', symbol: 'kr' },
-    NOK: { name: 'Norwegian Krone', symbol: 'kr' },
-    HUF: { name: 'Hungarian Forint', symbol: 'Ft' },
-    CZK: { name: 'Czech Koruna', symbol: 'Kč' },
-    RON: { name: 'Romanian Leu', symbol: 'lei' },
-    BGN: { name: 'Bulgarian Lev', symbol: 'лв' },
+    CNY: { name: 'Chinese Yuan', symbol: '¥' }
 };
 
 export const CurrencyProvider = ({ children }) => {
     const [selectedCurrency, setSelectedCurrency] = useState(() => {
         return localStorage.getItem('selectedCurrency') || 'USD';
     });
-    const [rate, setRate] = useState(1);
+    const [rates, setRates] = useState({ USD: 1 });
+    const [currencies, setCurrencies] = useState({ USD: { name: 'US Dollar', symbol: '$' } });
     const [loading, setLoading] = useState(true);
 
-    const fetchRate = useCallback(async (toCode) => {
-        if (toCode === 'USD') {
-            setRate(1);
-            setLoading(false);
-            return;
-        }
-
+    const fetchAllData = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${BASE_URL}/USD_${toCode}.json`);
-            if (!response.ok) throw new Error('Failed to fetch rate');
-            const data = await response.json();
-            setRate(data.rate);
+            const { data } = await api.get('/currencies/rates');
+            if (data && data.rates && data.names) {
+                setRates(data.rates);
+
+                // Construct currencies object for dropdown
+                const currencyMap = {};
+                Object.keys(data.names).forEach(code => {
+                    currencyMap[code] = {
+                        name: (data.names[code] || '').trim(), // Trim value as requested
+                        symbol: CURRENCY_SYMBOLS[code] || code
+                    };
+                });
+                setCurrencies(currencyMap);
+            }
         } catch (error) {
-            console.error(`Error fetching conversion rate for ${toCode}:`, error);
-            // Revert or stay at 1 if failed
-            setRate(1);
+            console.error('Error fetching currency data from backend:', error);
+            // Fallback is already set in initial state
         } finally {
             setLoading(false);
         }
     }, []);
 
+    // Detect user's local currency based on IP (Run just once)
+    const detectCurrency = useCallback(async () => {
+        // Prevent re-detection in same session or if already detected/manually set
+        if (sessionStorage.getItem('currencyDetected') || localStorage.getItem('selectedCurrencyManual')) return;
+
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+
+            if (data && data.currency) {
+                console.log(`🌍 Detected local currency: ${data.currency} (${data.country_name})`);
+                setSelectedCurrency(data.currency);
+                localStorage.setItem('selectedCurrency', data.currency);
+            }
+        } catch (err) {
+            console.warn('Geolocation detection skipped or failed:', err.message);
+        } finally {
+            sessionStorage.setItem('currencyDetected', 'true');
+        }
+    }, []);
+
     useEffect(() => {
-        fetchRate(selectedCurrency);
-    }, [selectedCurrency, fetchRate]);
+        fetchAllData();
+        detectCurrency();
+    }, [fetchAllData, detectCurrency]);
 
     const changeCurrency = (code) => {
         setSelectedCurrency(code);
         localStorage.setItem('selectedCurrency', code);
+        localStorage.setItem('selectedCurrencyManual', 'true'); // Flag to prevent auto-detection override
     };
+
+    const currentRate = rates[selectedCurrency] || 1;
 
     const formatPrice = useCallback((amountUSD) => {
         const amount = Number(amountUSD) || 0;
-        const converted = amount * rate;
-        const currencyInfo = SUPPORTED_CURRENCIES[selectedCurrency] || { symbol: selectedCurrency };
+        const converted = amount * currentRate;
+        const currencyInfo = currencies[selectedCurrency] || { symbol: selectedCurrency };
 
         return `${currencyInfo.symbol} ${converted.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         })}`;
-    }, [rate, selectedCurrency]);
+    }, [currentRate, selectedCurrency, currencies]);
 
     const convert = useCallback((amountUSD) => {
-        return (Number(amountUSD) || 0) * rate;
-    }, [rate]);
+        return (Number(amountUSD) || 0) * currentRate;
+    }, [currentRate]);
 
     const value = {
-        currencies: SUPPORTED_CURRENCIES,
+        currencies,
         selectedCurrency,
         changeCurrency,
         formatPrice,
         convert,
-        symbol: (SUPPORTED_CURRENCIES[selectedCurrency] || {}).symbol || selectedCurrency,
+        symbol: (currencies[selectedCurrency] || {}).symbol || selectedCurrency,
         loading
     };
 

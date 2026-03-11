@@ -156,6 +156,7 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                                 <><span className="text-lg">+</span> <span className="font-medium">Cart</span></>
                             )}
                         </button>
+                        
                     </div>
                 </div>
             </div>
