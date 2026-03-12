@@ -125,7 +125,25 @@ exports.updateOrderToPaid = async (req, res) => {
 
     if (req.body.itemsPrice) order.itemsPrice = req.body.itemsPrice;
     if (req.body.shippingPrice) order.shippingPrice = req.body.shippingPrice;
-    if (req.body.totalPrice) order.totalPrice = req.body.totalPrice;
+
+    if (req.body.totalPrice && req.body.currency && req.body.currency !== order.currency) {
+      // Calculate conversion factor to update individual items accurately
+      const oldTotal = order.totalPrice || 1;
+      const conversionFactor = req.body.totalPrice / oldTotal;
+
+      console.log(`💱 Converting Order #${order._id} from ${order.currency} to ${req.body.currency}. Total: ${req.body.totalPrice}`);
+
+      // Correct individual line items on the order record
+      order.orderItems.forEach(item => {
+        item.price = Number((item.price * conversionFactor).toFixed(2));
+      });
+
+      order.totalPrice = req.body.totalPrice;
+      order.currency = req.body.currency;
+    } else if (req.body.totalPrice) {
+      order.totalPrice = req.body.totalPrice;
+    }
+
     if (req.body.currency) order.currency = req.body.currency;
 
     const previouslyPaid = order.isPaid;

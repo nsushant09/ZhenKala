@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useStripe, useElements, PaymentElement, ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import api from '../../services/api';
 
-const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError }) => {
+const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError, convertedTotals }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError
         const { error: confirmError } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                return_url: `${window.location.origin}/checkout?orderId=${orderId}&from_redirect=true`,
+                return_url: `${window.location.origin}/order-success?orderId=${orderId}&from_redirect=true`,
             },
         });
 
@@ -33,7 +33,7 @@ const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError
         const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                return_url: `${window.location.origin}/checkout?orderId=${orderId}&from_redirect=true`,
+                return_url: `${window.location.origin}/order-success?orderId=${orderId}&from_redirect=true`,
             },
             redirect: 'if_required',
         });
@@ -49,7 +49,9 @@ const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError
                     status: paymentIntent.status,
                     update_time: new Date().toISOString(),
                     email_address: paymentIntent.receipt_email || '',
-                    paymentMethod: selectedMethod || 'Card / Digital Wallet'
+                    paymentMethod: selectedMethod || 'Card / Digital Wallet',
+                    // Pass converted prices if they exist (e.g. for Alipay/WeChat in CNY)
+                    ...(convertedTotals || {})
                 });
                 onSuccess();
             } catch (err) {

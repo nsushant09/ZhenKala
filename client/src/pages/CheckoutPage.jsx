@@ -31,11 +31,22 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, getCartTotal, clearCart } = useCart();
-  const { formatPrice, selectedCurrency } = useCurrency();
+  const { formatPrice, selectedCurrency, convert, currencies } = useCurrency();
+  const currentCurrencyInfo = currencies[selectedCurrency] || { symbol: '' };
 
   const [subtotal, setSubtotal] = useState(getCartTotal());
   const [shippingPrice, setShippingPrice] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
+
+  // Converted totals for display (especially for Alipay/WeChat)
+  const [displayTotals, setDisplayTotals] = useState({
+    itemsPrice: 0,
+    shippingPrice: 0,
+    totalPrice: 0,
+    currency: selectedCurrency,
+    symbol: currentCurrencyInfo.symbol || '',
+    rate: 1
+  });
 
   // States
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment
@@ -56,11 +67,28 @@ const CheckoutPage = () => {
   });
 
   const calculateTotals = useCallback((baseSubtotal) => {
-    const shipping = baseSubtotal > 0 && baseSubtotal < 100 ? 15 : 0;
+    const shippingUSD = baseSubtotal > 0 && baseSubtotal < 100 ? 15 : 0;
     setSubtotal(baseSubtotal);
-    setShippingPrice(shipping);
-    setTotalPrice(baseSubtotal + shipping);
-  }, []);
+    setShippingPrice(shippingUSD);
+    setTotalPrice(baseSubtotal + shippingUSD);
+
+    // Get current conversion rate from context for Display
+    const convertedSubtotal = convert(baseSubtotal);
+    const convertedShipping = convert(shippingUSD);
+    const convertedTotal = convertedSubtotal + convertedShipping;
+
+    // Explicitly calculate current local rate relative to USD
+    const currentRate = baseSubtotal === 0 ? 1 : convertedSubtotal / baseSubtotal;
+
+    setDisplayTotals({
+      itemsPrice: convertedSubtotal,
+      shippingPrice: convertedShipping,
+      totalPrice: convertedTotal,
+      currency: selectedCurrency,
+      symbol: (currencies[selectedCurrency] || {}).symbol || '',
+      rate: currentRate || 1
+    });
+  }, [selectedCurrency, convert, currencies]);
 
   useEffect(() => {
     // Check if country is Nepal or zip code is a 5-digit Nepali postcode
@@ -73,40 +101,19 @@ const CheckoutPage = () => {
     setDeliveryEstimate(date);
   }, [shippingAddress.country, shippingAddress.zipCode]);
 
-  const handlePaymentRedirect = useCallback(async (params) => {
-    const status = params.get('redirect_status');
-    const piId = params.get('payment_intent');
-    const orderId = params.get('orderId');
-
-    if (!orderId || !piId) return;
-
-    if (status === 'succeeded') {
-      try {
-        setLoading(true);
-        await api.put(`/orders/${orderId}/pay`, {
-          id: piId,
-          status: 'succeeded',
-          update_time: new Date().toISOString()
-        });
-        clearCart();
-        navigate(`/orders/${orderId}?success=true`);
-      } catch (err) {
-        setError('Payment confirmed but we couldn\'t update your order status. Please contact support.');
-      } finally {
-        setLoading(false);
-      }
-    } else if (status === 'failed' || status === 'canceled') {
-      await api.put(`/orders/${orderId}/fail`);
-      setError('Payment failed or was cancelled. Please select a different method or try again.');
-    }
-  }, [navigate, clearCart]);
-
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const resumeOrderId = queryParams.get('orderId');
     const fromRedirect = queryParams.get('from_redirect') === 'true';
 
-    if (!resumeOrderId && cart.items.length === 0 && !fromRedirect) {
+    // If coming from redirect but to checkout, something went wrong with state.
+    // We should allow OrderSuccessPage to handle redirects.
+    if (fromRedirect && resumeOrderId) {
+      navigate(`/order-success${location.search}`);
+      return;
+    }
+
+    if (!resumeOrderId && cart.items.length === 0) {
       navigate('/cart');
       return;
     }
@@ -130,11 +137,6 @@ const CheckoutPage = () => {
           calculateTotals(order.itemsPrice);
           setIsResumedOrder(true);
           setStep(2);
-
-          // If coming back from a Stripe redirect
-          if (fromRedirect) {
-            handlePaymentRedirect(queryParams);
-          }
         } else {
           // New order flow, fetch profile
           const { data: profile } = await api.get('/users/profile');
@@ -184,16 +186,16 @@ const CheckoutPage = () => {
           name: item.product?.name || item.name,
           quantity: item.quantity,
           image: item.product?.images?.[0]?.url || item.image || '',
-          price: item.price,
+          price: (item.price || item.product?.price || 0) * displayTotals.rate,
           size: item.size,
           color: item.color
         })),
         shippingAddress,
         paymentMethod: 'processing',
-        itemsPrice: subtotal,
-        shippingPrice,
-        totalPrice,
-        currency: selectedCurrency,
+        itemsPrice: displayTotals.itemsPrice,
+        shippingPrice: displayTotals.shippingPrice,
+        totalPrice: displayTotals.totalPrice,
+        currency: displayTotals.currency,
         estimatedDeliveryDate: deliveryEstimate
       };
 
@@ -221,6 +223,7 @@ const CheckoutPage = () => {
       try {
         let amount = totalPrice;
         let currency = selectedCurrency.toLowerCase();
+        let currentRate = 1;
 
         // Specific handling for Alipay/WeChat Pay currency requirements
         if (paymentMethod === 'Alipay' || paymentMethod === 'WeChat Pay') {
@@ -228,14 +231,36 @@ const CheckoutPage = () => {
             try {
               const res = await fetch(`https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api/USD_CNY.json`);
               const data = await res.json();
-              const rate = data.rate || 7.2;
-              amount = totalPrice * rate;
+              currentRate = data.rate || 7.2;
+              amount = totalPrice * currentRate;
               currency = 'cny';
             } catch (err) {
-              amount = totalPrice * 7.2;
+              currentRate = 7.2;
+              amount = totalPrice * currentRate;
               currency = 'cny';
             }
           }
+        }
+
+        // Update display totals for Order Summary
+        if (currency.toUpperCase() !== selectedCurrency) {
+          setDisplayTotals({
+            itemsPrice: subtotal * currentRate,
+            shippingPrice: shippingPrice * currentRate,
+            totalPrice: totalPrice * currentRate,
+            currency: currency.toUpperCase(),
+            symbol: currency.toUpperCase() === 'CNY' ? '¥' : '',
+            rate: currentRate
+          });
+        } else {
+          setDisplayTotals({
+            itemsPrice: subtotal,
+            shippingPrice: shippingPrice,
+            totalPrice: totalPrice,
+            currency: selectedCurrency,
+            symbol: '',
+            rate: 1
+          });
         }
 
         const { data: intentData } = await api.post('/payments/create-payment-intent', {
@@ -255,7 +280,7 @@ const CheckoutPage = () => {
     };
 
     createIntent();
-  }, [paymentMethod, step, createdOrderId, totalPrice, selectedCurrency]);
+  }, [paymentMethod, step, createdOrderId, totalPrice, subtotal, shippingPrice, selectedCurrency]);
 
   const handlePaymentSuccess = async () => {
     await clearCart();
@@ -263,10 +288,20 @@ const CheckoutPage = () => {
   };
 
   const getDisplayAmount = () => {
-    if (intentDetails && intentDetails.currency.toUpperCase() === 'CNY') {
-      return `¥ ${(intentDetails.amount / 100).toFixed(2)}`;
+    if (displayTotals.currency !== selectedCurrency) {
+      const symbol = displayTotals.symbol || displayTotals.currency;
+      return `${symbol} ${displayTotals.totalPrice.toFixed(2)}`;
     }
     return formatPrice(totalPrice);
+  };
+
+  const formatSummaryPrice = (amount) => {
+    if (displayTotals.currency !== selectedCurrency) {
+      const symbol = displayTotals.symbol || displayTotals.currency;
+      const convertedAmount = Number(amount) * displayTotals.rate;
+      return `${symbol} ${convertedAmount.toFixed(2)}`;
+    }
+    return formatPrice(amount);
   };
 
   return (
@@ -373,6 +408,12 @@ const CheckoutPage = () => {
                     selectedMethod={paymentMethod}
                     onSuccess={handlePaymentSuccess}
                     onError={setError}
+                    convertedTotals={displayTotals.currency !== selectedCurrency ? {
+                      itemsPrice: displayTotals.itemsPrice,
+                      shippingPrice: displayTotals.shippingPrice,
+                      totalPrice: displayTotals.totalPrice,
+                      currency: displayTotals.currency
+                    } : null}
                   />
                 </Elements>
               )}
@@ -396,13 +437,13 @@ const CheckoutPage = () => {
                 <div key={idx} className="preview-item">
                   <div className="item-img"><img src={item.product?.images?.[0]?.url || '/placeholder.jpg'} alt={item.product?.name} /></div>
                   <div className="item-details"><p className="item-name">{item.product?.name || item.name}</p><p className="item-meta">Qty: {item.quantity}</p></div>
-                  <div className="item-price">{formatPrice(item.price * item.quantity)}</div>
+                  <div className="item-price">{formatSummaryPrice(item.price * item.quantity)}</div>
                 </div>
               ))}
             </div>
             <div className="summary-calculations">
-              <div className="calc-row"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-              <div className="calc-row"><span>Shipping</span><span>{shippingPrice > 0 ? formatPrice(shippingPrice) : 'FREE'}</span></div>
+              <div className="calc-row"><span>Subtotal</span><span>{formatSummaryPrice(subtotal)}</span></div>
+              <div className="calc-row"><span>Shipping</span><span>{shippingPrice > 0 ? formatSummaryPrice(shippingPrice) : 'FREE'}</span></div>
               <div className="calc-row delivery-estimate-row">
                 <span>Estimated Delivery</span>
                 <span>
@@ -413,7 +454,7 @@ const CheckoutPage = () => {
                   })}
                 </span>
               </div>
-              <div className="calc-row total"><span>Total</span><span>{formatPrice(totalPrice)}</span></div>
+              <div className="calc-row total"><span>Total</span><span>{formatSummaryPrice(totalPrice)}</span></div>
             </div>
             <p className="secure-text">Secure Checkout - SSL Encrypted</p>
           </div>

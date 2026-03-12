@@ -23,6 +23,7 @@ import FAQPage from './pages/FAQPage';
 import DeliveryPage from './pages/DeliveryPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import RefundPolicyPage from './pages/RefundPolicyPage';
+import OrderSuccessPage from './pages/OrderSuccessPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 
@@ -86,6 +87,14 @@ function App() {
                       element={
                         <PrivateRoute>
                           <CheckoutPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/order-success"
+                      element={
+                        <PrivateRoute>
+                          <OrderSuccessPage />
                         </PrivateRoute>
                       }
                     />
