@@ -66,22 +66,6 @@ exports.createOrder = async (req, res) => {
       estimatedDeliveryDate,
     });
 
-    // Update product stock
-    for (let item of orderItems) {
-      const product = await Product.findById(item.product);
-      if (product) {
-        if (item.variant && product.variants && product.variants.length > 0) {
-          const variant = product.variants.id(item.variant);
-          if (variant) {
-            variant.stock -= item.quantity;
-          }
-        } else {
-          product.stock -= item.quantity;
-        }
-        await product.save(); // Triggers pre-save hook to sync base stock
-      }
-    }
-
     res.status(201).json(order);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -164,6 +148,23 @@ exports.updateOrderToPaid = async (req, res) => {
 
     // Send confirmation email only if it wasn't already paid (prevent duplicate emails)
     if (!previouslyPaid) {
+      // Update product stock on successful payment
+      for (let item of updatedOrder.orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+          if (item.variant && product.variants && product.variants.length > 0) {
+            const variant = product.variants.id(item.variant);
+            if (variant) {
+              variant.stock -= item.quantity;
+            }
+          } else {
+            product.stock -= item.quantity;
+          }
+          await product.save();
+          console.log(`📦 Stock updated for ${product.name} following Payment.`);
+        }
+      }
+
       await sendOrderConfirmationEmail(updatedOrder);
     }
 

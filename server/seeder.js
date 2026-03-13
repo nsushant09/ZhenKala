@@ -23,6 +23,21 @@ const users = [
       zipCode: '44600',
       phone: '+977 1-4412345'
     }
+  },
+  {
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john@example.com',
+    password: 'password123',
+    role: 'user',
+    address: {
+      street: '123 Test St',
+      city: 'Kathmandu',
+      state: 'Bagmati',
+      country: 'Nepal',
+      zipCode: '44600',
+      phone: '+977 1-5555555'
+    }
   }
 ];
 

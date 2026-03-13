@@ -1,4 +1,5 @@
 const Order = require('../models/Order');
+const Product = require('../models/Product');
 const PaymentConfig = require('../models/PaymentConfig');
 const stripeLib = require('stripe');
 const { sendOrderConfirmationEmail } = require('../utils/emailService');
@@ -83,6 +84,23 @@ exports.handleStripeWebhook = async (req, res) => {
                         email_address: paymentIntent.receipt_email || '',
                     };
                     const savedOrder = await order.save();
+
+                    // Update product stock on successful payment via Webhook
+                    for (let item of order.orderItems) {
+                        const product = await Product.findById(item.product);
+                        if (product) {
+                            if (item.variant && product.variants && product.variants.length > 0) {
+                                const variant = product.variants.id(item.variant);
+                                if (variant) {
+                                    variant.stock -= item.quantity;
+                                }
+                            } else {
+                                product.stock -= item.quantity;
+                            }
+                            await product.save();
+                            console.log(`📦 Stock updated via Webhook for ${product.name}`);
+                        }
+                    }
 
                     // Send email
                     await sendOrderConfirmationEmail(savedOrder);
