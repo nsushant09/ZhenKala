@@ -6,7 +6,12 @@ const dotenv = require('dotenv');
 // Load environment variables
 dotenv.config();
 
+const { apiLimiter } = require('./middleware/rateLimiter');
+
 const app = express();
+
+// Rate limiting
+app.use('/api', apiLimiter);
 
 // Middleware
 app.use(cors());
@@ -66,12 +71,27 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Thangka E-commerce API' });
 });
 
-// Error handling middleware
+// Custom Error Handling Middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+
+  // Log error for monitoring
+  console.error(`❌ [${new Date().toISOString()}] ${req.method} ${req.url} - Error: ${err.message}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err.stack);
+  }
+
+  // Handle specific MongoDB/Mongoose errors
+  if (err.name === 'CastError') {
+    return res.status(404).json({ message: 'Resource not found' });
+  }
+  if (err.code === 11000) {
+    return res.status(400).json({ message: 'Duplicate field value entered' });
+  }
+
+  res.status(statusCode).json({
+    message: err.message || 'Server Error',
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
 });
 
