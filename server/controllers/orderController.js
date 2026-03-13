@@ -150,18 +150,41 @@ exports.updateOrderToPaid = async (req, res) => {
     if (!previouslyPaid) {
       // Update product stock on successful payment
       for (let item of updatedOrder.orderItems) {
-        const product = await Product.findById(item.product);
-        if (product) {
-          if (item.variant && product.variants && product.variants.length > 0) {
-            const variant = product.variants.id(item.variant);
-            if (variant) {
-              variant.stock -= item.quantity;
+        try {
+          const product = await Product.findById(item.product);
+          if (product) {
+            console.log(`📦 Updating stock for product: ${product.name} (ID: ${product._id})`);
+            const quantityToDeduct = Number(item.quantity) || 0;
+
+            if (item.variant && product.variants && product.variants.length > 0) {
+              let variant = product.variants.id(item.variant);
+
+              // Fallback: If ID lookup fails, search by size/color
+              if (!variant) {
+                variant = product.variants.find(v =>
+                  String(v.size) === String(item.size) &&
+                  String(v.color) === String(item.color)
+                );
+              }
+
+              if (variant) {
+                console.log(`🔹 Reducing variant stock (${variant.size || ''} ${variant.color || ''}) by ${quantityToDeduct}`);
+                variant.stock = Math.max(0, variant.stock - quantityToDeduct);
+                product.markModified('variants');
+              } else {
+                console.log(`⚠️ Variant not found for item ${item.name}, falling back to main stock.`);
+                product.stock = Math.max(0, product.stock - quantityToDeduct);
+              }
+            } else {
+              console.log(`🔹 Reducing main product stock by ${quantityToDeduct}`);
+              product.stock = Math.max(0, product.stock - quantityToDeduct);
             }
-          } else {
-            product.stock -= item.quantity;
+
+            await product.save();
+            console.log(`✅ ${product.name} stock updated successfully.`);
           }
-          await product.save();
-          console.log(`📦 Stock updated for ${product.name} following Payment.`);
+        } catch (stockError) {
+          console.error(`❌ Critical error updating stock for item ${item.name}:`, stockError);
         }
       }
 

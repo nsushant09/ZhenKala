@@ -87,18 +87,38 @@ exports.handleStripeWebhook = async (req, res) => {
 
                     // Update product stock on successful payment via Webhook
                     for (let item of order.orderItems) {
-                        const product = await Product.findById(item.product);
-                        if (product) {
-                            if (item.variant && product.variants && product.variants.length > 0) {
-                                const variant = product.variants.id(item.variant);
-                                if (variant) {
-                                    variant.stock -= item.quantity;
+                        try {
+                            const product = await Product.findById(item.product);
+                            if (product) {
+                                console.log(`📦 Webhook: Updating stock for ${product.name}`);
+                                const quantityToDeduct = Number(item.quantity) || 0;
+
+                                if (item.variant && product.variants && product.variants.length > 0) {
+                                    let variant = product.variants.id(item.variant);
+
+                                    // Fallback: If ID lookup fails, search by size/color
+                                    if (!variant) {
+                                        variant = product.variants.find(v =>
+                                            String(v.size) === String(item.size) &&
+                                            String(v.color) === String(item.color)
+                                        );
+                                    }
+
+                                    if (variant) {
+                                        variant.stock = Math.max(0, variant.stock - quantityToDeduct);
+                                        product.markModified('variants');
+                                    } else {
+                                        product.stock = Math.max(0, product.stock - quantityToDeduct);
+                                    }
+                                } else {
+                                    product.stock = Math.max(0, product.stock - quantityToDeduct);
                                 }
-                            } else {
-                                product.stock -= item.quantity;
+
+                                await product.save();
+                                console.log(`✅ Webhook: ${product.name} stock updated.`);
                             }
-                            await product.save();
-                            console.log(`📦 Stock updated via Webhook for ${product.name}`);
+                        } catch (stockError) {
+                            console.error(`❌ Webhook: Error updating stock for ${item.name}:`, stockError);
                         }
                     }
 
