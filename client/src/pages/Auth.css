@@ -18,3 +18,87 @@
     font-weight: 600;
     text-decoration: underline;
 }
+
+/* Verification Specific Styles */
+.success-message-box {
+    padding: 12px;
+    background-color: #ecfdf5;
+    color: #059669;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    margin-bottom: var(--spacing-md);
+    border: 1px solid #d1fae5;
+}
+
+.verification-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.otp-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0;
+}
+
+.otp-input-wrapper label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--color-gray-600);
+}
+
+.otp-input {
+    width: 100%;
+    max-width: 250px;
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 8px;
+    padding: 16px;
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    background-color: #fcfcfc;
+    font-family: monospace;
+}
+
+.otp-input:focus {
+    outline: none;
+    border-color: var(--color-on-background);
+    background-color: #ffffff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.otp-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--spacing-lg);
+}
+
+.btn-back,
+.btn-resend {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-gray-600);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+}
+
+.btn-back:hover,
+.btn-resend:hover {
+    color: var(--color-on-background);
+    background-color: var(--color-gray-100);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

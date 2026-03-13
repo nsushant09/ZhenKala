@@ -301,6 +301,7 @@ exports.clearCart = async (req, res) => {
 
     cart.items = [];
     await cart.save();
+    console.log(`🧹 Cart cleared for user: ${req.user._id}`);
 
     res.json({ message: 'Cart cleared' });
   } catch (error) {

@@ -4,21 +4,36 @@ const stripeLib = require('stripe');
 const { sendOrderConfirmationEmail } = require('../utils/emailService');
 
 // Helper to get active configuration
+// Helper to get active configuration - SECURE: prioritize .env for secrets
 const getActiveConfig = async () => {
-    let config = await PaymentConfig.findOne();
-    if (!config) {
-        // Fallback to environment variables if no DB config
-        return {
-            stripe: {
-                secretKey: process.env.STRIPE_SECRET_KEY,
-                publicKey: process.env.STRIPE_PUBLIC_KEY
-            },
-            paypal: {
-                clientId: process.env.PAYPAL_CLIENT_ID
-            }
-        };
-    }
-    return config;
+    let dbConfig = await PaymentConfig.findOne();
+
+    // Core infrastructure keys must come from .env for security
+    const secureConfig = {
+        stripe: {
+            secretKey: process.env.STRIPE_SECRET_KEY,
+            publicKey: process.env.STRIPE_PUBLIC_KEY,
+            enabled: dbConfig?.stripe?.enabled ?? true
+        },
+        paypal: {
+            clientId: process.env.PAYPAL_CLIENT_ID,
+            secret: process.env.PAYPAL_SECRET,
+            mode: process.env.PAYPAL_MODE || 'sandbox',
+            enabled: dbConfig?.paypal?.enabled ?? true
+        },
+        applePay: {
+            merchantId: dbConfig?.applePay?.merchantId || process.env.APPLE_PAY_MERCHANT_ID,
+            enabled: dbConfig?.applePay?.enabled ?? true
+        },
+        googlePay: {
+            merchantId: dbConfig?.googlePay?.merchantId || process.env.GOOGLE_PAY_MERCHANT_ID,
+            merchantName: dbConfig?.googlePay?.merchantName || 'ZhenKala',
+            enabled: dbConfig?.googlePay?.enabled ?? true
+        },
+        businessInfo: dbConfig?.businessInfo || {}
+    };
+
+    return secureConfig;
 };
 
 // @desc    Handle Stripe Webhooks
@@ -160,8 +175,7 @@ exports.createStripePaymentIntent = async (req, res) => {
 exports.getPayPalClientId = async (req, res) => {
     try {
         const config = await getActiveConfig();
-        const clientId = config.paypal?.clientId || process.env.PAYPAL_CLIENT_ID;
-        res.json({ clientId });
+        res.json({ clientId: config.paypal?.clientId });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -174,11 +188,11 @@ exports.getPaymentConfig = async (req, res) => {
     try {
         const config = await getActiveConfig();
         res.json({
-            stripePublicKey: config.stripe?.publicKey || process.env.STRIPE_PUBLIC_KEY,
-            paypalClientId: config.paypal?.clientId || process.env.PAYPAL_CLIENT_ID,
-            applePayMerchantId: config.applePay?.merchantId || process.env.APPLE_PAY_MERCHANT_ID,
-            googlePayMerchantId: config.googlePay?.merchantId || process.env.GOOGLE_PAY_MERCHANT_ID,
-            googlePayMerchantName: config.googlePay?.merchantName || 'ZhenKala',
+            stripePublicKey: config.stripe?.publicKey,
+            paypalClientId: config.paypal?.clientId,
+            applePayMerchantId: config.applePay?.merchantId,
+            googlePayMerchantId: config.googlePay?.merchantId,
+            googlePayMerchantName: config.googlePay?.merchantName,
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -72,7 +72,8 @@ function cartReducer(state, action) {
       return {
         ...state,
         items: [],
-        localVersion: state.localVersion + 1
+        localVersion: state.localVersion + 1,
+        lastSyncedVersion: state.localVersion + 1 // Burn previous syncs to prevent "undelete" race condition
       };
 
     case 'SYNC_WITH_SERVER': {
@@ -283,6 +284,7 @@ export const CartProvider = ({ children }) => {
   }, [isAuthenticated, triggerSync]);
 
   const clearCart = useCallback(async () => {
+    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     dispatch({ type: 'OPTIMISTIC_CLEAR' });
     if (isAuthenticated) {
       try {

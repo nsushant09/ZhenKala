@@ -8,12 +8,14 @@ const {
   getUserById,
   updateUser,
   registerUser,
+  sendRegistrationOTP,
   loginUser,
   forgotPassword,
   resetPassword,
 } = require('../controllers/userController');
 const { protect, admin } = require('../middleware/auth');
 
+router.post('/send-otp', sendRegistrationOTP);
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/forgot-password', forgotPassword);

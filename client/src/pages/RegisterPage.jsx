@@ -18,7 +18,10 @@ const RegisterPage = () => {
     zipCode: '',
     phone: ''
   });
+  const [step, setStep] = useState(1); // 1: Form, 2: OTP
+  const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
@@ -28,16 +31,37 @@ const RegisterPage = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSendOTP = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
+    try {
+      await axios.post('/api/users/send-otp', {
+        email: formData.email,
+        firstName: formData.firstName
+      });
+      setStep(2);
+      setSuccessMessage(`Verification code sent to ${formData.email}`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send verification code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!otp || otp.length < 6) {
+      setError('Please enter a valid 6-digit verification code.');
+      return;
+    }
+
+    setError('');
+    setIsLoading(true);
+
     const registerData = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      password: formData.password,
+      ...formData,
       address: {
         street: formData.street,
         city: formData.city,
@@ -45,7 +69,8 @@ const RegisterPage = () => {
         country: formData.country,
         zipCode: formData.zipCode,
         phone: formData.phone
-      }
+      },
+      otp
     };
 
     try {
@@ -53,7 +78,7 @@ const RegisterPage = () => {
       login(response.data, response.data.token);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || 'Verification failed. Please check the code and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -69,149 +94,195 @@ const RegisterPage = () => {
       <div className="split-form-side">
         <div className="form-card-container reveal active">
           <div className="form-header">
-            <h1>Join ZhenKala, Shop with Us.</h1>
-            <p>Begin your journey through Himalayan sacred art.</p>
+            <h1 className="garamond">{step === 1 ? 'Join ZhenKala' : 'Verification Required'}</h1>
+            <p>{step === 1 ? 'Begin your journey through Himalayan sacred art.' : 'We\'ve sent a 6-digit code to your email.'}</p>
           </div>
 
           {error && <div className="error-message-box">{error}</div>}
+          {successMessage && !error && <div className="success-message-box">{successMessage}</div>}
 
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="form-row">
+          {step === 1 ? (
+            <form className="auth-form" onSubmit={handleSendOTP}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="firstName">First Name</label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    className="form-control"
+                    placeholder="John"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="lastName">Last Name</label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    className="form-control"
+                    placeholder="Doe"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
               <div className="form-group">
-                <label htmlFor="firstName">First Name</label>
+                <label htmlFor="email">Email Address</label>
                 <input
-                  type="text"
-                  id="firstName"
+                  type="email"
+                  id="email"
                   className="form-control"
-                  placeholder="John"
-                  value={formData.firstName}
+                  placeholder="name@example.com"
+                  value={formData.email}
                   onChange={handleChange}
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label htmlFor="lastName">Last Name</label>
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  className="form-control"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength="6"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="street">Street Address</label>
                 <input
                   type="text"
-                  id="lastName"
+                  id="street"
                   className="form-control"
-                  placeholder="Doe"
-                  value={formData.lastName}
+                  placeholder="123 Sacred Path"
+                  value={formData.street}
                   onChange={handleChange}
                   required
                 />
               </div>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                className="form-control"
-                placeholder="name@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="city">City</label>
+                  <input
+                    type="text"
+                    id="city"
+                    className="form-control"
+                    placeholder="Kathmandu"
+                    value={formData.city}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="state">State / Province</label>
+                  <input
+                    type="text"
+                    id="state"
+                    className="form-control"
+                    placeholder="Bagmati"
+                    value={formData.state}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                className="form-control"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="zipCode">Zip Code</label>
+                  <input
+                    type="text"
+                    id="zipCode"
+                    className="form-control"
+                    placeholder="44600"
+                    value={formData.zipCode}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="country">Country</label>
+                  <input
+                    type="text"
+                    id="country"
+                    className="form-control"
+                    placeholder="Nepal"
+                    value={formData.country}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="street">Street Address</label>
-              <input
-                type="text"
-                id="street"
-                className="form-control"
-                placeholder="123 Sacred Path"
-                value={formData.street}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-row">
               <div className="form-group">
-                <label htmlFor="city">City</label>
+                <label htmlFor="phone">Phone Number (Optional)</label>
                 <input
-                  type="text"
-                  id="city"
+                  type="tel"
+                  id="phone"
                   className="form-control"
-                  placeholder="Kathmandu"
-                  value={formData.city}
+                  placeholder="+977 1234567890"
+                  value={formData.phone}
                   onChange={handleChange}
-                  required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="state">State / Province</label>
-                <input
-                  type="text"
-                  id="state"
-                  className="form-control"
-                  placeholder="Bagmati"
-                  value={formData.state}
-                  onChange={handleChange}
-                  required
-                />
+
+              <button type="submit" className="btn-form-primary" disabled={isLoading}>
+                {isLoading ? 'Verifying email...' : 'Send Verification Code'}
+              </button>
+            </form>
+          ) : (
+            <div className="verification-container">
+              <form className="auth-form" onSubmit={handleRegister}>
+                <div className="otp-input-wrapper">
+                  <label htmlFor="otp">Enter 6-Digit Code</label>
+                  <input
+                    type="text"
+                    id="otp"
+                    maxLength="6"
+                    placeholder="000000"
+                    className="otp-input"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <button type="submit" className="btn-form-primary" disabled={isLoading}>
+                  {isLoading ? 'Finalizing...' : 'Create My Account'}
+                </button>
+              </form>
+
+              <div className="otp-actions">
+                <button
+                  type="button"
+                  className="btn-back"
+                  onClick={() => setStep(1)}
+                  disabled={isLoading}
+                >
+                  Edit Registration Details
+                </button>
+                <button
+                  type="button"
+                  className="btn-resend"
+                  onClick={handleSendOTP}
+                  disabled={isLoading}
+                >
+                  Resend Code
+                </button>
               </div>
             </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="zipCode">Zip Code</label>
-                <input
-                  type="text"
-                  id="zipCode"
-                  className="form-control"
-                  placeholder="44600"
-                  value={formData.zipCode}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="country">Country</label>
-                <input
-                  type="text"
-                  id="country"
-                  className="form-control"
-                  placeholder="Nepal"
-                  value={formData.country}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="phone">Phone Number</label>
-              <input
-                type="tel"
-                id="phone"
-                className="form-control"
-                placeholder="+977 1234567890"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-            </div>
-
-            <button type="submit" className="btn-form-primary" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create an account'}
-            </button>
-          </form>
+          )}
 
           <div className="auth-footer">
             <p>

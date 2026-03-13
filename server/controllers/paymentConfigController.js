@@ -12,7 +12,18 @@ exports.getPaymentSettings = async (req, res) => {
             config = await PaymentConfig.create({});
         }
 
-        res.json(config);
+        // MASK SENSITIVE DATA: Never send real keys to the frontend dashboard
+        const sanitizedConfig = config.toObject();
+        if (sanitizedConfig.stripe) {
+            sanitizedConfig.stripe.secretKey = sanitizedConfig.stripe.secretKey ? '********' : '';
+            sanitizedConfig.stripe.publicKey = sanitizedConfig.stripe.publicKey ? '********' : '';
+        }
+        if (sanitizedConfig.paypal) {
+            sanitizedConfig.paypal.clientId = sanitizedConfig.paypal.clientId ? '********' : '';
+            sanitizedConfig.paypal.secret = sanitizedConfig.paypal.secret ? '********' : '';
+        }
+
+        res.json(sanitizedConfig);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

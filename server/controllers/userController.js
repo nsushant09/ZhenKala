@@ -1,20 +1,75 @@
 const crypto = require('crypto');
 const User = require('../models/User');
+const UserOTP = require('../models/UserOTP');
 const { generateToken } = require('../middleware/auth');
+const { sendOTPEmail } = require('../utils/emailService');
 
-// @desc    Register a new user
+// @desc    Send OTP for registration
+// @route   POST /api/users/send-otp
+// @access  Public
+exports.sendRegistrationOTP = async (req, res) => {
+  try {
+    const { email, firstName } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // 1. Check if user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User with this email already exists' });
+    }
+
+    // 2. Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 3. Save to DB (Update if exists, or Create new)
+    await UserOTP.findOneAndUpdate(
+      { email },
+      { otp, createdAt: new Date() },
+      { upsert: true, new: true }
+    );
+
+    // 4. Send Email
+    const emailSent = await sendOTPEmail(email, otp, firstName || 'Guest');
+
+    if (emailSent) {
+      res.status(200).json({ message: 'Verification code sent to your email' });
+    } else {
+      res.status(500).json({ message: 'Failed to send verification email. Please try again later.' });
+    }
+  } catch (error) {
+    console.error('OTP Error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Register a new user (Verified with OTP)
 // @route   POST /api/users/register
 // @access  Public
 exports.registerUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role, address } = req.body;
+    const { firstName, lastName, email, password, role, address, otp } = req.body;
 
+    // 1. Validate OTP
+    if (!otp) {
+      return res.status(400).json({ message: 'Verification code is required' });
+    }
+
+    const otpRecord = await UserOTP.findOne({ email });
+
+    if (!otpRecord || otpRecord.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid or expired verification code' });
+    }
+
+    // 2. Check if user already exists (Double check for race conditions)
     const userExists = await User.findOne({ email });
-
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    // 3. Create User
     const user = await User.create({
       firstName,
       lastName,
@@ -25,6 +80,9 @@ exports.registerUser = async (req, res) => {
     });
 
     if (user) {
+      // Delete the OTP record after successful registration
+      await UserOTP.deleteOne({ email });
+
       res.status(201).json({
         _id: user._id,
         firstName: user.firstName,

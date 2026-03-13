@@ -13,7 +13,7 @@ const users = [
     firstName: 'Admin',
     lastName: 'User',
     email: 'contact.zhenkala@gmail.com',
-    password: 'admin123',
+    password: 'SapoNeupane@321',
     role: 'admin',
     address: {
       street: '45 Artisan Way',
@@ -23,35 +23,7 @@ const users = [
       zipCode: '44600',
       phone: '+977 1-4412345'
     }
-  },
-  {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    password: 'password123',
-    address: {
-      street: '123 Sacred Path',
-      city: 'Sydney',
-      state: 'NSW',
-      country: 'Australia',
-      zipCode: '2000',
-      phone: '+61 412345678'
-    }
-  },
-  {
-    firstName: 'Sarah',
-    lastName: 'Miller',
-    email: 'sarah@example.com',
-    password: 'password123',
-    address: {
-      street: '78 Lotus Lane',
-      city: 'New York',
-      state: 'NY',
-      country: 'USA',
-      zipCode: '10001',
-      phone: '+1 212-555-0123'
-    }
-  },
+  }
 ];
 
 const categoryHierarchy = [
@@ -649,7 +621,7 @@ const seedDatabase = async () => {
     console.log('✅ Database seeded successfully!');
     console.log('\n📧 Admin Login:');
     console.log('   Email: contact.zhenkala@gmail.com');
-    console.log('   Password: admin123');
+    console.log('   Password: SapoNeupane@321');
     console.log('\n📧 Test User Login:');
     console.log('   Email: john@example.com');
     console.log('   Password: password123');
