@@ -55,6 +55,9 @@ jobs:
             mkdir -p /root/zhenkala-deploy
             echo "${SERVER_ENV_FILE}" > /root/zhenkala-deploy/server.env
 
+            # Create shared Docker network if it doesn't exist
+            docker network create zhenkala-network || true
+
             # Pull latest images from Docker Hub
             docker pull ${DOCKERHUB_USERNAME}/zhenkala-server:latest
             docker pull ${DOCKERHUB_USERNAME}/zhenkala-client:latest
@@ -69,14 +72,16 @@ jobs:
             docker run -d \
               --name zhenkala-server \
               -p 5001:5001 \
+              --network zhenkala-network \
               --env-file /root/zhenkala-deploy/server.env \
               ${DOCKERHUB_USERNAME}/zhenkala-server:latest
+
 
             # Run frontend container (Host 80 -> Container 80)
             docker run -d \
               --name zhenkala-client \
               -p 3000:80 \
-              --link zhenkala-server \
+              --network zhenkala-network \
               ${DOCKERHUB_USERNAME}/zhenkala-client:latest
 
             # Cleanup unused images
