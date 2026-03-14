@@ -1,0 +1,77 @@
+name: Deploy ZhenKala to Alibaba ECS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push server image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/zhenkala-server:latest
+
+      - name: Build and push client image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/zhenkala-client:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Alibaba ECS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        with:
+          host: 43.99.84.121
+          username: root
+          key: ${{ secrets.ALIBABA_SSH_PRIVATE_KEY }}
+          envs: DOCKERHUB_USERNAME
+          script: |
+            set -e
+
+            # Pull latest images from Docker Hub
+            docker pull ${DOCKERHUB_USERNAME}/zhenkala-server:latest
+            docker pull ${DOCKERHUB_USERNAME}/zhenkala-client:latest
+
+            # Stop and remove existing containers if they exist
+            docker stop zhenkala-server || true
+            docker rm zhenkala-server || true
+            docker stop zhenkala-client || true
+            docker rm zhenkala-client || true
+
+            # Run backend container (Host 5001 -> Container 5000)
+            docker run -d \
+              --name zhenkala-server \
+              -p 5001:5000 \
+              ${DOCKERHUB_USERNAME}/zhenkala-server:latest
+
+            # Run frontend container (Host 80 -> Container 80)
+            docker run -d \
+              --name zhenkala-client \
+              -p 80:80 \
+              --link zhenkala-server \
+              ${DOCKERHUB_USERNAME}/zhenkala-client:latest
+
+            # Cleanup unused images
+            docker image prune -f
