@@ -42,20 +42,11 @@ const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError
             await api.put(`/orders/${orderId}/fail`);
             onError(error.message);
             setLoading(false);
-        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-            try {
-                await api.put(`/orders/${orderId}/pay`, {
-                    id: paymentIntent.id,
-                    status: paymentIntent.status,
-                    update_time: new Date().toISOString(),
-                    email_address: paymentIntent.receipt_email || '',
-                    paymentMethod: selectedMethod || 'Card / Digital Wallet',
-                    orderSummaryTotals
-                });
-                onSuccess();
-            } catch (err) {
-                onError('Payment succeeded but failed to update order status.');
-            }
+        } else if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
+            // Instead of inline logic, manually redirect to the Success page to mimic Alipay's flow!
+            window.location.href = `${window.location.origin}/order-success?orderId=${orderId}&payment_intent=${paymentIntent.id}&redirect_status=${paymentIntent.status}&from_redirect=true`;
+        } else {
+            setLoading(false);
         }
     };
 

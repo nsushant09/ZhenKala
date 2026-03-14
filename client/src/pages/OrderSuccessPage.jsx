@@ -28,11 +28,11 @@ const OrderSuccessPage = () => {
                 return;
             }
 
-            if (stripeStatus === 'succeeded') {
+            if (stripeStatus === 'succeeded' || stripeStatus === 'processing') {
                 try {
                     await api.put(`/orders/${oid}/pay`, {
                         id: piId,
-                        status: 'succeeded',
+                        status: stripeStatus,
                         update_time: new Date().toISOString()
                     });
 

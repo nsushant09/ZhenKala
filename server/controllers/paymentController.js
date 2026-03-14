@@ -165,6 +165,11 @@ exports.createStripePaymentIntent = async (req, res) => {
 
         if (paymentMethodType === 'Alipay' || paymentMethodType === 'WeChat Pay') {
             intentOptions.payment_method_types = methodTypes;
+            if (paymentMethodType === 'WeChat Pay') {
+                intentOptions.payment_method_options = {
+                    wechat_pay: { client: 'web' }
+                };
+            }
         } else {
             intentOptions.automatic_payment_methods = { enabled: true };
         }
