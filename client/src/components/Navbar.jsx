@@ -162,7 +162,7 @@ const Navbar = () => {
               <div id="google_translate_element" style={{ visibility: 'hidden', position: 'absolute', zIndex: -1 }}></div>
             </div>
 
-            <div className="tagline">Where tradition meets transformation</div>
+            <div className="tagline ml-[8px] md:ml-[32px]">Where tradition meets transformation</div>
             
             <div className="currency-selector">
               <select 
