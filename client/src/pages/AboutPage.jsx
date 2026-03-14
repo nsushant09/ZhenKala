@@ -9,7 +9,7 @@ const AboutPage = () => {
     {
       name: "Avisekh Dhakal",
       role: "Co-Founder",
-      image: ""
+      image: "/team_member_3.jpeg"
     },
     {
       name: "Aman Mahato",
@@ -19,7 +19,7 @@ const AboutPage = () => {
     {
       name: "Sushant Neupane",
       role: "Co-Founder",
-      image: "https://ui-avatars.com/api/?name=Sushant+Neupane&background=A52A2A&color=fff&size=400"
+      image: "/team_member_4.jpeg"
     },
     {
       name: "Utsab Sapkota",

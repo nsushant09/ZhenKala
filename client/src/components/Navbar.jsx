@@ -163,11 +163,17 @@ const Navbar = () => {
             </div>
 
             <div className="tagline">Where tradition meets transformation</div>
+            
             <div className="currency-selector">
-              <select value={selectedCurrency} onChange={(e) => changeCurrency(e.target.value)}>
+              <select 
+                value={selectedCurrency} 
+                onChange={(e) => changeCurrency(e.target.value)}
+                style={{ appearance: 'none', paddingRight: '0', cursor: 'pointer', outline: 'none', background: 'transparent', textAlign: 'right' }}
+                dir="rtl"
+              >
                 {Object.entries(currencies).map(([code, info]) => (
-                  <option key={code} value={code}>
-                    {info.name} ({code.toUpperCase()})
+                  <option key={code} value={code} dir="ltr">
+                    {code.toUpperCase()} - {info.name}
                   </option>
                 ))}
               </select>
