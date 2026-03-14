@@ -30,6 +30,7 @@ const merchantRoutes = require('./routes/merchantRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const paymentConfigRoutes = require('./routes/paymentConfigRoutes');
 const currencyRoutes = require('./routes/currencyRoutes'); // Add this
+const contactRoutes = require('./routes/contactRoutes');
 const path = require('path');
 
 const { updateExchangeRates } = require('./controllers/currencyController'); // Import the job
@@ -47,6 +48,7 @@ app.use('/api/merchant-details', merchantRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/payment-settings', paymentConfigRoutes);
 app.use('/api/currencies', currencyRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Make uploads folder static
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
