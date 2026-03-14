@@ -131,7 +131,7 @@ const HomePage = () => {
       </div>
 
       <div className="relative h-[350px] w-full overflow-hidden reveal pop-up-scroll">
-        <img src="homepage-sillouete.png" alt="ZhenKala Silhouette" className="w-auto h-auto object-contain" />
+        <img src="homepage-sillouete.png" alt="ZhenKala Silhouette" className="w-full h-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/20 flex items-center justify-center">
           <div className="w-[85%] md:w-[75%] mx-auto garamond text-white text-center text-4xl md:text-6xl font-medium leading-tight">
             "Turning sacred intention into hand-painted reality. The essence of Himalayan art."
