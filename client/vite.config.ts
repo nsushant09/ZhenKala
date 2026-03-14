@@ -9,12 +9,12 @@ export default defineConfig({
         port: 3000,
         proxy: {
             '/api': {
-                target: 'http://43.99.84.121',
+                target: 'http://43.99.84.121:5000',
                 changeOrigin: true,
                 secure: false,
             },
             '/uploads': {
-                target: 'http://43.99.84.121',
+                target: 'http://43.99.84.121:5000',
                 changeOrigin: true,
                 secure: false,
             },
