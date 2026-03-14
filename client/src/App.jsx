@@ -47,8 +47,6 @@ import ScrollToTop from './components/ScrollToTop';
 // Hooks
 import useScrollReveal from './hooks/useScrollReveal';
 
-import { CheckoutProvider } from './context/CheckoutContext';
-
 function ScrollRevealHandler() {
   useScrollReveal();
   return null;
@@ -62,155 +60,153 @@ function App() {
       <AuthProvider>
         <CurrencyProvider>
           <CartProvider>
-            <CheckoutProvider>
-              <ShopProvider>
-                <div className="App">
-                  <Navbar />
-                  <main style={{ minHeight: 'calc(100vh - 282px)' }}>
-                    <Routes>
-                      {/* Public Routes */}
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/reviews" element={<ReviewsPage />} />
-                      <Route path="/products" element={<ProductsPage />} />
-                      <Route path="/products/:id" element={<ProductDetailPage />} />
-                      <Route path="/cart" element={<CartPage />} />
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/register" element={<RegisterPage />} />
-                      <Route path="/about" element={<AboutPage />} />
-                      <Route path="/contact" element={<ContactPage />} />
-                      <Route path="/faq" element={<FAQPage />} />
-                      <Route path="/delivery" element={<DeliveryPage />} />
-                      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                      <Route path="/refund-policy" element={<RefundPolicyPage />} />
+            <ShopProvider>
+              <div className="App">
+                <Navbar />
+                <main style={{ minHeight: 'calc(100vh - 282px)' }}>
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/reviews" element={<ReviewsPage />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/products/:id" element={<ProductDetailPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/faq" element={<FAQPage />} />
+                    <Route path="/delivery" element={<DeliveryPage />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                    <Route path="/refund-policy" element={<RefundPolicyPage />} />
 
 
-                      {/* Protected Routes */}
-                      <Route
-                        path="/checkout"
-                        element={
-                          <PrivateRoute>
-                            <CheckoutPage />
-                          </PrivateRoute>
-                        }
-                      />
-                      <Route
-                        path="/order-success"
-                        element={
-                          <PrivateRoute>
-                            <OrderSuccessPage />
-                          </PrivateRoute>
-                        }
-                      />
-                      <Route
-                        path="/profile"
-                        element={
-                          <PrivateRoute>
-                            <ProfilePage />
-                          </PrivateRoute>
-                        }
-                      />
-                      <Route
-                        path="/orders"
-                        element={
-                          <PrivateRoute>
-                            <OrdersPage />
-                          </PrivateRoute>
-                        }
-                      />
-                      <Route
-                        path="/orders/:id"
-                        element={
-                          <PrivateRoute>
-                            <OrderDetailPage />
-                          </PrivateRoute>
-                        }
-                      />
+                    {/* Protected Routes */}
+                    <Route
+                      path="/checkout"
+                      element={
+                        <PrivateRoute>
+                          <CheckoutPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/order-success"
+                      element={
+                        <PrivateRoute>
+                          <OrderSuccessPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <PrivateRoute>
+                          <ProfilePage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/orders"
+                      element={
+                        <PrivateRoute>
+                          <OrdersPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/orders/:id"
+                      element={
+                        <PrivateRoute>
+                          <OrderDetailPage />
+                        </PrivateRoute>
+                      }
+                    />
 
-                      {/* Admin Routes */}
-                      <Route
-                        path="/admin"
-                        element={
-                          <AdminRoute>
-                            <AdminDashboard />
-                          </AdminRoute>
-                        }
-                      />
-                      <Route
-                        path="/admin/products"
-                        element={
-                          <AdminRoute>
-                            <AdminProducts />
-                          </AdminRoute>
-                        }
-                      />
-                      <Route
-                        path="/admin/products/new"
-                        element={
-                          <AdminRoute>
-                            <AdminProductForm />
-                          </AdminRoute>
-                        }
-                      />
-                      <Route
-                        path="/admin/products/:id/edit"
-                        element={
-                          <AdminRoute>
-                            <AdminProductForm />
-                          </AdminRoute>
-                        }
-                      />
-                      <Route
-                        path="/admin/orders"
-                        element={
-                          <AdminRoute>
-                            <AdminOrders />
-                          </AdminRoute>
-                        }
-                      />
-                      <Route
-                        path="/admin/users"
-                        element={
-                          <AdminRoute>
-                            <AdminUsers />
-                          </AdminRoute>
-                        }
-                      />
+                    {/* Admin Routes */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminRoute>
+                          <AdminDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/products"
+                      element={
+                        <AdminRoute>
+                          <AdminProducts />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/products/new"
+                      element={
+                        <AdminRoute>
+                          <AdminProductForm />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/products/:id/edit"
+                      element={
+                        <AdminRoute>
+                          <AdminProductForm />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/orders"
+                      element={
+                        <AdminRoute>
+                          <AdminOrders />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/users"
+                      element={
+                        <AdminRoute>
+                          <AdminUsers />
+                        </AdminRoute>
+                      }
+                    />
 
-                      <Route
-                        path="/admin/settings"
-                        element={
-                          <AdminRoute>
-                            <AdminMerchantSettings />
-                          </AdminRoute>
-                        }
-                      />
+                    <Route
+                      path="/admin/settings"
+                      element={
+                        <AdminRoute>
+                          <AdminMerchantSettings />
+                        </AdminRoute>
+                      }
+                    />
 
-                      <Route
-                        path="/admin/payment"
-                        element={
-                          <AdminRoute>
-                            <PaymentSettings />
-                          </AdminRoute>
-                        }
-                      />
+                    <Route
+                      path="/admin/payment"
+                      element={
+                        <AdminRoute>
+                          <PaymentSettings />
+                        </AdminRoute>
+                      }
+                    />
 
-                      <Route
-                        path="/admin/analytics"
-                        element={
-                          <AdminRoute>
-                            <AdminAnalytics />
-                          </AdminRoute>
-                        }
-                      />
+                    <Route
+                      path="/admin/analytics"
+                      element={
+                        <AdminRoute>
+                          <AdminAnalytics />
+                        </AdminRoute>
+                      }
+                    />
 
-                      {/* 404 Route */}
-                      <Route path="*" element={<NotFoundPage />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                </div>
-              </ShopProvider>
-            </CheckoutProvider>
+                    {/* 404 Route */}
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            </ShopProvider>
           </CartProvider>
         </CurrencyProvider>
       </AuthProvider>

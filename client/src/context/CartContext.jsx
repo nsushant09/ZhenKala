@@ -238,14 +238,40 @@ export const CartProvider = ({ children }) => {
 
   // --- EXPOSED ACTIONS ---
 
+  const getAvailableStock = useCallback((product, variant = null) => {
+    if (!product) return 0;
+
+    if (variant?.size || variant?.color) {
+      const matchedVariant = (product.variants || []).find(v =>
+        (v.size == variant.size || (!v.size && !variant.size)) &&
+        (v.color == variant.color || (!v.color && !variant.color))
+      );
+      if (matchedVariant) return Number(matchedVariant.stock) || 0;
+    }
+
+    return Number(product.stock) || 0;
+  }, []);
+
   const addToCart = useCallback(async (product, quantity = 1, variant = null) => {
     const productId = product._id || product.id;
+
+    const maxStock = getAvailableStock(product, variant);
 
     const existingItem = stateRef.current.items.find(item =>
       (item.product?._id || item.product?.id || item.product) === productId &&
       item.size === variant?.size &&
       item.color === variant?.color
     );
+
+    const requestedQuantity = existingItem ? existingItem.quantity + quantity : quantity;
+    if (requestedQuantity > maxStock) {
+      return {
+        success: false,
+        code: 'STOCK_LIMIT',
+        stock: maxStock,
+        message: `Only ${maxStock} items are available.`
+      };
+    }
 
     if (existingItem) {
       dispatch({
@@ -261,14 +287,36 @@ export const CartProvider = ({ children }) => {
     }
 
     if (isAuthenticated) triggerSync();
-    return true;
-  }, [isAuthenticated, triggerSync]);
+    return { success: true };
+  }, [getAvailableStock, isAuthenticated, triggerSync]);
 
   const updateCartItem = useCallback((itemId, quantity) => {
     if (quantity < 1) return;
+
+    const currentItem = stateRef.current.items.find(item => item._id === itemId);
+    if (!currentItem) {
+      return { success: false, message: 'Item not found in cart' };
+    }
+
+    const product = currentItem.product || {};
+    const maxStock = getAvailableStock(product, {
+      size: currentItem.size,
+      color: currentItem.color
+    });
+
+    if (quantity > maxStock) {
+      return {
+        success: false,
+        code: 'STOCK_LIMIT',
+        stock: maxStock,
+        message: `Only ${maxStock} items are available.`
+      };
+    }
+
     dispatch({ type: 'OPTIMISTIC_UPDATE', payload: { itemId, quantity } });
     if (isAuthenticated) triggerSync();
-  }, [isAuthenticated, triggerSync]);
+    return { success: true };
+  }, [getAvailableStock, isAuthenticated, triggerSync]);
 
   const removeFromCart = useCallback(async (itemId) => {
     dispatch({ type: 'OPTIMISTIC_REMOVE', payload: itemId });

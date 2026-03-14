@@ -71,22 +71,13 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ['Apple Pay', 'Google Pay', 'MasterCard', 'Visa', 'PayPal', 'Union Pay', 'American Express', 'stripe', 'cod', 'processing', 'Card / Digital Wallet', 'Alipay', 'WeChat Pay'],
+      enum: ['Apple Pay', 'Google Pay', 'MasterCard', 'Visa', 'PayPal', 'Union Pay', 'American Express', 'stripe', 'cod', 'processing', 'Card / Digital Wallet'],
     },
     paymentResult: {
       id: String,
       status: String,
       update_time: String,
       email_address: String,
-      idempotencyKey: String,
-    },
-    idempotencyKey: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
-    checkoutToken: {
-      type: String,
     },
     itemsPrice: {
       type: Number,
@@ -144,6 +135,10 @@ const orderSchema = new mongoose.Schema(
     actualShippingCost: {
       type: Number,
       default: 0,
+    },
+    stockDeducted: {
+      type: Boolean,
+      default: false,
     },
   },
   {

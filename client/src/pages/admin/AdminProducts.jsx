@@ -26,11 +26,28 @@ const AdminProducts = () => {
     fetchProducts();
   }, [page, search]);
 
+  useEffect(() => {
+    const onFocus = () => {
+      fetchProducts();
+    };
+
+    const intervalId = setInterval(() => {
+      fetchProducts();
+    }, 30000);
+
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [page, search]);
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const { data } = await api.get(
-        `/products?page=${page}&limit=20&search=${search}`
+        `/products?page=${page}&limit=20&search=${search}&_t=${Date.now()}`
       );
       setProducts(data.products);
       setTotalPages(data.pages);
@@ -141,6 +158,12 @@ const AdminProducts = () => {
 
                 <tbody className="divide-y divide-secondary/5 font-primary">
                   {products.map((product) => (
+                    (() => {
+                      const computedStock = (product.variants && product.variants.length > 0)
+                        ? product.variants.reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0)
+                        : (Number(product.stock) || 0);
+
+                      return (
                     <tr
                       key={product._id}
                       className="hover:bg-white/40 transition-colors group"
@@ -177,9 +200,9 @@ const AdminProducts = () => {
 
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-2">
-                          <span className={`w-1.5 h-1.5 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${computedStock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
-                            {product.stock > 0 ? `${product.stock} Units` : 'Out of Stock'}
+                            {computedStock > 0 ? `${computedStock} Units` : 'Out of Stock'}
                           </span>
                         </div>
                       </td>
@@ -208,6 +231,8 @@ const AdminProducts = () => {
                         </div>
                       </td>
                     </tr>
+                      );
+                    })()
                   ))}
                 </tbody>
               </table>

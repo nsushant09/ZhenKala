@@ -8,10 +8,8 @@ const {
 } = require('../controllers/paymentController');
 const { protect } = require('../middleware/auth');
 
-const { paymentLimiter } = require('../middleware/rateLimiter');
-
 router.post('/webhook', handleStripeWebhook);
-router.post('/create-payment-intent', protect, paymentLimiter, createStripePaymentIntent);
+router.post('/create-payment-intent', protect, createStripePaymentIntent);
 router.get('/paypal/client-id', getPayPalClientId);
 router.get('/config', protect, getPaymentConfig);
 

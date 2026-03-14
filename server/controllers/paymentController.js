@@ -1,8 +1,8 @@
 const Order = require('../models/Order');
-const Product = require('../models/Product');
 const PaymentConfig = require('../models/PaymentConfig');
 const stripeLib = require('stripe');
 const { sendOrderConfirmationEmail } = require('../utils/emailService');
+const { validateAndDeductOrderStock } = require('../utils/inventoryService');
 
 // Helper to get active configuration
 // Helper to get active configuration - SECURE: prioritize .env for secrets
@@ -72,8 +72,18 @@ exports.handleStripeWebhook = async (req, res) => {
             // Extract order ID from metadata
             const orderId = paymentIntent.metadata.orderId;
             if (orderId) {
-                const order = await Order.findById(orderId).populate('user', 'firstName lastName email');
+                let savedOrder;
+                let shouldSendEmail = false;
+
+                const order = await Order.findById(orderId)
+                    .populate('user', 'firstName lastName email');
+
                 if (order && !order.isPaid) {
+                    if (!order.stockDeducted) {
+                        await validateAndDeductOrderStock(order);
+                        order.stockDeducted = true;
+                    }
+
                     order.isPaid = true;
                     order.paidAt = Date.now();
                     order.orderStatus = 'processing';
@@ -83,48 +93,13 @@ exports.handleStripeWebhook = async (req, res) => {
                         update_time: new Date().toISOString(),
                         email_address: paymentIntent.receipt_email || '',
                     };
-                    const savedOrder = await order.save();
 
-                    // Update product stock on successful payment via Webhook
-                    for (let item of order.orderItems) {
-                        try {
-                            const product = await Product.findById(item.product);
-                            if (product) {
-                                console.log(`📦 Webhook: Updating stock for ${product.name}`);
-                                const quantityToDeduct = Number(item.quantity) || 0;
+                    savedOrder = await order.save();
+                    shouldSendEmail = true;
+                }
 
-                                if (item.variant && product.variants && product.variants.length > 0) {
-                                    let variant = product.variants.id(item.variant);
-
-                                    // Fallback: If ID lookup fails, search by size/color
-                                    if (!variant) {
-                                        variant = product.variants.find(v =>
-                                            String(v.size) === String(item.size) &&
-                                            String(v.color) === String(item.color)
-                                        );
-                                    }
-
-                                    if (variant) {
-                                        variant.stock = Math.max(0, variant.stock - quantityToDeduct);
-                                        product.markModified('variants');
-                                    } else {
-                                        product.stock = Math.max(0, product.stock - quantityToDeduct);
-                                    }
-                                } else {
-                                    product.stock = Math.max(0, product.stock - quantityToDeduct);
-                                }
-
-                                await product.save();
-                                console.log(`✅ Webhook: ${product.name} stock updated.`);
-                            }
-                        } catch (stockError) {
-                            console.error(`❌ Webhook: Error updating stock for ${item.name}:`, stockError);
-                        }
-                    }
-
-                    // Send email
+                if (shouldSendEmail && savedOrder) {
                     await sendOrderConfirmationEmail(savedOrder);
-
                     console.log(`Order ${orderId} marked as PAID via Webhook.`);
                 }
             }

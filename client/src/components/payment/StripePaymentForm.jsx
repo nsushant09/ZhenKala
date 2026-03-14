@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useStripe, useElements, PaymentElement, ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import api from '../../services/api';
 
-const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError, convertedTotals }) => {
+const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError, orderSummaryTotals }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
@@ -50,8 +50,7 @@ const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError
                     update_time: new Date().toISOString(),
                     email_address: paymentIntent.receipt_email || '',
                     paymentMethod: selectedMethod || 'Card / Digital Wallet',
-                    // Pass converted prices if they exist (e.g. for Alipay/WeChat in CNY)
-                    ...(convertedTotals || {})
+                    orderSummaryTotals
                 });
                 onSuccess();
             } catch (err) {

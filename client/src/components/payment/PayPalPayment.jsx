@@ -2,7 +2,7 @@ import React from 'react';
 import { PayPalButtons } from '@paypal/react-paypal-js';
 import api from '../../services/api';
 
-const PayPalPayment = ({ amount, orderId, onSuccess, onError }) => {
+const PayPalPayment = ({ amount, orderId, onSuccess, onError, orderSummaryTotals }) => {
     return (
         <div className="paypal-container">
             <PayPalButtons
@@ -27,7 +27,8 @@ const PayPalPayment = ({ amount, orderId, onSuccess, onError }) => {
                             status: details.status,
                             update_time: details.update_time,
                             email_address: details.payer.email_address,
-                            paymentMethod: 'PayPal'
+                            paymentMethod: 'PayPal',
+                            orderSummaryTotals
                         });
                         onSuccess();
                     } catch (err) {

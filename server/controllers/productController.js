@@ -75,10 +75,21 @@ exports.getProducts = async (req, res) => {
       .skip(skip)
       .populate('category', 'name slug parent ancestors');
 
+    const correctedProducts = await Promise.all(products.map(async (product) => {
+      if (product.variants && product.variants.length > 0) {
+        const variantStockTotal = product.variants.reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0);
+        if ((Number(product.stock) || 0) !== variantStockTotal) {
+          await Product.updateOne({ _id: product._id }, { $set: { stock: variantStockTotal } });
+          product.stock = variantStockTotal;
+        }
+      }
+      return product;
+    }));
+
     const total = await Product.countDocuments(query);
 
     res.json({
-      products,
+      products: correctedProducts,
       page: pageNum,
       pages: Math.ceil(total / limitNum),
       total,
@@ -98,6 +109,14 @@ exports.getProductById = async (req, res) => {
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
+    }
+
+    if (product.variants && product.variants.length > 0) {
+      const variantStockTotal = product.variants.reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0);
+      if ((Number(product.stock) || 0) !== variantStockTotal) {
+        await Product.updateOne({ _id: product._id }, { $set: { stock: variantStockTotal } });
+        product.stock = variantStockTotal;
+      }
     }
 
     res.json(product);

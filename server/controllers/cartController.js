@@ -47,7 +47,7 @@ exports.addToCart = async (req, res) => {
     }
 
     if (stockAvailable < quantity) {
-      return res.status(400).json({ message: 'Insufficient stock' });
+      return res.status(400).json({ message: 'Requested quantity exceeds available stock.' });
     }
 
     // 2. Find or Create Cart
@@ -68,7 +68,7 @@ exports.addToCart = async (req, res) => {
       // Check total quantity after update
       const newQuantity = cart.items[existingItemIndex].quantity + quantity;
       if (stockAvailable < newQuantity) {
-        return res.status(400).json({ message: 'Insufficient stock for updated quantity' });
+        return res.status(400).json({ message: 'Requested quantity exceeds available stock.' });
       }
       cart.items[existingItemIndex].quantity = newQuantity;
       cart.items[existingItemIndex].price = price; // Sync price while we are at it
@@ -108,6 +108,9 @@ exports.updateCartItem = async (req, res) => {
 
     // Check stock for this specifc item/variant
     const product = await Product.findById(item.product);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
     let stockAvailable = product.stock;
 
     if (item.size || item.color) {
@@ -119,7 +122,7 @@ exports.updateCartItem = async (req, res) => {
     }
 
     if (stockAvailable < quantity) {
-      return res.status(400).json({ message: 'Insufficient stock' });
+      return res.status(400).json({ message: 'Requested quantity exceeds available stock.' });
     }
 
     item.quantity = quantity;

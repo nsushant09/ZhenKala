@@ -22,13 +22,11 @@ router.route('/myorders')
 router.route('/analytics')
   .get(protect, admin, getAnalytics);
 
-const { paymentLimiter } = require('../middleware/rateLimiter');
-
 router.route('/:id')
   .get(protect, getOrderById);
 
 router.route('/:id/pay')
-  .put(protect, paymentLimiter, updateOrderToPaid);
+  .put(protect, updateOrderToPaid);
 
 router.route('/:id/fail')
   .put(protect, updateOrderToFailed);
