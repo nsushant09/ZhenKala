@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { useCurrency } from '../context/CurrencyContext';
 import { FiPackage, FiChevronRight, FiClock, FiCheckCircle, FiTruck } from 'react-icons/fi';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './OrdersPage.css';
 
 const OrdersPage = () => {
@@ -24,7 +25,11 @@ const OrdersPage = () => {
     fetchOrders();
   }, []);
 
-  if (loading) return <div className="orders-loading">Loading your orders...</div>;
+  if (loading) return (
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <LoadingSpinner />
+    </div>
+  );
 
   return (
     <div className="orders-container">

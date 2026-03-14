@@ -1,0 +1,159 @@
+.profile-container {
+    max-width: 1200px;
+    margin: 4rem auto;
+    padding: 0 1rem;
+    min-height: 70vh;
+}
+
+.profile-header {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.profile-header h1 {
+    font-size: 3rem;
+    color: var(--color-on-background);
+    margin-bottom: 0.5rem;
+}
+
+.profile-content {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.profile-details-section,
+.profile-orders-section {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    flex: 1;
+    min-width: 300px;
+}
+
+.profile-section-title {
+    font-size: 1.5rem;
+    color: var(--color-on-background);
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--color-secondary-light);
+    padding-bottom: 0.5rem;
+}
+
+.profile-form-group {
+    margin-bottom: 1rem;
+}
+
+.profile-form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-gray-600);
+}
+
+.profile-form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: var(--transition-fast);
+}
+
+.profile-form-group input:focus {
+    border-color: var(--color-secondary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(165, 42, 42, 0.1);
+}
+
+.profile-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.profile-save-btn {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    background: var(--color-secondary);
+    color: white;
+    text-align: center;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    margin-top: 1.5rem;
+}
+
+.profile-save-btn:hover {
+    background: var(--color-primary);
+}
+
+.profile-save-btn:disabled {
+    background: var(--color-gray-400);
+    cursor: not-allowed;
+}
+
+.profile-message {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.profile-message.success {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.profile-message.error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Orders override for profile page to make them fit nicely */
+.profile-orders-section .order-card {
+    box-shadow: none;
+    background: #fafafa;
+}
+
+.profile-orders-section .order-card-header {
+    background: transparent;
+    padding: 1rem;
+}
+
+.profile-orders-section .order-card-body {
+    padding: 1rem;
+}
+
+.profile-view-all-orders {
+    display: block;
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--color-secondary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.profile-view-all-orders:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .profile-content {
+        flex-direction: column;
+    }
+    
+    .profile-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}

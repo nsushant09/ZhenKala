@@ -3,6 +3,7 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useCurrency, CURRENCY_SYMBOLS } from '../context/CurrencyContext';
 import { FiCheckCircle, FiPackage, FiTruck, FiMapPin, FiCreditCard, FiPrinter, FiShield, FiCalendar } from 'react-icons/fi';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './OrderDetailPage.css';
 
 const OrderDetailPage = () => {
@@ -50,7 +51,11 @@ const OrderDetailPage = () => {
     window.print();
   };
 
-  if (loading) return <div className="order-detail-loading">Loading Order...</div>;
+  if (loading) return (
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <LoadingSpinner />
+    </div>
+  );
   if (error) return <div className="order-detail-error">{error}</div>;
   if (!order) return <div className="order-detail-error">Order Not Found</div>;
 
