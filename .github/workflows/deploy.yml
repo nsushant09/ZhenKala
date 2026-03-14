@@ -64,6 +64,8 @@ jobs:
             docker run -d \
               --name zhenkala-server \
               -p 5001:5000 \
+              -e PORT=5000 \
+              -e NODE_ENV=production \
               ${DOCKERHUB_USERNAME}/zhenkala-server:latest
 
             # Run frontend container (Host 80 -> Container 80)
