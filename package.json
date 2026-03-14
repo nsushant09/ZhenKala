@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "ali-oss": "^6.23.0",
+    "multer": "^2.1.1"
+  }
+}

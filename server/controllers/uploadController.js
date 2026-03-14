@@ -1,58 +1,41 @@
 const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
+const client = require('../config/oss');
 
-// Set storage engine
-const storage = multer.diskStorage({
-    destination: './uploads/',
-    filename: function (req, file, cb) {
-        cb(
-            null,
-            file.fieldname + '-' + Date.now() + path.extname(file.originalname)
-        );
-    },
-});
+const upload = multer({ dest: 'uploads/' });
 
-// Init upload
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10000000 }, // 10MB limit
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    },
-}).single('image'); // 'image' is the field name
-
-// Check file type
-function checkFileType(file, cb) {
-    // Allowed ext
-    const filetypes = /jpeg|jpg|png|webp|gif/;
-    // Check ext
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    // Check mime
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb('Error: Images Only!');
-    }
-}
-
-// @desc    Upload file
+// @desc    Upload file to Aliyun OSS
 // @route   POST /api/upload
 // @access  Private/Admin
 exports.uploadFile = (req, res) => {
-    upload(req, res, (err) => {
+    const handler = upload.single('image');
+
+    handler(req, res, async (err) => {
         if (err) {
-            res.status(400).json({ message: err });
-        } else {
-            if (req.file == undefined) {
-                res.status(400).json({ message: 'No file selected' });
-            } else {
-                res.json({
-                    message: 'File uploaded',
-                    imageUrl: `/${req.file.path}`,
-                });
-            }
+            console.error('Multer error during upload:', err);
+            return res.status(400).json({ message: err.message || String(err) });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file selected' });
+        }
+
+        try {
+            const fileName = `products/${Date.now()}-${req.file.originalname}`;
+            const filePath = req.file.path;
+
+            const stream = fs.createReadStream(filePath);
+            const result = await client.putStream(fileName, stream);
+
+            return res.json({
+                message: 'File uploaded',
+                imageUrl: result.url,
+            });
+        } catch (error) {
+            console.error('OSS upload error:', error);
+            return res.status(500).json({ message: error.message || 'Failed to upload image' });
         }
     });
 };
+
