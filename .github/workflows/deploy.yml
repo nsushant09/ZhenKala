@@ -68,7 +68,7 @@ jobs:
             # Run backend container (Host 5001 -> Container 5000)
             docker run -d \
               --name zhenkala-server \
-              -p 5000:5000 \
+              -p 5001:5001 \
               --env-file /root/zhenkala-deploy/server.env \
               ${DOCKERHUB_USERNAME}/zhenkala-server:latest
 
