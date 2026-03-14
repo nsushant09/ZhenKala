@@ -171,8 +171,8 @@ const CartPage = () => {
 
                       {/* Quantity */}
                       <div className="col-span-1 sm:col-span-2 flex sm:justify-center">
-                        <div>
-                          <div className="flex items-center border border-gray-200 rounded-full bg-white p-1">
+                        <div className="flex flex-col items-start sm:items-center">
+                          <div className="flex items-center border border-gray-200 rounded-full bg-white p-1 w-max">
                             <button
                               onClick={() => handleUpdateQuantity(itemId, item.quantity - 1)}
                               disabled={item.quantity <= 1}

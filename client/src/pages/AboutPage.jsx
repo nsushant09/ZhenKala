@@ -1,29 +1,30 @@
 import React from 'react';
 import AboutHeroImg from '/about-us-header.jpg';
-const StoryImg = '/about-us-story.jpg';
 import Divider from '../components/Divider';
+
+const StoryImg = '/about-us-story.jpg';
 
 const AboutPage = () => {
   const team = [
     {
       name: "Avisekh Dhakal",
-      role: "CEO & Creative Director",
-      image: "file:///Users/home/.gemini/antigravity/brain/04afb0b5-842d-4de2-8bce-02b1f4f73a66/team_member_1_utsab_png_1769947798411.png"
+      role: "Co-Founder",
+      image: ""
     },
     {
       name: "Aman Mahato",
-      role: "Technical Lead",
-      image: "file:///Users/home/.gemini/antigravity/brain/04afb0b5-842d-4de2-8bce-02b1f4f73a66/team_member_2_sushant_png_1769947814123.png"
+      role: "Co-Founder",
+      image: "/team_member_1.jpg"
     },
     {
       name: "Sushant Neupane",
-      role: "Lead Artisan",
-      image: "file:///Users/home/.gemini/antigravity/brain/04afb0b5-842d-4de2-8bce-02b1f4f73a66/team_member_3_artisan_png_1769947830642.png"
+      role: "Co-Founder",
+      image: "https://ui-avatars.com/api/?name=Sushant+Neupane&background=A52A2A&color=fff&size=400"
     },
     {
       name: "Utsab Sapkota",
-      role: "Operations Manager",
-      image: "https://ui-avatars.com/api/?name=Tashi+Dorje&background=A52A2A&color=fff&size=400"
+      role: "Co-Founder",
+      image: "/team_member_2.jpg"
     }
   ];
 
@@ -108,7 +109,7 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
             {team.map((member, index) => (
               <div key={index} className={`text-center transition-all duration-300 hover:scale-105 p-4 reveal reveal-delay-${index + 1}`}>
-                <div className="w-full aspect-[4/5] rounded-sm mb-6 overflow-hidden border border-gray-200 p-2 bg-white shadow-sm">
+                <div className="w-full aspect-[4/5] rounded-sm mb-6 overflow-hidden  p-2  shadow-sm">
                   <img src={member.image} alt={member.name} className="w-full h-full object-cover rounded-[2px]" />
                 </div>
                 <h3 className="font-primary text-2xl font-medium text-on-background mb-1">{member.name}</h3>

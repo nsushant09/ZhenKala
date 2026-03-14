@@ -269,7 +269,7 @@ export const CartProvider = ({ children }) => {
         success: false,
         code: 'STOCK_LIMIT',
         stock: maxStock,
-        message: `Only ${maxStock} items are available.`
+        message: `Only ${maxStock} items are available`
       };
     }
 
