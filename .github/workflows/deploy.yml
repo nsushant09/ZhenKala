@@ -42,13 +42,18 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          SERVER_ENV_FILE: ${{ secrets.SERVER_ENV_FILE }}
         with:
           host: 43.99.84.121
           username: root
           key: ${{ secrets.ALIBABA_SSH_PRIVATE_KEY }}
-          envs: DOCKERHUB_USERNAME
+          envs: DOCKERHUB_USERNAME,SERVER_ENV_FILE
           script: |
             set -e
+
+            # Write server environment file from GitHub secret
+            mkdir -p /root/zhenkala-deploy
+            echo "${SERVER_ENV_FILE}" > /root/zhenkala-deploy/server.env
 
             # Pull latest images from Docker Hub
             docker pull ${DOCKERHUB_USERNAME}/zhenkala-server:latest
@@ -64,8 +69,7 @@ jobs:
             docker run -d \
               --name zhenkala-server \
               -p 5001:5000 \
-              -e PORT=5000 \
-              -e NODE_ENV=production \
+              --env-file /root/zhenkala-deploy/server.env \
               ${DOCKERHUB_USERNAME}/zhenkala-server:latest
 
             # Run frontend container (Host 80 -> Container 80)
