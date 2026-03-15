@@ -415,7 +415,8 @@ iframe.goog-te-menu-frame {
   /* Bridge any potential gap */
 }
 
-.navbar-user-menu:hover .user-dropdown {
+.navbar-user-menu:hover .user-dropdown,
+.user-dropdown.is-open {
   display: block;
 }
 

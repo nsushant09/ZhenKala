@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import './Navbar.css';
 import api from '../services/api';
+import ConfirmModal from './ConfirmModal';
 
 const languages = [
   { code: 'en', name: 'English', native: 'English' },
@@ -22,12 +23,17 @@ const Navbar = () => {
   const [currentLang, setCurrentLang] = useState('English');
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(null);
   
   const mobileMenuRef = useRef(null);
-  const { user, isAuthenticated } = useAuth();
+  const userMenuRef = useRef(null);
+  const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();
   const { currencies, selectedCurrency, changeCurrency } = useCurrency();
   const navigate = useNavigate();
+
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -35,16 +41,25 @@ const Navbar = () => {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
     };
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'unset';
-    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
   }, [isMenuOpen]);
+
+  const handleLogout = () => {
+    setShowLogoutConfirm(false);
+    logout();
+    setIsUserMenuOpen(false);
+    navigate('/');
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -152,12 +167,34 @@ const Navbar = () => {
               </Link>
               
               {isAuthenticated ? (
-                <Link to="/profile" className="navbar-action">
-                  <FiUser /> <span className="action-text">{user?.firstName}</span>
-                </Link>
+                <div
+                  className="navbar-user-menu"
+                  ref={userMenuRef}
+                  onMouseEnter={() => setIsUserMenuOpen(true)}
+                  onMouseLeave={() => setIsUserMenuOpen(false)}
+                >
+                  <button type="button" className="navbar-action">
+                    <FiUser />
+                    <span>{user?.firstName}</span>
+                  </button>
+                  {isUserMenuOpen && (
+                    <div className="user-dropdown is-open">
+                      <Link to="/profile" onClick={() => setIsUserMenuOpen(false)}>Profile</Link>
+                      <Link to="/orders" onClick={() => setIsUserMenuOpen(false)}>My Orders</Link>
+                      {user?.role === 'admin' && (
+                        <>
+                          <Link to="/admin" onClick={() => setIsUserMenuOpen(false)}>Admin Dashboard</Link>
+                          <Link to="/admin/settings" onClick={() => setIsUserMenuOpen(false)}>Merchant Settings</Link>
+                        </>
+                      )}
+                      <button type="button" onClick={() => setShowLogoutConfirm(true)}>Logout</button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Link to="/login" className="navbar-action">
-                  <FiUser /> <span className="action-text">Account</span>
+                  <FiUser />
+                  <span>Sign In</span>
                 </Link>
               )}
               
@@ -168,6 +205,76 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* Categories Bar with Mega Menu */}
+      <div className="navbar-categories">
+        <div className="container">
+          {categories.map((category) => (
+            <div
+              key={category._id}
+              className="category-item"
+              onMouseEnter={() => setActiveCategory(category._id)}
+              onMouseLeave={() => setActiveCategory(null)}
+            >
+              <Link
+                to={`/products?category=${encodeURIComponent(category.name)}`}
+                className="category-link"
+                onClick={() => setActiveCategory(null)}
+              >
+                {category.name}
+                {category.children && category.children.length > 0 && <span className="dropdown-arrow">▾</span>}
+              </Link>
+              {category.children && category.children.length > 0 && activeCategory === category._id && (
+                <div className="mega-menu" style={{ display: 'block', opacity: 1, visibility: 'visible' }}>
+                  <div className="container">
+                    <div className="mega-menu-grid">
+                      {category.children.map((child) => (
+                        <div key={child._id} className="mega-menu-column">
+                          <Link
+                            to={`/products?category=${encodeURIComponent(child.name)}`}
+                            className="mega-menu-title"
+                            onClick={() => setActiveCategory(null)}
+                          >
+                            {child.name}
+                          </Link>
+                          {child.children && child.children.length > 0 && (
+                            <ul className="mega-menu-list">
+                              {child.children.map((subChild) => (
+                                <li key={subChild._id}>
+                                  <Link
+                                    to={`/products?category=${encodeURIComponent(subChild.name)}`}
+                                    onClick={() => setActiveCategory(null)}
+                                  >
+                                    {subChild.name}
+                                  </Link>
+                                  {subChild.children && subChild.children.length > 0 && (
+                                    <ul className="mega-menu-sublist">
+                                      {subChild.children.map((leaf) => (
+                                        <li key={leaf._id}>
+                                          <Link
+                                            to={`/products?category=${encodeURIComponent(leaf.name)}`}
+                                            onClick={() => setActiveCategory(null)}
+                                          >
+                                            {leaf.name}
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Mobile Menu Sidebar */}
       {isMenuOpen && (
@@ -210,6 +317,16 @@ const Navbar = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of your ZhenKala account?"
+        confirmText="Logout"
+        cancelText="Stay Logged In"
+      />
     </>
   );
 };
