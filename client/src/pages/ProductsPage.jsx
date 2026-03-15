@@ -171,7 +171,7 @@ const ProductsPage = () => {
 
           {/* Sidebar / Filters */}
           <aside className={`
-                        fixed md:relative inset-y-0 left-0 z-50 w-64 bg-white md:bg-transparent shadow-xl md:shadow-none transform transition-transform duration-300 ease-in-out p-6 md:p-0 overflow-y-auto md:overflow-visible
+                        fixed md:relative inset-y-0 left-0 z-[1005] md:z-[100] w-64 bg-white md:bg-transparent shadow-xl md:shadow-none transform transition-transform duration-300 ease-in-out p-6 md:p-0 overflow-y-auto md:overflow-visible
                         ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
                         md:block md:w-1/4 lg:w-1/5
                     `}>

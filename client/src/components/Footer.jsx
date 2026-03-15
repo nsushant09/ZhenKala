@@ -46,7 +46,8 @@ const Footer = () => {
           <div className="footer-section">
             <h3 className="footer-title">Contact</h3>
             <ul className="footer-contact">
-              <li>+977 9705428340, +977 9861283794</li>
+              <li>+977 9705428340</li>
+              <li>+977 9861283794</li>
               <li>contact.zhenkala@gmail.com</li>
               <li>Thamel-12, Kathmandu, Nepal</li>
             </ul>

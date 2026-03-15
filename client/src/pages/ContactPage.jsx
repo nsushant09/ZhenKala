@@ -162,7 +162,7 @@ const ContactPage = () => {
                                     <FiMapPin className="text-2xl text-secondary shrink-0 mt-1" />
                                     <div className="info-text">
                                         <h4 className="font-semibold text-base text-on-background mb-1 uppercase tracking-wide">Workshop Location</h4>
-                                        <p className="text-gray-700 leading-relaxed">Artisans Workshop, Boudhanath Stupa Area</p>
+                                        <p className="text-gray-700 leading-relaxed">Thamel-12, Kathmandu, Nepal</p>
                                         <p className="text-gray-700 leading-relaxed">Kathmandu, Nepal</p>
                                     </div>
                                 </div>
@@ -180,8 +180,8 @@ const ContactPage = () => {
                                     <FiPhone className="text-2xl text-secondary shrink-0 mt-1" />
                                     <div className="info-text">
                                         <h4 className="font-semibold text-base text-on-background mb-1 uppercase tracking-wide">Call or WhatsApp</h4>
-                                        <p className="text-gray-700 leading-relaxed">+977 123456789 (Local Workshop)</p>
-                                        <p className="text-gray-700 leading-relaxed">+61 400 000 000 (Operations Support)</p>
+                                        <p className="text-gray-700 leading-relaxed">+977 9705428340</p>
+                                        <p className="text-gray-700 leading-relaxed">+977 9861283794</p>
                                     </div>
                                 </div>
                             </div>
