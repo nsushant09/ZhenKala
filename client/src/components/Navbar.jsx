@@ -6,7 +6,6 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import './Navbar.css';
 import api from '../services/api';
-import ConfirmModal from './ConfirmModal';
 
 const languages = [
   { code: 'en', name: 'English', native: 'English' },
@@ -18,21 +17,19 @@ const languages = [
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('English');
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [categories, setCategories] = useState([]);
-
+  
   const mobileMenuRef = useRef(null);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { getCartCount } = useCart();
   const { currencies, selectedCurrency, changeCurrency } = useCurrency();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  // IMPLEMENTATION: Close menu when clicking outside
+  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
@@ -41,7 +38,6 @@ const Navbar = () => {
     };
     if (isMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      // Prevent background scrolling when menu is open
       document.body.style.overflow = 'hidden';
     }
     return () => {
@@ -81,13 +77,13 @@ const Navbar = () => {
 
   return (
     <>
+      {/* Top Bar */}
       <div className="navbar-top">
         <div className="container">
           <div className="navbar-top-content">
-            {/* Language */}
-            <div className="language-selector-advanced"
-              onMouseEnter={() => setIsLangOpen(true)}
-              onMouseLeave={() => setIsLangOpen(false)}>
+            <div className="language-selector-advanced" 
+                 onMouseEnter={() => setIsLangOpen(true)} 
+                 onMouseLeave={() => setIsLangOpen(false)}>
               <button className="lang-toggle-btn">
                 <FiGlobe /> <span>{currentLang}</span>
                 <FiChevronDown className={isLangOpen ? 'rotate' : ''} />
@@ -104,15 +100,13 @@ const Navbar = () => {
                   </div>
                 </div>
               )}
-              <div id="google_translate_element" style={{ display: 'none' }}></div>
             </div>
 
             <div className="tagline">Where tradition meets transformation</div>
 
-            {/* Currency */}
             <div className="currency-selector-advanced"
-              onMouseEnter={() => setIsCurrencyOpen(true)}
-              onMouseLeave={() => setIsCurrencyOpen(false)}>
+                 onMouseEnter={() => setIsCurrencyOpen(true)}
+                 onMouseLeave={() => setIsCurrencyOpen(false)}>
               <button className="currency-toggle-btn">
                 <span>{selectedCurrency.toUpperCase()}</span>
                 <FiChevronDown className={isCurrencyOpen ? 'rotate' : ''} />
@@ -131,12 +125,18 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Main Bar */}
       <nav className="navbar-main">
         <div className="container">
           <div className="navbar-content">
             <Link to="/"><img src="/LogoRed.svg" alt="Logo" style={{ height: '32px' }} /></Link>
 
-            {/* Desktop Search */}
+            {/* RESTORED: Desktop Links */}
+            <div className="navbar-links hidden lg:flex">
+              <Link to="/about">About Us</Link>
+              <Link to="/contact">Contact Us</Link>
+            </div>
+
             <form className="navbar-search hidden lg:flex" onSubmit={handleSearch}>
               <input type="text" placeholder="Search Product" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
               <button type="submit"><FiSearch /></button>
@@ -146,37 +146,30 @@ const Navbar = () => {
               <Link to="/cart" className="navbar-action">
                 <div className="cart-icon-wrapper">
                   <FiShoppingCart />
-                  {getCartCount() > 0 && (
-                    <span className="cart-badge">{getCartCount()}</span>
-                  )}
+                  {getCartCount() > 0 && <span className="cart-badge">{getCartCount()}</span>}
                 </div>
                 <span className="action-text">Cart</span>
               </Link>
-
+              
               {isAuthenticated ? (
-                <div className="navbar-user-menu">
-                  <Link to="/profile" className="navbar-action">
-                    <FiUser />
-                    <span className="action-text">{user?.firstName}</span>
-                  </Link>
-                </div>
+                <Link to="/profile" className="navbar-action">
+                  <FiUser /> <span className="action-text">{user?.firstName}</span>
+                </Link>
               ) : (
                 <Link to="/login" className="navbar-action">
-                  <FiUser />
-                  <span className="action-text">Account</span>
+                  <FiUser /> <span className="action-text">Account</span>
                 </Link>
               )}
-
+              
               <button className="lg:hidden navbar-mobile-toggle" onClick={() => setIsMenuOpen(true)}>
                 <FiMenu size={24} />
               </button>
             </div>
-
           </div>
         </div>
       </nav>
 
-      {/* IMPLEMENTATION: Mobile Menu Sidebar */}
+      {/* Mobile Menu Sidebar */}
       {isMenuOpen && (
         <div className="navbar-mobile-menu">
           <div className="mobile-menu-content" ref={mobileMenuRef}>
@@ -187,27 +180,25 @@ const Navbar = () => {
               </button>
             </div>
 
-            {/* Mobile Search Bar - Wrapped in form for correct styling */}
             <form className="mobile-search-form" onSubmit={handleSearch}>
               <div className="mobile-search-wrapper">
-                <input
-                  type="text"
-                  placeholder="Search Product"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                <input 
+                  type="text" 
+                  placeholder="Search Product" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
                 />
                 <button type="submit"><FiSearch /></button>
               </div>
             </form>
 
-            {/* Mobile Categories */}
             <div className="mobile-categories-section">
               <h3 className="mobile-section-label">Categories</h3>
               <div className="mobile-category-list">
                 {categories.map((cat) => (
-                  <Link
-                    key={cat._id}
-                    to={`/products?category=${cat.name}`}
+                  <Link 
+                    key={cat._id} 
+                    to={`/products?category=${cat.name}`} 
                     onClick={() => setIsMenuOpen(false)}
                     className="mobile-category-link"
                   >
