@@ -17,18 +17,143 @@
   color: var(--color-on-secondary);
 }
 
-.language-selector select,
-.currency-selector select {
+/* Container for the whole selector */
+.currency-selector-advanced {
+  position: relative;
+  /* Flex direction column + align-items center ensures the dropdown 
+     is anchored to the center of the button without needing transforms */
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+}
+
+/* The visible button */
+.currency-toggle-btn {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
   background: transparent;
   border: none;
   color: var(--color-on-secondary-light);
   cursor: pointer;
+  padding: 6px 0;
+  font-family: var(--font-secondary);
   font-size: 14px;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.currency-toggle-btn:hover {
+  color: white;
+}
+
+/* The Dropdown Menu - Consolidated & Fixed */
+.currency-dropdown-list {
+  position: absolute;
+  top: 100%;
+  /* Removed right: 50% and transform to eliminate jitter */
+  background: white;
+  min-width: 250px;
+  
+  /* Height and Scroll logic */
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  margin-top: 0;
+  border: 1px solid rgba(165, 42, 42, 0.1);
+  pointer-events: all;
+  
+  /* Use simple animation that doesn't conflict with positioning */
+  animation: slideDownFade 0.2s ease-out;
+}
+
+/* Invisible Bridge to close the hover gap */
+.currency-dropdown-list::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: 0;
+  right: 0;
+  height: 15px;
+  background: transparent;
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Elegant Scrollbar Styling */
+.currency-dropdown-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.currency-dropdown-list::-webkit-scrollbar-track {
+  background: #fdfaf5;
+}
+
+.currency-dropdown-list::-webkit-scrollbar-thumb {
+  background: var(--color-secondary-light);
+  border-radius: 10px;
+}
+
+.currency-dropdown-list::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}
+
+/* Individual Currency Option */
+.currency-option {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-on-background);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-primary);
+}
+
+.currency-option:hover {
+  background: #fdfaf5;
+  color: var(--color-secondary);
+}
+
+.currency-option.active {
+  background: var(--color-secondary-light);
+  color: var(--color-secondary);
+  font-weight: 600;
+}
+
+/* Chevron Rotation */
+.chevron-icon {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.chevron-icon.rotate {
+  transform: rotate(180deg);
 }
 
 /* Advanced Language Selector Styles */
 .language-selector-advanced {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Aligns to the left of the container */
   z-index: 1000;
 }
 
@@ -46,6 +171,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transition: var(--transition-fast);
+  white-space: nowrap;
 }
 
 .lang-toggle-btn:hover {
@@ -69,26 +195,24 @@
 .lang-dropdown-advanced {
   position: absolute;
   top: 100%;
-  left: 0;
+  left:0px;
   background: white;
   min-width: 400px;
   border-radius: var(--radius-md);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   padding: 24px;
   margin-top: 0;
-  /* Remove margin to eliminate the gap */
-  padding-top: 24px;
-  animation: slideDownFade 0.3s ease-out;
   border: 1px solid rgba(165, 42, 42, 0.1);
+  animation: slideDownFade 0.3s ease-out;
 }
 
-/* Invisible Bridge to keep the menu open when moving mouse between button and menu */
+/* Invisible Bridge to close the hover gap */
 .lang-dropdown-advanced::before {
   content: '';
   position: absolute;
   top: -15px;
   left: 0;
-  width: 100%;
+  right: 0;
   height: 15px;
   background: transparent;
 }
@@ -98,7 +222,6 @@
     opacity: 0;
     transform: translateY(-10px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -122,6 +245,7 @@
   text-align: left;
   transition: all 0.2s ease;
   width: 100%;
+  cursor: pointer;
 }
 
 .lang-option:hover {
@@ -472,6 +596,7 @@ iframe.goog-te-menu-frame {
 
 /* Mobile Responsive */
 @media (max-width: 1024px) {
+  
   .navbar-links {
     display: none;
   }
@@ -541,5 +666,15 @@ iframe.goog-te-menu-frame {
 
   .navbar-categories {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .lang-dropdown-advanced {
+    min-width: calc(100vw - 32px); /* Leaves a small margin on the sides */
+    left: 0;
+  }
+  .lang-grid {
+    grid-template-columns: 1fr; /* Stack languages in one column on mobile */
   }
 }

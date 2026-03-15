@@ -28,6 +28,7 @@ const Navbar = () => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('English');
   const closeTimeoutRef = useRef(null);
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
 
   const handleLangEnter = () => {
     if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
@@ -163,21 +164,35 @@ const Navbar = () => {
             </div>
 
             <div className="tagline ml-[8px] md:ml-[32px]">Where tradition meets transformation</div>
-            
-            <div className="currency-selector">
-              <select 
-                value={selectedCurrency} 
-                onChange={(e) => changeCurrency(e.target.value)}
-                style={{ appearance: 'none', paddingRight: '0', cursor: 'pointer', outline: 'none', background: 'transparent', textAlign: 'right' }}
-                dir="rtl"
-              >
-                {Object.entries(currencies).map(([code, info]) => (
-                  <option key={code} value={code} dir="ltr">
-                    {code.toUpperCase()} - {info.name}
-                  </option>
-                ))}
-              </select>
+
+            <div
+              className="currency-selector-advanced"
+              onMouseEnter={() => setIsCurrencyOpen(true)}
+              onMouseLeave={() => setIsCurrencyOpen(false)}
+            >
+              <button className="currency-toggle-btn">
+                <span>{selectedCurrency.toUpperCase()} - {currencies[selectedCurrency]?.name}</span>
+                <FiChevronDown className={`chevron-icon ${isCurrencyOpen ? 'rotate' : ''}`} />
+              </button>
+
+              {isCurrencyOpen && (
+                <div className="currency-dropdown-list">
+                  {Object.entries(currencies).map(([code, info]) => (
+                    <button
+                      key={code}
+                      onClick={() => {
+                        changeCurrency(code);
+                        setIsCurrencyOpen(false);
+                      }}
+                      className={`currency-option ${selectedCurrency === code ? 'active' : ''}`}
+                    >
+                      {code.toUpperCase()} - {info.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
           </div>
         </div>
       </div>

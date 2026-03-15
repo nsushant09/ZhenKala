@@ -139,28 +139,37 @@ const HomePage = () => {
         </div>
       </div>
 
-      <div className="container bg-primary flex flex-col md:flex-row items-center bg-white overflow-hidden reveal pop-up-scroll">
-        <div className="w-full md:w-1/2">
+      <div class="container flex flex-col md:flex-row bg-primary overflow-hidden reveal pop-up-scroll justify-center items-center">
+
+        
+        <div class="w-full md:w-1/2 flex justify-center items-center">
           <img
             src="/homepage-silk-brocade.png"
             alt="Traditional Himalayan Silk Brocade"
-            className="w-[70%] h-auto object-cover"
+            class="w-[70%] h-auto object-cover"
           />
         </div>
 
-        <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col items-center justify-center text-center space-y-8">
-          <h2 className="text-2xl md:text-4xl text-[#333333] font-medium leading-[1.2]">
-            Frame your Thangka with <br className="hidden md:block" /> Silk Brocade
+        
+        <div class="w-full md:w-1/2  flex flex-col justify-center items-center text-center p-8 md:p-16 space-y-8">
+
+          <h2 class="text-2xl  md:text-4xl text-[#333333] font-medium leading-[1.2]">
+            Frame your Thangka with <br class="hidden md:block"/>
+              Silk Brocade
           </h2>
 
-          <p className="text-gray-400 text-md md:text-xl font-medium leading-relaxed max-w-lg">
-            Complete your masterpiece with traditional Himalayan silk brocade. More than a frame, it is a gateway that elevates the artwork and honors its sacred lineage.
+          <p class="text-gray-400  text-md md:text-xl font-medium leading-relaxed max-w-lg">
+            Complete your masterpiece with traditional Himalayan silk brocade.
+            More than a frame, it is a gateway that elevates the artwork and
+            honors its sacred lineage.
           </p>
 
-          <div className="flex flex-row justify-center text-primary items-center gap-2 bg-secondary py-[12px] px-[24px] rounded-md w-fit cursor-pointer hover:bg-red-900 transition-all hover:scale-105 active:scale-95 duration-300 shadow-sm mt-4">
-            <span className="font-medium">Explore Silk Options</span>
+          <div class="flex items-center  gap-2 bg-secondary py-[12px] px-[24px] rounded-md w-fit cursor-pointer hover:bg-red-900 transition-all hover:scale-105 active:scale-95 duration-300 shadow-sm mt-4">
+            <span class="font-medium text-primary">Explore Silk Options</span>
           </div>
+
         </div>
+
       </div>
     </div>
   );
