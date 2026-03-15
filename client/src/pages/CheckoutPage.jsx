@@ -19,7 +19,7 @@ const PaymentIcons = {
   'Apple Pay': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg',
   'Google Pay': 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg',
   'MasterCard': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg',
-  'Visa': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Visa_Inc._logo_%282021%E2%80%93present%29.svg/640px-Visa_Inc._logo_%282021%E2%80%93present%29.svg.png',
+  'Visa': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Visa_Inc._logo_%282021%E2%80%93present%29.svg/1280px-Visa_Inc._logo_%282021%E2%80%93present%29.svg.png?_=20240313022811',
   'PayPal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
   'Union Pay': 'https://upload.wikimedia.org/wikipedia/commons/1/1b/UnionPay_logo.svg',
   'American Express': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
@@ -68,17 +68,25 @@ const CheckoutPage = () => {
   });
 
   const calculateTotals = useCallback((baseSubtotal) => {
-    const shippingUSD = baseSubtotal > 0 && baseSubtotal < 100 ? 15 : 0;
+    // 1. Determine if the destination is Nepal
+    const isNepal = shippingAddress.country?.trim().toLowerCase() === 'nepal' ||
+      /^\d{5}$/.test(shippingAddress.zipCode?.trim());
+
+    // 2. Set the base shipping rate based on location
+    const baseRate = isNepal ? 1 : 15;
+
+    // 3. Apply the $100 threshold (Free shipping if $100 or more)
+    const shippingUSD = (baseSubtotal > 0 && baseSubtotal < 100) ? baseRate : 0;
+
     setSubtotal(baseSubtotal);
     setShippingPrice(shippingUSD);
     setTotalPrice(baseSubtotal + shippingUSD);
 
-    // Get current conversion rate from context for Display
+    // Conversion Logic for Display
     const convertedSubtotal = convert(baseSubtotal);
     const convertedShipping = convert(shippingUSD);
     const convertedTotal = convertedSubtotal + convertedShipping;
 
-    // Explicitly calculate current local rate relative to USD
     const currentRate = baseSubtotal === 0 ? 1 : convertedSubtotal / baseSubtotal;
 
     setDisplayTotals({
@@ -89,7 +97,7 @@ const CheckoutPage = () => {
       symbol: (currencies[selectedCurrency] || {}).symbol || '',
       rate: currentRate || 1
     });
-  }, [selectedCurrency, convert, currencies]);
+  }, [selectedCurrency, convert, currencies, shippingAddress.country, shippingAddress.zipCode]);
 
   useEffect(() => {
     // Check if country is Nepal or zip code is a 5-digit Nepali postcode
@@ -99,22 +107,17 @@ const CheckoutPage = () => {
     const days = isNepal ? 5 : 15;
     const date = new Date();
     date.setDate(date.getDate() + days);
+
     setDeliveryEstimate(date);
   }, [shippingAddress.country, shippingAddress.zipCode]);
 
+
+  // 2. INITIAL DATA LOAD (Runs once on mount)
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const resumeOrderId = queryParams.get('orderId');
-    const fromRedirect = queryParams.get('from_redirect') === 'true';
-
-    // If coming from redirect but to checkout, something went wrong with state.
-    // We should allow OrderSuccessPage to handle redirects.
-    if (fromRedirect && resumeOrderId) {
-      navigate(`/order-success${location.search}`);
-      return;
-    }
-
-    if (!resumeOrderId && cart.items.length === 0) {
+    
+    if (cart.items.length === 0 && !resumeOrderId) {
       navigate('/cart');
       return;
     }
@@ -122,62 +125,42 @@ const CheckoutPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch payment config
         const { data: paymentConfig } = await api.get('/payments/config');
         setConfig(paymentConfig);
 
         if (resumeOrderId) {
-          // Resume existing order
           const { data: order } = await api.get(`/orders/${resumeOrderId}`);
-          if (order.isPaid) {
-            navigate(`/orders/${resumeOrderId}`);
-            return;
-          }
+          if (order.isPaid) return navigate(`/orders/${resumeOrderId}`);
+          
           setCreatedOrderId(order._id);
           setShippingAddress(order.shippingAddress);
-          setSubtotal(order.itemsPrice || 0);
-          setShippingPrice(order.shippingPrice || 0);
-          setTotalPrice(order.totalPrice || 0);
-
-          const resumedCurrency = order.currency || selectedCurrency;
-          const resumedSymbol = (currencies[resumedCurrency] || {}).symbol || resumedCurrency;
-          setDisplayTotals({
-            itemsPrice: order.itemsPrice || 0,
-            shippingPrice: order.shippingPrice || 0,
-            totalPrice: order.totalPrice || 0,
-            currency: resumedCurrency,
-            symbol: resumedSymbol,
-            rate: 1
-          });
-          setOrderSummaryTotals({
-            itemsPrice: order.itemsPrice || 0,
-            shippingPrice: order.shippingPrice || 0,
-            totalPrice: order.totalPrice || 0,
-            currency: resumedCurrency
-          });
+          setSubtotal(order.itemsPrice);
+          setShippingPrice(order.shippingPrice);
+          setTotalPrice(order.totalPrice);
           setIsResumedOrder(true);
           setStep(2);
         } else {
-          // New order flow, fetch profile
           const { data: profile } = await api.get('/users/profile');
           if (profile.address) {
-            setShippingAddress(prev => ({
-              ...prev,
-              ...profile.address,
-              phone: profile.address.phone || prev.phone || ''
-            }));
+            setShippingAddress(prev => ({ ...prev, ...profile.address }));
           }
-          calculateTotals(getCartTotal());
         }
       } catch (err) {
-        console.error('Error fetching checkout data:', err);
-        setError('Failed to load order details.');
+        setError('Failed to load checkout details.');
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [cart.items.length, navigate, location.search, calculateTotals, getCartTotal]);
+  }, [navigate]); // Only runs once
+
+  // 3. REACTIVE PRICING (Updates as you type)
+  useEffect(() => {
+    if (!isResumedOrder) {
+      calculateTotals(getCartTotal());
+    }
+  }, [calculateTotals, getCartTotal, isResumedOrder]);
+
 
   // Dynamic Stripe Promise
   const [stripeInstance, setStripeInstance] = useState(null);

@@ -15,8 +15,8 @@ const CartPage = () => {
   const [quantityErrors, setQuantityErrors] = useState({});
 
   const subtotal = getCartTotal();
-  const shipping = subtotal > 0 && subtotal < 100 ? 15 : 0;
-  const total = subtotal + shipping;
+  // const shipping = subtotal > 0 && subtotal < 100 ? 15 : 0;
+  const total = subtotal;
 
   const handleUpdateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -218,7 +218,7 @@ const CartPage = () => {
                     <span>Subtotal</span>
                     <span className="text-gray-800">{formatPrice(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
+                  {/* <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
                     <span>Shipping</span>
                     <span className="">
                       {shipping > 0 ? formatPrice(shipping) : <span className="text-secondary">FREE</span>}
@@ -230,7 +230,7 @@ const CartPage = () => {
                         Add {formatPrice(100 - subtotal)} more for FREE shipping
                       </p>
                     </div>
-                  )}
+                  )} */}
                 </div>
 
                 <div className="flex justify-between font-bold text-3xl mb-10 text-gray-800 items-baseline">
