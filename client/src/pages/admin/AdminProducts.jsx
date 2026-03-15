@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FiPlus,
   FiEdit2,
@@ -11,6 +11,8 @@ import {
 import api from '../../services/api';
 
 const AdminProducts = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -25,6 +27,14 @@ const AdminProducts = () => {
   useEffect(() => {
     fetchProducts();
   }, [page, search]);
+
+  // Refetch when returning from add/edit so the list updates
+  useEffect(() => {
+    if (location.state?.refreshList) {
+      fetchProducts();
+      navigate('/admin/products', { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const onFocus = () => {

@@ -176,7 +176,7 @@
 }
 
 .lang-toggle-btn:hover {
-  color: white;
+  color: var(--color-primary);
 }
 
 .globe-icon {
@@ -250,7 +250,7 @@
 }
 
 .lang-option:hover {
-  background: #fff;
+  background: var(--color-primary);
   border-color: var(--color-secondary);
   box-shadow: 0 4px 12px rgba(165, 42, 42, 0.08);
   transform: translateY(-1px);

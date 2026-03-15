@@ -213,7 +213,7 @@ const AdminProductForm = () => {
             } else {
                 await api.post('/products', payload);
             }
-            navigate('/admin/products');
+            navigate('/admin/products', { replace: true, state: { refreshList: true } });
         } catch (error) {
             console.error('Error saving product:', error);
             setError(error.response?.data?.message || 'Failed to save product.');
@@ -297,19 +297,6 @@ const AdminProductForm = () => {
                                         <option key={cat._id} value={cat._id}>{cat.name}</option>
                                     ))}
                                 </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cost Price ($)</label>
-                                <input
-                                    type="number"
-                                    name="costPrice"
-                                    value={formData.costPrice}
-                                    onChange={handleChange}
-                                    placeholder="Manufacturing/Acquisition cost"
-                                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all"
-                                    required
-                                />
                             </div>
 
                             <div className="space-y-2">
