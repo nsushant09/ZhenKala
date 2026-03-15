@@ -597,32 +597,21 @@ iframe.goog-te-menu-frame {
 
 /* Mobile Responsive */
 @media (max-width: 1024px) {
-  
-  .navbar-links {
+  .navbar-links, .navbar-search, .navbar-categories {
     display: none;
-  }
-
-  .navbar-search {
-    min-width: 200px;
-  }
-
-  .categories-list {
-    gap: var(--spacing-md);
   }
 
   .navbar-mobile-toggle {
     display: block;
+    cursor: pointer;
   }
 
   .navbar-mobile-menu {
     display: block;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    z-index: 2000;
   }
 
   .mobile-menu-content {
@@ -630,23 +619,84 @@ iframe.goog-te-menu-frame {
     right: 0;
     top: 0;
     bottom: 0;
-    width: 280px;
-    background-color: var(--color-surface);
-    padding: var(--spacing-xl);
+    width: 300px; /* Fixed width of the drawer */
+    background-color: white;
+    /* Margin/Padding: 32px on both sides of the content */
+    padding: 24px 32px; 
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    /* This ensures padding doesn't make the box wider than 300px */
+    box-sizing: border-box; 
   }
 
-  .mobile-menu-content a,
-  .mobile-menu-content button {
+  .mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  /* Mobile Search Styling - The Fix */
+  .mobile-search-form {
+    margin-bottom: 32px;
+    width: 100%; 
     display: block;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--color-gray-200);
   }
 
-  .mobile-menu-content hr {
-    margin: var(--spacing-md) 0;
+  .mobile-search-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    padding: 12px 16px;
+    width: 100%;
+    box-sizing: border-box; /* Crucial: includes padding in width */
+  }
+
+  .mobile-search-wrapper input {
+    flex: 1; /* Takes up all available space */
+    min-width: 0; /* Allows the input to shrink smaller than its default size */
     border: none;
-    border-top: 2px solid var(--color-gray-300);
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    color: var(--color-on-surface);
+  }
+
+  .mobile-search-wrapper button {
+    background: transparent;
+    border: none;
+    padding-left: 8px;
+    display: flex;
+    align-items: center;
+    color: var(--color-gray-600);
+  }
+
+  /* Categories Styling */
+  .mobile-section-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .mobile-category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .mobile-category-link {
+    font-size: 16px;
+    color: var(--color-on-surface);
+    text-decoration: none;
+    transition: color 0.2s;
   }
 }
 
