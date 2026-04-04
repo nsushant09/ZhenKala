@@ -72,19 +72,19 @@ const CheckoutPage = () => {
     const isNepal = shippingAddress.country?.trim().toLowerCase() === 'nepal' ||
       /^\d{5}$/.test(shippingAddress.zipCode?.trim());
 
-    // 2. Set the base shipping rate based on location
-    const baseRate = isNepal ? 1 : 15;
+    // 2. Set the base shipping rate in NPR (roughly $1 for Nepal, $15 for International)
+    const baseRateNPR = isNepal ? 130 : 2000;
 
-    // 3. Apply the $100 threshold (Free shipping if $100 or more)
-    const shippingUSD = (baseSubtotal > 0 && baseSubtotal < 100) ? baseRate : 0;
+    // 3. Apply the 13,000 NPR threshold (roughly $100) (Free shipping if 13,000 NPR or more)
+    const shippingNPR = (baseSubtotal > 0 && baseSubtotal < 13000) ? baseRateNPR : 0;
 
     setSubtotal(baseSubtotal);
-    setShippingPrice(shippingUSD);
-    setTotalPrice(baseSubtotal + shippingUSD);
+    setShippingPrice(shippingNPR);
+    setTotalPrice(baseSubtotal + shippingNPR);
 
     // Conversion Logic for Display
     const convertedSubtotal = convert(baseSubtotal);
-    const convertedShipping = convert(shippingUSD);
+    const convertedShipping = convert(shippingNPR);
     const convertedTotal = convertedSubtotal + convertedShipping;
 
     const currentRate = baseSubtotal === 0 ? 1 : convertedSubtotal / baseSubtotal;

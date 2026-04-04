@@ -9,8 +9,10 @@ import {
   FiX
 } from 'react-icons/fi';
 import api from '../../services/api';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const AdminProducts = () => {
+  const { formatPrice } = useCurrency();
   const location = useLocation();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -201,11 +203,11 @@ const AdminProducts = () => {
                       </td>
 
                       <td className="px-8 py-6 text-gray-400 text-xs line-through">
-                        {product.originalPrice ? `$${product.originalPrice.toLocaleString()}` : '-'}
+                        {product.originalPrice ? formatPrice(product.originalPrice) : '-'}
                       </td>
 
                       <td className="px-8 py-6 font-bold text-secondary text-sm">
-                        ${product.price.toLocaleString()}
+                        {formatPrice(product.price)}
                       </td>
 
                       <td className="px-8 py-6">

@@ -379,10 +379,10 @@ const AdminProductForm = () => {
                                         <tr className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
                                             <th className="px-4 pb-4">Size</th>
                                             <th className="px-4 pb-4">Color</th>
-                                            <th className="px-4 pb-4">Cost Price ($)</th>
-                                            <th className="px-4 pb-4">Orig. Price ($)</th>
+                                            <th className="px-4 pb-4">Cost Price (Rs)</th>
+                                            <th className="px-4 pb-4">Orig. Price (Rs)</th>
                                             <th className="px-4 pb-4">Discount (%)</th>
-                                            <th className="px-4 pb-4">Final Price ($)</th>
+                                            <th className="px-4 pb-4">Final Price (Rs)</th>
                                             <th className="px-4 pb-4">Stock</th>
                                             <th className="px-4 pb-4 text-right">Actions</th>
                                         </tr>

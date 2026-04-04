@@ -194,7 +194,7 @@ const AdminOrders = () => {
                       </td>
 
                       <td className="px-8 py-6 font-bold text-gray-800 text-sm">
-                        ${order.totalPrice.toLocaleString()}
+                        {order.currency === 'USD' ? '$' : order.currency === 'NPR' ? 'Rs ' : (order.currency || '$')}{order.totalPrice.toLocaleString()}
                       </td>
 
                       <td className="px-8 py-6">
@@ -284,7 +284,7 @@ const AdminOrders = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Actual Shipping Cost ($)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Actual Shipping Cost (Rs)</label>
                 <input
                   type="number"
                   placeholder="Cost paid to courier..."

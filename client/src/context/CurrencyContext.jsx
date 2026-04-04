@@ -95,22 +95,24 @@ export const CurrencyProvider = ({ children }) => {
         localStorage.setItem('selectedCurrencyManual', 'true'); // Flag to prevent auto-detection override
     };
 
+    const nprRate = rates['NPR'] || 1;
     const currentRate = rates[selectedCurrency] || 1;
 
-    const formatPrice = useCallback((amountUSD) => {
-        const amount = Number(amountUSD) || 0;
-        const converted = amount * currentRate;
+    const formatPrice = useCallback((amountNPR) => {
+        const amount = Number(amountNPR) || 0;
+        // Convert from NPR to Selected Currency: (Amount / Rate_NPR) * Rate_Selected
+        const converted = (amount / nprRate) * currentRate;
         const currencyInfo = currencies[selectedCurrency] || { symbol: selectedCurrency };
 
         return `${currencyInfo.symbol} ${converted.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         })}`;
-    }, [currentRate, selectedCurrency, currencies]);
+    }, [currentRate, nprRate, selectedCurrency, currencies]);
 
-    const convert = useCallback((amountUSD) => {
-        return (Number(amountUSD) || 0) * currentRate;
-    }, [currentRate]);
+    const convert = useCallback((amountNPR) => {
+        return (Number(amountNPR) || 0) * (currentRate / nprRate);
+    }, [currentRate, nprRate]);
 
     const value = {
         currencies,
