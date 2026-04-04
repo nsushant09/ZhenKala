@@ -12,6 +12,7 @@ import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import StripePaymentForm from '../components/payment/StripePaymentForm';
 import PayPalPayment from '../components/payment/PayPalPayment';
 import { useMerchant } from '../context/MerchantContext';
+import { STRIPE_PUBLIC_KEY, PAYPAL_CLIENT_ID } from '../config/payment';
 
 // stripePromise is now handled as state inside CheckoutPage component
 
@@ -109,7 +110,7 @@ const CheckoutPage = () => {
       symbol: (currencies[selectedCurrency] || {}).symbol || '',
       rate: currentRate || 1
     });
-  }, [selectedCurrency, convert, currencies, shippingAddress.country, shippingAddress.zipCode, appliedCoupon, merchantSettings]);
+  }, [selectedCurrency, convert, currencies, shippingAddress.country, shippingAddress.zipCode, appliedCoupon, settings]);
 
   useEffect(() => {
     // ... delivery estimate logic ...

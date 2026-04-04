@@ -172,11 +172,15 @@ exports.updateOrderToPaid = async (req, res) => {
     const shouldSendConfirmationEmail = !previouslyPaid;
 
     if (shouldSendConfirmationEmail) {
-      await sendOrderConfirmationEmail(updatedOrder);
+      // Non-blocking email send
+      sendOrderConfirmationEmail(updatedOrder).catch(emailErr => {
+        console.error('[Email Error] Failed to send order confirmation:', emailErr.message);
+      });
     }
 
     res.json(updatedOrder);
   } catch (error) {
+    console.error('[Order Update Error]:', error);
     res.status(400).json({ message: error.message });
   }
 };
