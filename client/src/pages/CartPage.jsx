@@ -260,7 +260,7 @@ const CartPage = () => {
                   {subtotal < threshold && subtotal > 0 && (
                     <div className="bg-secondary/5 p-4 rounded-sm mt-2">
                        <p className="text-[10px] text-secondary font-bold uppercase tracking-wider text-center leading-relaxed">
-                        Free shipping on orders over {formatPrice(threshold)} (${(threshold/130).toFixed(0)})
+                        Free shipping on orders over {formatPrice(threshold)}
                       </p>
                     </div>
                   )}

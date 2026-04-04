@@ -63,7 +63,13 @@ const AdminMiscellaneous = () => {
             setSaving(true);
             setError('');
             setSuccess('');
-            await api.put('/merchant-details', settings);
+            const { data } = await api.put('/merchant-details', settings);
+            if (data) {
+                setSettings({
+                    deliveryCharges: data.deliveryCharges || { nepal: 130, international: 2000 },
+                    freeShippingThreshold: data.freeShippingThreshold || 13000
+                });
+            }
             setSuccess('Settings updated successfully');
         } catch (err) {
             setError('Failed to update settings');

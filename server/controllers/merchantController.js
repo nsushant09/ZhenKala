@@ -18,9 +18,22 @@ exports.getMerchantDetails = async (req, res) => {
 exports.updateMerchantDetails = async (req, res) => {
     try {
         let details = await MerchantDetails.getSingleton();
+        const { deliveryCharges, freeShippingThreshold, ...otherSettings } = req.body;
+        
+        if (deliveryCharges) {
+            details.deliveryCharges = {
+                ...details.deliveryCharges,
+                ...deliveryCharges
+            };
+            details.markModified('deliveryCharges');
+        }
+        
+        if (freeShippingThreshold !== undefined) {
+            details.freeShippingThreshold = freeShippingThreshold;
+        }
 
-        // Update fields from body
-        Object.assign(details, req.body);
+        // Update other top-level fields
+        Object.assign(details, otherSettings);
 
         await details.save();
         res.json(details);
