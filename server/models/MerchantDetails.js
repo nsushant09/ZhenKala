@@ -17,7 +17,12 @@ const merchantDetailsSchema = new mongoose.Schema({
     contactPhone: String,
     address: String,
     paypalEmail: String,
-    taxId: String
+    taxId: String,
+    deliveryCharges: {
+        nepal: { type: Number, default: 130 },
+        international: { type: Number, default: 2000 }
+    },
+    freeShippingThreshold: { type: Number, default: 13000 }
 }, { timestamps: true });
 
 // Ensure only one settings document exists

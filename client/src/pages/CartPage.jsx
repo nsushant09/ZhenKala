@@ -16,7 +16,21 @@ const CartPage = () => {
   const [promoCode, setPromoCode] = useState('');
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
+  const [merchantSettings, setMerchantSettings] = useState(null);
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data } = await api.get('/merchant-details');
+        setMerchantSettings(data);
+      } catch (err) {
+        console.error('Failed to load merchant settings');
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const threshold = merchantSettings?.freeShippingThreshold ?? 13000;
   const subtotal = getCartTotal();
   const discountAmount = appliedCoupon ? (subtotal * (appliedCoupon.discountPercent / 100)) : 0;
   const total = subtotal - discountAmount;
@@ -237,6 +251,19 @@ const CartPage = () => {
                     <span>Subtotal</span>
                     <span className="text-gray-800">{formatPrice(subtotal)}</span>
                   </div>
+                  <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
+                    <span>Shipping</span>
+                    <span className={subtotal >= threshold ? "text-green-600" : ""}>
+                      {subtotal >= threshold ? 'FREE' : 'Depends on location'}
+                    </span>
+                  </div>
+                  {subtotal < threshold && subtotal > 0 && (
+                    <div className="bg-secondary/5 p-4 rounded-sm mt-2">
+                       <p className="text-[10px] text-secondary font-bold uppercase tracking-wider text-center leading-relaxed">
+                        Free shipping on orders over {formatPrice(threshold)} (${(threshold/130).toFixed(0)})
+                      </p>
+                    </div>
+                  )}
                   {appliedCoupon && (
                     <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-green-600">
                       <span>Discount ({appliedCoupon.discountPercent}%)</span>
@@ -283,9 +310,14 @@ const CartPage = () => {
                 </div>
 
                 <div className="flex justify-between font-bold text-3xl mb-10 text-gray-800 items-baseline">
-                  <span className="garamond text-xl">Total Due</span>
+                  <span className="garamond text-xl">Total Due*</span>
                   <span className="text-secondary">{formatPrice(total)}</span>
                 </div>
+                {subtotal < threshold && (
+                  <p className="text-[9px] text-gray-400 uppercase tracking-widest text-center mb-6 -mt-6">
+                    *Shipping & Taxes calculated at checkout
+                  </p>
+                )}
 
                 <button
                   onClick={() => navigate('/checkout')}

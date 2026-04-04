@@ -62,23 +62,29 @@ const CheckoutPage = () => {
   const [createdOrderId, setCreatedOrderId] = useState(null);
   const [isResumedOrder, setIsResumedOrder] = useState(false);
   const [orderSummaryTotals, setOrderSummaryTotals] = useState(null);
+  const [merchantSettings, setMerchantSettings] = useState(null);
   const [config, setConfig] = useState({
     stripePublicKey: STRIPE_PUBLIC_KEY,
     paypalClientId: PAYPAL_CLIENT_ID
   });
 
-  const calculateTotals = useCallback((baseSubtotal, coupon = appliedCoupon) => {
+  const calculateTotals = useCallback((baseSubtotal, coupon = appliedCoupon, settings = merchantSettings) => {
     // 1. Determine if the destination is Nepal
     const isNepal = shippingAddress.country?.trim().toLowerCase() === 'nepal' ||
       /^\d{5}$/.test(shippingAddress.zipCode?.trim());
 
-    // 2. Set the base shipping rate in NPR (roughly $1 for Nepal, $15 for International)
-    const baseRateNPR = isNepal ? 130 : 2000;
+    // 2. Set the shipping rates and threshold from settings or fallbacks
+    const nepalCharge = settings?.deliveryCharges?.nepal ?? 130;
+    const internationalCharge = settings?.deliveryCharges?.international ?? 2000;
+    const threshold = settings?.freeShippingThreshold ?? 13000;
 
-    // 3. Apply the 13,000 NPR threshold (roughly $100) (Free shipping if 13,000 NPR or more)
-    const shippingNPR = (baseSubtotal > 0 && baseSubtotal < 13000) ? baseRateNPR : 0;
+    // 3. Set the base shipping rate in NPR
+    const baseRateNPR = isNepal ? nepalCharge : internationalCharge;
 
-    // 4. Calculate Discount
+    // 4. Apply the threshold for free shipping
+    const shippingNPR = (baseSubtotal > 0 && baseSubtotal < threshold) ? baseRateNPR : 0;
+
+    // 5. Calculate Discount
     const discountAmountNPR = coupon ? (baseSubtotal * (coupon.discountPercent / 100)) : 0;
     const finalItemsPriceNPR = baseSubtotal - discountAmountNPR;
 
@@ -86,7 +92,7 @@ const CheckoutPage = () => {
     setShippingPrice(shippingNPR);
     setTotalPrice(finalItemsPriceNPR + shippingNPR);
 
-    // Conversion Logic for Display
+    // Conversion Logic for Display...
     const convertedSubtotal = convert(baseSubtotal);
     const convertedDiscount = convert(discountAmountNPR);
     const convertedShipping = convert(shippingNPR);
@@ -103,11 +109,10 @@ const CheckoutPage = () => {
       symbol: (currencies[selectedCurrency] || {}).symbol || '',
       rate: currentRate || 1
     });
-  }, [selectedCurrency, convert, currencies, shippingAddress.country, shippingAddress.zipCode, appliedCoupon]);
+  }, [selectedCurrency, convert, currencies, shippingAddress.country, shippingAddress.zipCode, appliedCoupon, merchantSettings]);
 
   useEffect(() => {
-    // Check if country is Nepal or zip code is a 5-digit Nepali postcode
-    // Nepali postcodes are 5 digits (e.g., 44600)
+    // ... delivery estimate logic ...
     const isNepal = shippingAddress.country?.trim().toLowerCase() === 'nepal' ||
       /^\d{5}$/.test(shippingAddress.zipCode?.trim());
     const days = isNepal ? 5 : 15;
@@ -133,6 +138,9 @@ const CheckoutPage = () => {
         setLoading(true);
         const { data: paymentConfig } = await api.get('/payments/config');
         setConfig(paymentConfig);
+
+        const { data: mSettings } = await api.get('/merchant-details');
+        setMerchantSettings(mSettings);
 
         if (resumeOrderId) {
           const { data: order } = await api.get(`/orders/${resumeOrderId}`);
