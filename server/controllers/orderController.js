@@ -17,6 +17,8 @@ exports.createOrder = async (req, res) => {
       totalPrice,
       currency,
       estimatedDeliveryDate,
+      coupon,
+      discountAmount,
     } = req.body;
 
     if (orderItems && orderItems.length === 0) {
@@ -65,6 +67,8 @@ exports.createOrder = async (req, res) => {
       totalPrice,
       currency,
       estimatedDeliveryDate,
+      coupon,
+      discountAmount,
     });
 
     res.status(201).json(order);

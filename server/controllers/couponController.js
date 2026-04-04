@@ -101,21 +101,25 @@ exports.validateCoupon = async (req, res) => {
     try {
         const { code } = req.body;
         const now = new Date();
-        const nowForStartCheck = new Date();
-        // Set to end of the current UTC day to be inclusive for users in timezones ahead of UTC
-        nowForStartCheck.setUTCHours(23, 59, 59, 999);
+        const midnight = new Date(now);
+        midnight.setUTCHours(0, 0, 0, 0);
+
+        console.log(`[Coupon Debug] Validating: "${code}"`);
+        console.log(`[Coupon Debug] Server Time: ${now.toISOString()}`);
 
         const coupon = await Coupon.findOne({
-            code: code.toUpperCase(),
+            code: code.trim().toUpperCase(),
             isActive: true,
-            startDate: { $lte: nowForStartCheck },
-            endDate: { $gte: now },
+            startDate: { $lte: now },
+            endDate: { $gte: midnight },
         });
 
         if (!coupon) {
+            console.log(`[Coupon Debug] Result: NOT FOUND or INACTIVE/EXPIRED`);
             return res.status(404).json({ message: 'Invalid or expired coupon code' });
         }
 
+        console.log(`[Coupon Debug] Result: Found ${coupon.code} (${coupon.discountPercent}%)`);
         res.json({
             code: coupon.code,
             discountPercent: coupon.discountPercent,

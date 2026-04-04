@@ -30,8 +30,8 @@ const PaymentIcons = {
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { cart, getCartTotal, clearCart } = useCart();
   const { formatPrice, selectedCurrency, convert, currencies } = useCurrency();
+  const { cart, getCartTotal, clearCart, appliedCoupon } = useCart();
   const currentCurrencyInfo = currencies[selectedCurrency] || { symbol: '' };
 
   const [subtotal, setSubtotal] = useState(getCartTotal());
@@ -67,7 +67,7 @@ const CheckoutPage = () => {
     paypalClientId: PAYPAL_CLIENT_ID
   });
 
-  const calculateTotals = useCallback((baseSubtotal) => {
+  const calculateTotals = useCallback((baseSubtotal, coupon = appliedCoupon) => {
     // 1. Determine if the destination is Nepal
     const isNepal = shippingAddress.country?.trim().toLowerCase() === 'nepal' ||
       /^\d{5}$/.test(shippingAddress.zipCode?.trim());
@@ -78,26 +78,32 @@ const CheckoutPage = () => {
     // 3. Apply the 13,000 NPR threshold (roughly $100) (Free shipping if 13,000 NPR or more)
     const shippingNPR = (baseSubtotal > 0 && baseSubtotal < 13000) ? baseRateNPR : 0;
 
+    // 4. Calculate Discount
+    const discountAmountNPR = coupon ? (baseSubtotal * (coupon.discountPercent / 100)) : 0;
+    const finalItemsPriceNPR = baseSubtotal - discountAmountNPR;
+
     setSubtotal(baseSubtotal);
     setShippingPrice(shippingNPR);
-    setTotalPrice(baseSubtotal + shippingNPR);
+    setTotalPrice(finalItemsPriceNPR + shippingNPR);
 
     // Conversion Logic for Display
     const convertedSubtotal = convert(baseSubtotal);
+    const convertedDiscount = convert(discountAmountNPR);
     const convertedShipping = convert(shippingNPR);
-    const convertedTotal = convertedSubtotal + convertedShipping;
+    const convertedTotal = (convertedSubtotal - convertedDiscount) + convertedShipping;
 
     const currentRate = baseSubtotal === 0 ? 1 : convertedSubtotal / baseSubtotal;
 
     setDisplayTotals({
       itemsPrice: convertedSubtotal,
+      discountAmount: convertedDiscount,
       shippingPrice: convertedShipping,
       totalPrice: convertedTotal,
       currency: selectedCurrency,
       symbol: (currencies[selectedCurrency] || {}).symbol || '',
       rate: currentRate || 1
     });
-  }, [selectedCurrency, convert, currencies, shippingAddress.country, shippingAddress.zipCode]);
+  }, [selectedCurrency, convert, currencies, shippingAddress.country, shippingAddress.zipCode, appliedCoupon]);
 
   useEffect(() => {
     // Check if country is Nepal or zip code is a 5-digit Nepali postcode
@@ -199,7 +205,9 @@ const CheckoutPage = () => {
         shippingPrice: displayTotals.shippingPrice,
         totalPrice: displayTotals.totalPrice,
         currency: displayTotals.currency,
-        estimatedDeliveryDate: deliveryEstimate
+        estimatedDeliveryDate: deliveryEstimate,
+        coupon: appliedCoupon?._id || appliedCoupon?.id,
+        discountAmount: displayTotals.discountAmount || 0,
       };
 
       const { data: order } = await api.post('/orders', orderData);
@@ -208,7 +216,9 @@ const CheckoutPage = () => {
         itemsPrice: order.itemsPrice,
         shippingPrice: order.shippingPrice,
         totalPrice: order.totalPrice,
-        currency: order.currency
+        currency: order.currency,
+        coupon: order.coupon,
+        discountAmount: order.discountAmount
       });
       setStep(2);
     } catch (err) {
@@ -234,7 +244,8 @@ const CheckoutPage = () => {
           itemsPrice: displayTotals.itemsPrice,
           shippingPrice: displayTotals.shippingPrice,
           totalPrice: displayTotals.totalPrice,
-          currency: displayTotals.currency
+          currency: displayTotals.currency,
+          discountAmount: displayTotals.discountAmount
         };
 
         let amount = Number(summaryTotals.totalPrice) || 0;
@@ -329,6 +340,7 @@ const CheckoutPage = () => {
                   <label>Phone Number</label>
                   <input type="tel" name="phone" value={shippingAddress.phone} onChange={handleInputChange} required />
                 </div>
+
                 <button type="submit" className="place-order-btn mt-4" disabled={loading}>
                   {loading ? 'Initializing...' : 'Continue to Payment'}
                 </button>
@@ -393,7 +405,8 @@ const CheckoutPage = () => {
                       itemsPrice: displayTotals.itemsPrice,
                       shippingPrice: displayTotals.shippingPrice,
                       totalPrice: displayTotals.totalPrice,
-                      currency: displayTotals.currency
+                      currency: displayTotals.currency,
+                      discountAmount: displayTotals.discountAmount
                     }}
                     onSuccess={handlePaymentSuccess}
                     onError={setError}
@@ -413,7 +426,8 @@ const CheckoutPage = () => {
                       itemsPrice: displayTotals.itemsPrice,
                       shippingPrice: displayTotals.shippingPrice,
                       totalPrice: displayTotals.totalPrice,
-                      currency: displayTotals.currency
+                      currency: displayTotals.currency,
+                      discountAmount: displayTotals.discountAmount
                     }}
                   />
                 </Elements>
@@ -442,8 +456,15 @@ const CheckoutPage = () => {
                 </div>
               ))}
             </div>
+
             <div className="summary-calculations">
               <div className="calc-row"><span>Subtotal</span><span>{formatSummaryPrice(subtotal)}</span></div>
+              {appliedCoupon && (
+                <div className="calc-row text-green-600">
+                  <span>Discount ({appliedCoupon.discountPercent}%)</span>
+                  <span>-{formatSummaryPrice(subtotal * (appliedCoupon.discountPercent / 100))}</span>
+                </div>
+              )}
               <div className="calc-row"><span>Shipping</span><span>{shippingPrice > 0 ? formatSummaryPrice(shippingPrice) : 'FREE'}</span></div>
               <div className="calc-row delivery-estimate-row">
                 <span>Estimated Delivery</span>

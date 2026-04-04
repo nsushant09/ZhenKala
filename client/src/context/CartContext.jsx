@@ -20,6 +20,7 @@ const initialState = {
   initialized: false,
   localVersion: 0, // Incremented on every local user action
   lastSyncedVersion: 0, // The localVersion that was last successfully accepted by the server
+  appliedCoupon: null, // Track coupon separately
 };
 
 function cartReducer(state, action) {
@@ -124,6 +125,12 @@ function cartReducer(state, action) {
         lastSyncedVersion: syncedVersion
       };
     }
+
+    case 'SET_COUPON':
+      return { ...state, appliedCoupon: action.payload };
+
+    case 'CLEAR_COUPON':
+      return { ...state, appliedCoupon: null };
 
     default:
       return state;
@@ -367,8 +374,11 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getCartTotal,
     getCartCount,
-    refreshCart
-  }), [state.items, state.loading, addToCart, updateCartItem, removeFromCart, removeMultipleFromCart, clearCart, getCartTotal, getCartCount, refreshCart]);
+    refreshCart,
+    applyCoupon: (coupon) => dispatch({ type: 'SET_COUPON', payload: coupon }),
+    clearCoupon: () => dispatch({ type: 'CLEAR_COUPON' }),
+    appliedCoupon: state.appliedCoupon
+  }), [state.items, state.loading, state.appliedCoupon, addToCart, updateCartItem, removeFromCart, removeMultipleFromCart, clearCart, getCartTotal, getCartCount, refreshCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

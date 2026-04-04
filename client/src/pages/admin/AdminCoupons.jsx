@@ -43,9 +43,9 @@ const AdminCoupons = () => {
         try {
             const { data } = await api.get('/coupons');
             setCoupons(data);
-        } catch (error) {
-            console.error('Error fetching coupons:', error);
-            setError('Failed to fetch coupons');
+        } catch (err) {
+            console.error('Fetch Coupons Error:', err.response?.data || err.message);
+            setError(err.response?.data?.message || err.message || 'Failed to fetch coupons');
         } finally {
             setLoading(false);
         }

@@ -200,6 +200,12 @@ const OrderDetailPage = () => {
                   <span>{t.subtotal}</span>
                   <span>{formatOrderPrice(order.itemsPrice)}</span>
                 </div>
+                {order.discountAmount > 0 && (
+                  <div className="total-row discount-row text-green-600">
+                    <span className="text-green-600">{useChinese ? '优惠折扣' : 'Discount'}</span>
+                    <span className="text-green-600">-{formatOrderPrice(order.discountAmount)}</span>
+                  </div>
+                )}
                 <div className="total-row">
                   <span>{t.shipping}</span>
                   <span>{order.shippingPrice > 0 ? formatOrderPrice(order.shippingPrice) : t.free}</span>

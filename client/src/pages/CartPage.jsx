@@ -6,17 +6,36 @@ import { FiTrash2, FiMinus, FiPlus, FiArrowRight, FiShoppingBag } from 'react-ic
 import ConfirmModal from '../components/ConfirmModal';
 
 const CartPage = () => {
-  const { cart, removeFromCart, updateCartItem, getCartTotal, loading } = useCart();
+  const { cart, removeFromCart, updateCartItem, getCartTotal, loading, applyCoupon, clearCoupon, appliedCoupon } = useCart();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
   const [quantityErrors, setQuantityErrors] = useState({});
+  const [promoCode, setPromoCode] = useState('');
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const subtotal = getCartTotal();
-  // const shipping = subtotal > 0 && subtotal < 100 ? 15 : 0;
-  const total = subtotal;
+  const discountAmount = appliedCoupon ? (subtotal * (appliedCoupon.discountPercent / 100)) : 0;
+  const total = subtotal - discountAmount;
+
+  const handleApplyPromoCode = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const { data } = await api.post('/coupons/validate', { code: promoCode });
+      applyCoupon(data);
+      setPromoCode('');
+    } catch (err) {
+      setPromoError(err.response?.data?.message || 'Invalid or expired coupon code');
+      clearCoupon();
+    } finally {
+      setPromoLoading(false);
+    }
+  };
 
   const handleUpdateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -218,19 +237,49 @@ const CartPage = () => {
                     <span>Subtotal</span>
                     <span className="text-gray-800">{formatPrice(subtotal)}</span>
                   </div>
-                  {/* <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
-                    <span>Shipping</span>
-                    <span className="">
-                      {shipping > 0 ? formatPrice(shipping) : <span className="text-secondary">FREE</span>}
-                    </span>
-                  </div>
-                  {shipping > 0 && (
-                    <div className="bg-secondary/5 p-4 rounded-lg mt-2">
-                      <p className="text-[10px] text-secondary font-bold uppercase tracking-wider text-center">
-                        Add {formatPrice(100 - subtotal)} more for FREE shipping
-                      </p>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-green-600">
+                      <span>Discount ({appliedCoupon.discountPercent}%)</span>
+                      <span>-{formatPrice(discountAmount)}</span>
                     </div>
-                  )} */}
+                  )}
+                </div>
+
+                {/* Promo Code Input */}
+                <div className="mb-8">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 block">Promo Code</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder={appliedCoupon ? appliedCoupon.code : "Enter code..."}
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                      disabled={appliedCoupon || promoLoading}
+                      className="flex-grow px-4 py-3 bg-white/50 border border-gray-100 rounded-sm text-xs focus:outline-none focus:border-secondary transition-all uppercase tracking-widest"
+                    />
+                    {appliedCoupon ? (
+                      <button
+                        onClick={clearCoupon}
+                        className="px-4 py-3 text-xs font-bold text-red-500 uppercase tracking-widest hover:bg-red-50 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleApplyPromoCode}
+                        disabled={promoLoading || !promoCode.trim()}
+                        className="px-6 py-3 bg-secondary text-white rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 transition-all disabled:opacity-50"
+                      >
+                        {promoLoading ? '...' : 'Apply'}
+                      </button>
+                    )}
+                  </div>
+                  {promoError && <p className="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-widest">{promoError}</p>}
+                  {appliedCoupon && (
+                    <p className="mt-2 text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                      Coupon Applied Successfully
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-between font-bold text-3xl mb-10 text-gray-800 items-baseline">
