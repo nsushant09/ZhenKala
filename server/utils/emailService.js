@@ -78,7 +78,7 @@ const sendOrderConfirmationEmail = async (order) => {
                                     <h3 style="color: #c53030; text-transform: uppercase; font-size: 12px; margin-bottom: 10px; letter-spacing: 1px;">Invoice Details</h3>
                                     <p style="color: #666; margin: 5px 0; font-size: 14px;"><strong>No:</strong> #${order._id.toString().toUpperCase()}</p>
                                     <p style="color: #666; margin: 5px 0; font-size: 14px;"><strong>Date:</strong> ${new Date(order.paidAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                                    <p style="color: #666; margin: 5px 0; font-size: 14px;"><strong>Method:</strong> ${order.paymentMethod}</p>
+                                    <p style="color: #666; margin: 5px 0; font-size: 14px;"><strong>Method:</strong> ${order.paymentMethod.toUpperCase()}</p>
                                 </td>
                             </tr>
                         </table>

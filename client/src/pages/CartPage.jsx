@@ -181,9 +181,9 @@ const CartPage = () => {
                           </div>
                           <button
                             onClick={() => handleRemoveClick(itemId)}
-                            className="text-gray-400 hover:text-secondary transition-colors duration-300 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider w-fit group/remove"
+                            className="text-secondary transition-all duration-300 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider w-fit group/remove hover:scale-110 origin-left"
                           >
-                            <FiTrash2 size={12} className="group-hover/remove:text-secondary" /> Remove Item
+                            <FiTrash2 size={14} className="transition-transform duration-300" /> Remove Item
                           </button>
                         </div>
                       </div>

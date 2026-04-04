@@ -24,7 +24,7 @@ const Navbar = () => {
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
-  
+
   const mobileMenuRef = useRef(null);
   const userMenuRef = useRef(null);
   const { user, isAuthenticated, logout } = useAuth();
@@ -61,6 +61,28 @@ const Navbar = () => {
     navigate('/');
   };
 
+  // Sync with Google Translate on mount
+  useEffect(() => {
+    const checkGoogleTranslate = () => {
+      const cookieValue = document.cookie.split('; ').find(row => row.startsWith('googtrans='));
+      if (cookieValue) {
+        try {
+          const langCode = cookieValue.split('=')[1].split('/').pop();
+          const matchedLang = languages.find(l => l.code === langCode);
+          if (matchedLang) {
+            setCurrentLang(matchedLang.name);
+          }
+        } catch (err) {
+          console.error('Error parsing googtrans cookie:', err);
+        }
+      }
+    };
+    
+    // Check after a short delay
+    const timer = setTimeout(checkGoogleTranslate, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -83,11 +105,27 @@ const Navbar = () => {
   const handleLanguageChange = (lang) => {
     setCurrentLang(lang.name);
     setIsLangOpen(false);
-    const googleSelect = document.querySelector('.goog-te-combo');
-    if (googleSelect) {
-      googleSelect.value = lang.code;
-      googleSelect.dispatchEvent(new Event('change'));
-    }
+
+    const triggerGoogleTranslate = () => {
+      const googleSelect = document.querySelector('.goog-te-combo');
+      if (googleSelect) {
+        googleSelect.value = lang.code;
+        googleSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        googleSelect.dispatchEvent(new Event('click', { bubbles: true }));
+      } else {
+        // Fallback retry
+        setTimeout(() => {
+          const retrySelect = document.querySelector('.goog-te-combo');
+          if (retrySelect) {
+            retrySelect.value = lang.code;
+            retrySelect.dispatchEvent(new Event('change', { bubbles: true }));
+            retrySelect.dispatchEvent(new Event('click', { bubbles: true }));
+          }
+        }, 500);
+      }
+    };
+
+    triggerGoogleTranslate();
   };
 
   return (
@@ -96,9 +134,11 @@ const Navbar = () => {
       <div className="navbar-top">
         <div className="container">
           <div className="navbar-top-content">
-            <div className="language-selector-advanced" 
-                 onMouseEnter={() => setIsLangOpen(true)} 
-                 onMouseLeave={() => setIsLangOpen(false)}>
+            <div className="language-selector-advanced"
+              onMouseEnter={() => setIsLangOpen(true)}
+              onMouseLeave={() => setIsLangOpen(false)}>
+              {/* HIDDEN GOOGLE ELEMENT */}
+              <div id="google_translate_element" style={{ visibility: 'hidden', position: 'absolute', zIndex: -1, height: 0, width: 0, overflow: 'hidden' }}></div>
               <button className="lang-toggle-btn">
                 <FiGlobe /> <span>{currentLang}</span>
                 <FiChevronDown className={isLangOpen ? 'rotate' : ''} />
@@ -120,8 +160,8 @@ const Navbar = () => {
             <div className="tagline">Where tradition meets transformation</div>
 
             <div className="currency-selector-advanced"
-                 onMouseEnter={() => setIsCurrencyOpen(true)}
-                 onMouseLeave={() => setIsCurrencyOpen(false)}>
+              onMouseEnter={() => setIsCurrencyOpen(true)}
+              onMouseLeave={() => setIsCurrencyOpen(false)}>
               <button className="currency-toggle-btn">
                 <span>{selectedCurrency.toUpperCase()}</span>
                 <FiChevronDown className={isCurrencyOpen ? 'rotate' : ''} />
@@ -165,7 +205,7 @@ const Navbar = () => {
                 </div>
                 <span className="action-text">Cart</span>
               </Link>
-              
+
               {isAuthenticated ? (
                 <div
                   className="navbar-user-menu"
@@ -197,7 +237,7 @@ const Navbar = () => {
                   <span>Sign In</span>
                 </Link>
               )}
-              
+
               <button className="lg:hidden navbar-mobile-toggle" onClick={() => setIsMenuOpen(true)}>
                 <FiMenu size={24} />
               </button>
@@ -289,11 +329,11 @@ const Navbar = () => {
 
             <form className="mobile-search-form" onSubmit={handleSearch}>
               <div className="mobile-search-wrapper">
-                <input 
-                  type="text" 
-                  placeholder="Search Product" 
-                  value={searchQuery} 
-                  onChange={(e) => setSearchQuery(e.target.value)} 
+                <input
+                  type="text"
+                  placeholder="Search Product"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <button type="submit"><FiSearch /></button>
               </div>
@@ -303,9 +343,9 @@ const Navbar = () => {
               <h3 className="mobile-section-label">Categories</h3>
               <div className="mobile-category-list">
                 {categories.map((cat) => (
-                  <Link 
-                    key={cat._id} 
-                    to={`/products?category=${cat.name}`} 
+                  <Link
+                    key={cat._id}
+                    to={`/products?category=${cat.name}`}
                     onClick={() => setIsMenuOpen(false)}
                     className="mobile-category-link"
                   >

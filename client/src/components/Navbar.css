@@ -280,7 +280,8 @@
   letter-spacing: 0.5px;
 }
 
-/* Ensure Google Translate elements are truly invisible but functional */
+ 
+
 .goog-te-banner-frame,
 .skiptranslate:not(.language-selector-advanced *) {
   display: none !important;
@@ -294,6 +295,7 @@ body {
 iframe.goog-te-menu-frame {
   display: none !important;
 }
+
 
 .tagline {
   color: var(--color-on-secondary-light);
