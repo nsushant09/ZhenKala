@@ -10,8 +10,15 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+const User = require('../models/User');
+
 const sendOrderConfirmationEmail = async (order) => {
     try {
+        // Populate coupon for percent display if not already populated
+        if (order.coupon && typeof order.coupon === 'string' || order.coupon instanceof require('mongoose').Types.ObjectId) {
+            await order.populate('coupon', 'code discountPercent');
+        }
+
         const itemsHtml = order.orderItems.map(item => `
             <tr>
                 <td style="padding: 15px 10px; border-bottom: 1px solid #f0f0f0; color: #444;">
@@ -24,22 +31,30 @@ const sendOrderConfirmationEmail = async (order) => {
             </tr>
         `).join('');
 
-        const mailOptions = {
+        const discountRowHtml = (order.discountAmount > 0) ? `
+            <tr>
+                <td style="padding: 8px 0; color: #c53030; font-size: 14px; text-align: left; font-weight: 600;">
+                    Discount ${order.coupon ? `(${order.coupon.discountPercent}%)` : ''}
+                </td>
+                <td style="padding: 8px 0; text-align: right; color: #c53030; font-weight: 600;">-${order.currency} ${order.discountAmount.toFixed(2)}</td>
+            </tr>
+        ` : '';
+
+        // 1. Send Customer Invoice
+        const customerMailOptions = {
             from: `"ZhenKala Art" <${process.env.EMAIL_USER}>`,
             to: order.user.email,
             subject: `Invoice for Order #${order._id.toString().slice(-8).toUpperCase()} - ZhenKala`,
             html: `
                 <div style="background-color: #fcfcfc; padding: 40px 0;">
                     <div style="font-family: 'Jost', Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 50px; border-radius: 24px; background-color: #ffffff; box-shadow: 0 10px 40px rgba(0,0,0,0.02); border: 1px solid #f0f0f0;">
-                        
-                        <!-- Header / Branding -->
                         <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 50px; border-bottom: 2px solid #fdf2f2; padding-bottom: 30px;">
                             <tr>
-                                <td width="50%" align="left" valign="top" style="vertical-align: top;">
+                                <td width="50%" align="left" valign="top">
                                     <h1 style="color: #1a1a1a; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase;">ZHENKALA</h1>
                                     <p style="color: #c53030; margin: 5px 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Official Purchase Invoice</p>
                                 </td>
-                                <td width="50%" align="right" valign="top" style="text-align: right; vertical-align: top; color: #888; font-size: 13px; line-height: 1.6;">
+                                <td width="50%" align="right" valign="top" style="text-align: right; color: #888; font-size: 13px; line-height: 1.6;">
                                     <strong>ZhenKala Art & Handicrafts</strong><br>
                                     Thamel Street, Kathmandu<br>
                                     Nepal, 44600<br>
@@ -48,10 +63,9 @@ const sendOrderConfirmationEmail = async (order) => {
                             </tr>
                         </table>
 
-                        <!-- Invoice Meta -->
                         <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 40px;">
                             <tr>
-                                <td width="50%" align="left" valign="top" style="vertical-align: top; width: 50%;">
+                                <td width="50%" align="left" valign="top">
                                     <h3 style="color: #c53030; text-transform: uppercase; font-size: 12px; margin-bottom: 10px; letter-spacing: 1px;">Bill To</h3>
                                     <p style="color: #1a1a1a; margin: 0; font-weight: 600;">${order.user.firstName} ${order.user.lastName}</p>
                                     <p style="color: #666; margin: 5px 0; font-size: 14px; line-height: 1.5;">
@@ -60,16 +74,15 @@ const sendOrderConfirmationEmail = async (order) => {
                                         ${order.shippingAddress.country}
                                     </p>
                                 </td>
-                                <td width="50%" align="right" valign="top" style="vertical-align: top; text-align: right; width: 50%;">
+                                <td width="50%" align="right" valign="top" style="text-align: right;">
                                     <h3 style="color: #c53030; text-transform: uppercase; font-size: 12px; margin-bottom: 10px; letter-spacing: 1px;">Invoice Details</h3>
                                     <p style="color: #666; margin: 5px 0; font-size: 14px;"><strong>No:</strong> #${order._id.toString().toUpperCase()}</p>
-                                    <p style="color: #666; margin: 5px 0; font-size: 14px;"><strong>Date:</strong> ${new Date(order.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                    <p style="color: #666; margin: 5px 0; font-size: 14px;"><strong>Date:</strong> ${new Date(order.paidAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                                     <p style="color: #666; margin: 5px 0; font-size: 14px;"><strong>Method:</strong> ${order.paymentMethod}</p>
                                 </td>
                             </tr>
                         </table>
 
-                        <!-- Items Table -->
                         <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
                             <thead>
                                 <tr style="background-color: #f9f9f9;">
@@ -83,51 +96,102 @@ const sendOrderConfirmationEmail = async (order) => {
                             </tbody>
                         </table>
 
-                        <!-- Totals Section -->
-                        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 50px;">
+                        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 20px;">
                             <tr>
                                 <td align="right">
-                                    <table width="250" border="0" align="right" cellpadding="0" cellspacing="0" style="width: 250px; border-collapse: collapse;">
+                                    <table width="250" border="0" align="right" cellpadding="0" cellspacing="0">
                                         <tr>
                                             <td style="padding: 8px 0; color: #666; font-size: 14px; text-align: left;">Subtotal</td>
                                             <td style="padding: 8px 0; text-align: right; color: #1a1a1a; font-weight: 500;">${order.currency} ${order.itemsPrice.toFixed(2)}</td>
                                         </tr>
+                                        ${discountRowHtml}
                                         <tr>
                                             <td style="padding: 8px 0; color: #666; font-size: 14px; text-align: left;">Shipping</td>
                                             <td style="padding: 8px 0; text-align: right; color: #1a1a1a; font-weight: 500;">${order.currency} ${order.shippingPrice.toFixed(2)}</td>
                                         </tr>
                                         <tr>
-                                            <td style="padding: 15px 0; border-top: 1px solid #eee; color: #1a1a1a; font-weight: 700; font-size: 18px; text-align: left;">Total Paid</td>
-                                            <td style="padding: 15px 0; border-top: 1px solid #eee; text-align: right; color: #c53030; font-weight: 700; font-size: 18px;">${order.currency} ${order.totalPrice.toFixed(2)}</td>
+                                            <td style="padding: 15px 0; border-top: 2px solid #1a1a1a; color: #1a1a1a; font-weight: 700; font-size: 18px; text-align: left;">Total Paid</td>
+                                            <td style="padding: 15px 0; border-top: 2px solid #1a1a1a; text-align: right; color: #c53030; font-weight: 700; font-size: 18px;">${order.currency} ${order.totalPrice.toFixed(2)}</td>
                                         </tr>
                                     </table>
                                 </td>
                             </tr>
                         </table>
 
-                        <!-- Footer Note -->
                         <div style="text-align: center; padding-top: 40px; border-top: 1px solid #f0f0f0;">
-                            <p style="color: #1a1a1a; font-weight: 600; font-size: 16px; margin: 0;">Thank you for your patronage.</p>
-                            <p style="color: #888; font-size: 13px; margin: 10px 0 30px;">This invoice confirms that your payment has been received and your sacred artwork is being prepared for transit.</p>
-                            
-                            <div style="display: inline-block; padding: 12px 30px; background-color: #1a1a1a; border-radius: 8px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 14px; letter-spacing: 1px;">
+                            <p style="color: #1a1a1a; font-weight: 600; font-size: 16px; margin: 0;">Thank you for your purchase.</p>
+                            <p style="color: #888; font-size: 13px; margin: 10px 0 30px;">We are now carefully preparing your selection from the Himalayas.</p>
+                            <div style="display: inline-block; padding: 12px 30px; background-color: #1a1a1a; border-radius: 8px; color: #ffffff; font-weight: 600; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">
                                 ZHENKALA ART & HANDICRAFTS
                             </div>
                         </div>
-
-                        <div style="text-align: center; margin-top: 50px; color: #bbb; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">
-                            &copy; ${new Date().getFullYear()} ZHENKALA • Verified Authentic Himalayan Masterpieces
-                        </div>
                     </div>
                 </div>
-                <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
             `,
         };
 
-        await transporter.sendMail(mailOptions);
-        console.log(`Confirmation invoice email sent to ${order.user.email}`);
+        await transporter.sendMail(customerMailOptions);
+        console.log(`Confirmation invoice email sent to customer: ${order.user.email}`);
+
+        // 2. Fetch and Notify Admins
+        const admins = await User.find({ role: 'admin' }).select('email firstName');
+        if (admins && admins.length > 0) {
+            const adminEmails = admins.map(admin => admin.email);
+            const adminMailOptions = {
+                from: `"ZhenKala Notifications" <${process.env.EMAIL_USER}>`,
+                to: adminEmails,
+                subject: `NEW ORDER RECEIVED - #${order._id.toString().toUpperCase()}`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 30px; border-radius: 12px; background: #ffffff;">
+                        <div style="background: #1a1a1a; color: #fff; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
+                            <h2 style="margin: 0; letter-spacing: 2px;">NEW ORDER ALERT</h2>
+                            <p style="margin: 5px 0 0; opacity: 0.8; font-size: 12px;">Customer: ${order.user.firstName} ${order.user.lastName}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 25px;">
+                            <h3 style="color: #c53030; font-size: 14px; margin-bottom: 15px;">ORDER SUMMARY</h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                ${order.orderItems.map(item => `
+                                    <tr>
+                                        <td style="padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px;"><strong>${item.name}</strong> x ${item.quantity}</td>
+                                        <td style="padding: 10px 0; border-bottom: 1px solid #f5f5f5; text-align: right; font-size: 14px;">${order.currency} ${item.price.toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                                <tr>
+                                    <td style="padding: 15px 0; font-weight: bold; font-size: 16px;">TOTAL REVENUE</td>
+                                    <td style="padding: 15px 0; text-align: right; font-weight: bold; font-size: 16px; color: #c53030;">${order.currency} ${order.totalPrice.toFixed(2)}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                            <h3 style="font-size: 14px; margin-top: 0; color: #333;">SHIPPING TO:</h3>
+                            <p style="margin: 0; font-size: 14px; line-height: 1.6;">
+                                ${order.shippingAddress.street}, ${order.shippingAddress.city}<br>
+                                ${order.shippingAddress.state} ${order.shippingAddress.zipCode}, ${order.shippingAddress.country}<br>
+                                <strong>Phone:</strong> ${order.shippingAddress.phone}
+                            </p>
+                        </div>
+
+                        <div style="text-align: center;">
+                            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/orders" 
+                               style="display: inline-block; padding: 15px 40px; background: #c53030; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">
+                                VIEW ORDER IN DASHBOARD
+                            </a>
+                        </div>
+                        
+                        <p style="margin-top: 40px; font-size: 11px; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
+                            This is an automated operational notification from the ZhenKala Engine.
+                        </p>
+                    </div>
+                `
+            };
+            await transporter.sendMail(adminMailOptions);
+            console.log(`Admin notification emails sent to: ${adminEmails.join(', ')}`);
+        }
+
     } catch (error) {
-        console.error('Error sending confirmation email:', error);
+        console.error('Error sending order emails:', error);
     }
 };
 
