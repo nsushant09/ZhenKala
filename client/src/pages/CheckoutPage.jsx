@@ -11,7 +11,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import StripePaymentForm from '../components/payment/StripePaymentForm';
 import PayPalPayment from '../components/payment/PayPalPayment';
-import { STRIPE_PUBLIC_KEY, PAYPAL_CLIENT_ID } from '../config/payment';
+import { useMerchant } from '../context/MerchantContext';
 
 // stripePromise is now handled as state inside CheckoutPage component
 
@@ -62,21 +62,21 @@ const CheckoutPage = () => {
   const [createdOrderId, setCreatedOrderId] = useState(null);
   const [isResumedOrder, setIsResumedOrder] = useState(false);
   const [orderSummaryTotals, setOrderSummaryTotals] = useState(null);
-  const [merchantSettings, setMerchantSettings] = useState(null);
+  const { settings } = useMerchant();
   const [config, setConfig] = useState({
     stripePublicKey: STRIPE_PUBLIC_KEY,
     paypalClientId: PAYPAL_CLIENT_ID
   });
 
-  const calculateTotals = useCallback((baseSubtotal, coupon = appliedCoupon, settings = merchantSettings) => {
+  const calculateTotals = useCallback((baseSubtotal, coupon = appliedCoupon, merchSettings = settings) => {
     // 1. Determine if the destination is Nepal
     const isNepal = shippingAddress.country?.trim().toLowerCase() === 'nepal' ||
       /^\d{5}$/.test(shippingAddress.zipCode?.trim());
 
-    // 2. Set the shipping rates and threshold from settings or fallbacks
-    const nepalCharge = settings?.deliveryCharges?.nepal ?? 130;
-    const internationalCharge = settings?.deliveryCharges?.international ?? 2000;
-    const threshold = settings?.freeShippingThreshold ?? 13000;
+    // 2. Set the shipping rates and threshold from merchSettings or fallbacks
+    const nepalCharge = merchSettings?.deliveryCharges?.nepal ?? 130;
+    const internationalCharge = merchSettings?.deliveryCharges?.international ?? 2000;
+    const threshold = merchSettings?.freeShippingThreshold ?? 13000;
 
     // 3. Set the base shipping rate in NPR
     const baseRateNPR = isNepal ? nepalCharge : internationalCharge;
@@ -138,9 +138,6 @@ const CheckoutPage = () => {
         setLoading(true);
         const { data: paymentConfig } = await api.get('/payments/config');
         setConfig(paymentConfig);
-
-        const { data: mSettings } = await api.get('/merchant-details');
-        setMerchantSettings(mSettings);
 
         if (resumeOrderId) {
           const { data: order } = await api.get(`/orders/${resumeOrderId}`);

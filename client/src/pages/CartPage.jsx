@@ -2,12 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiTrash2, FiMinus, FiPlus, FiArrowRight, FiShoppingBag } from 'react-icons/fi';
+import { FiTrash2, FiMinus, FiPlus, FiArrowRight, FiShoppingBag, FiCheckCircle } from 'react-icons/fi';
 import ConfirmModal from '../components/ConfirmModal';
+import api from '../services/api';
+
+import { useMerchant } from '../context/MerchantContext';
 
 const CartPage = () => {
   const { cart, removeFromCart, updateCartItem, getCartTotal, loading, applyCoupon, clearCoupon, appliedCoupon } = useCart();
   const { formatPrice } = useCurrency();
+  const { settings } = useMerchant();
   const navigate = useNavigate();
 
   const [showRemoveModal, setShowRemoveModal] = useState(false);
@@ -16,21 +20,8 @@ const CartPage = () => {
   const [promoCode, setPromoCode] = useState('');
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
-  const [merchantSettings, setMerchantSettings] = useState(null);
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const { data } = await api.get('/merchant-details');
-        setMerchantSettings(data);
-      } catch (err) {
-        console.error('Failed to load merchant settings');
-      }
-    };
-    fetchSettings();
-  }, []);
-
-  const threshold = merchantSettings?.freeShippingThreshold ?? 13000;
+  const threshold = settings?.freeShippingThreshold ?? 13000;
   const subtotal = getCartTotal();
   const discountAmount = appliedCoupon ? (subtotal * (appliedCoupon.discountPercent / 100)) : 0;
   const total = subtotal - discountAmount;
@@ -303,8 +294,8 @@ const CartPage = () => {
                   </div>
                   {promoError && <p className="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-widest">{promoError}</p>}
                   {appliedCoupon && (
-                    <p className="mt-2 text-[10px] font-bold text-green-600 uppercase tracking-widest">
-                      Coupon Applied Successfully
+                    <p className="mt-3 text-[10px] font-bold text-green-600 uppercase tracking-widest flex items-center gap-2 bg-green-50/50 p-2 rounded-sm border border-green-100">
+                      <FiCheckCircle size={14} /> Coupon Applied: {appliedCoupon.code}
                     </p>
                   )}
                 </div>
@@ -332,7 +323,7 @@ const CartPage = () => {
                     <span>Secure Checkout</span>
                     <span className="h-[1px] w-8 bg-gray-200"></span>
                   </div>
-                  <p>Authentic Himalayan Art &nbsp; • &nbsp; ZhenKala</p>
+                  <p>Authentic Himalayan Art &nbsp; • &nbsp; {settings?.businessName || 'ZhenKala'}</p>
                 </div>
               </div>
             </div>

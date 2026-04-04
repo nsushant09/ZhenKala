@@ -13,13 +13,28 @@ exports.createOrder = async (req, res) => {
       paymentMethod,
       itemsPrice,
       taxPrice,
-      shippingPrice,
-      totalPrice,
       currency,
       estimatedDeliveryDate,
       coupon,
       discountAmount,
     } = req.body;
+    
+    const MerchantDetails = require('../models/MerchantDetails');
+    const settings = await MerchantDetails.getSingleton();
+
+    // Server-side validation of shipping price
+    const isNepal = shippingAddress.country?.trim().toLowerCase() === 'nepal' ||
+      /^\d{5}$/.test(shippingAddress.zipCode?.trim());
+
+    const nepalCharge = settings?.deliveryCharges?.nepal ?? 130;
+    const internationalCharge = settings?.deliveryCharges?.international ?? 2000;
+    const threshold = settings?.freeShippingThreshold ?? 13000;
+
+    const baseRateNPR = isNepal ? nepalCharge : internationalCharge;
+    const validatedShippingNPR = (itemsPrice > 0 && itemsPrice < threshold) ? baseRateNPR : 0;
+
+    const finalShippingPrice = validatedShippingNPR;
+    const finalTotalPrice = Number(itemsPrice) + Number(finalShippingPrice) - (Number(discountAmount) || 0);
 
     if (orderItems && orderItems.length === 0) {
       return res.status(400).json({ message: 'No order items' });
@@ -63,8 +78,8 @@ exports.createOrder = async (req, res) => {
       paymentMethod,
       itemsPrice,
       taxPrice,
-      shippingPrice,
-      totalPrice,
+      shippingPrice: finalShippingPrice,
+      totalPrice: finalTotalPrice,
       currency,
       estimatedDeliveryDate,
       coupon,
