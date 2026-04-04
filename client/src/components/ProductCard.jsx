@@ -125,13 +125,13 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                 <div className="p-4 space-y-3 flex-grow flex flex-col">
                     <div className="flex-grow">
                         {/* Product Name */}
-                        <h3 className="text-xl text-gray-900 line-clamp-2 leading-tight min-h-[56px]" title={name}>{name}</h3>
+                        <h3 className="text-xl text-gray-900 line-clamp-2 leading-tight" title={name}>{name}</h3>
                     </div>
 
                     {/* Price Section */}
-                    <div className="flex items-center justify-between mt-auto">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xl font-medium text-on-background">
+                    <div className="flex tems-center justify-between">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-lg font-medium text-on-background">
                                 {formatPrice(price)}
                             </span>
                             {hasDiscount && (
