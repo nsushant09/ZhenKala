@@ -65,11 +65,11 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
     return (
         <Link
             to={`/products/${id}`}
-            className="block h-full"
+            className="block h-full w-full"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="bg-[#FCF9EC] rounded-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02] w-[300px] max-w-sm cursor-pointer group h-full flex flex-col">
+            <div className="bg-[#FCF9EC] rounded-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02] w-full max-w-sm cursor-pointer group h-full flex flex-col">
                 {/* Image Container */}
                 <div className="relative w-full overflow-hidden aspect-[4/5] bg-gray-200">
                     <img
@@ -125,17 +125,17 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                 <div className="p-4 space-y-3 flex-grow flex flex-col">
                     <div className="flex-grow">
                         {/* Product Name */}
-                        <h3 className="text-xl text-gray-900 line-clamp-2 leading-tight" title={name}>{name}</h3>
+                        <h3 className="text-lg sm:text-xl text-gray-900 line-clamp-2 leading-tight" title={name}>{name}</h3>
                     </div>
 
                     {/* Price Section */}
-                    <div className="flex tems-center justify-between">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-lg font-medium text-on-background">
+                    <div className="flex items-center justify-between mt-auto gap-2">
+                        <div className="flex flex-wrap items-baseline gap-1.5 min-w-0">
+                            <span className="text-base sm:text-lg font-medium text-on-background whitespace-nowrap">
                                 {formatPrice(price)}
                             </span>
                             {hasDiscount && (
-                                <span className="text-lg text-gray-400 line-through decoration-1">
+                                <span className="text-xs sm:text-sm text-gray-400 line-through decoration-1 whitespace-nowrap">
                                     {formatPrice(originalPrice)}
                                 </span>
                             )}
@@ -145,15 +145,15 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                         <button
                             className={`
                                 relative overflow-hidden px-4 py-2 rounded-md text-sm transition-all duration-300 flex items-center gap-1 shadow-sm
-                                ${isAdding ? 'bg-secondary cursor-default' : 'bg-secondary hover:bg-red-500 hover:scale-110'} text-white
+                                ${isAdding ? 'bg-secondary cursor-default' : 'bg-secondary hover:bg-red-500 hover:scale-[1.05]'} text-white shrink-0
                             `}
                             onClick={handleAddToCart}
                             disabled={isAdding}
                         >
                             {isAdding ? (
-                                <span translate="no" className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span translate="no" className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                             ) : (
-                                <><span className="text-lg">+</span> <span className="font-medium">Cart</span></>
+                                <><span className="text-lg font-light">+</span> <span className="font-medium text-xs sm:text-sm">Cart</span></>
                             )}
                         </button>
                         

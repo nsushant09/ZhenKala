@@ -15,7 +15,7 @@ const ProductCards = ({ products = [] }) => {
     }
 
     return (
-        <div className="flex flex-wrap justify-center items-stretch gap-[16px] my-[32px]">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 my-8">
             {products.map((product, index) => (
                 <div key={product.id || index} className="flex justify-center h-full">
                     <ProductCard

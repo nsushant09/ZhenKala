@@ -104,7 +104,7 @@ export const CurrencyProvider = ({ children }) => {
         const converted = (amount / nprRate) * currentRate;
         const currencyInfo = currencies[selectedCurrency] || { symbol: selectedCurrency };
 
-        return `${currencyInfo.symbol} ${converted.toLocaleString(undefined, {
+        return `${currencyInfo.symbol}\u00A0${converted.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         })}`;

@@ -242,6 +242,19 @@ const ProductDetailPage = () => {
       {/* Main Product Section */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Mobile Only: Name and Price Above Image */}
+          <div className="lg:hidden">
+            <h1 className="font-secondary text-3xl text-on-surface mb-2 garamond">{product.name}</h1>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl font-semibold text-secondary">{formatPrice(currentPrice)}</span>
+              {discount > 0 && (
+                <span className="bg-secondary text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                  {discount}% OFF
+                </span>
+              )}
+            </div>
+          </div>
+
           {/* Image Gallery */}
           <div className="lg:sticky lg:top-[120px] h-fit">
             <div className="w-full aspect-square bg-white rounded-xl overflow-hidden shadow-lg mb-4">
@@ -264,7 +277,7 @@ const ProductDetailPage = () => {
 
           {/* Product Info */}
           <div>
-            <h1 className="font-secondary text-4xl text-on-surface mb-4 garamond">{product.name}</h1>
+            <h1 className="hidden lg:block font-secondary text-4xl text-on-surface mb-4 garamond">{product.name}</h1>
 
             {/* Rating */}
             <div className="flex items-center gap-4 mb-6">
@@ -278,8 +291,8 @@ const ProductDetailPage = () => {
               </span>
             </div>
 
-            {/* Price */}
-            <div className="flex items-center gap-4 mb-8">
+            {/* Price (Desktop Only) */}
+            <div className="hidden lg:flex items-center gap-4 mb-8">
               <span className="text-3xl font-semibold text-secondary">{formatPrice(currentPrice)}</span>
               {discount > 0 && (
                 <>
@@ -508,21 +521,21 @@ const ProductDetailPage = () => {
 
       {/* Sticky Cart Bar */}
       {showStickyCart && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.1)] z-50 animate-[slideUp_0.3s_ease-out] py-2">
-          <div className="container mx-auto px-4 flex justify-between items-center py-4">
-            <div className="flex items-center gap-4">
-              <img src={mainImage?.url || product.images[0]?.url} alt={product.name} className="w-[60px] h-[60px] object-cover rounded-md" />
-              <div>
-                <h4 className="text-base font-semibold text-on-surface mb-1 hidden sm:block">{product.name}</h4>
-                <span className="text-lg font-semibold text-secondary">{formatPrice(currentPrice)}</span>
+        <div className="fixed py-2 bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-50 animate-[slideUp_0.3s_ease-out]">
+          <div className="container mx-auto px-4 flex justify-between items-center py-3 sm:py-4 gap-3">
+            <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+              <img src={mainImage?.url || product.images[0]?.url} alt={product.name} className="w-12 h-12 sm:w-[60px] sm:h-[60px] flex-shrink-0 object-cover rounded-md shadow-sm" />
+              <div className="min-w-0">
+                <h4 className="text-xs sm:text-base font-semibold text-on-surface mb-0.5 truncate hidden sm:block">{product.name}</h4>
+                <span className="text-base sm:text-lg font-bold text-secondary block sm:inline">{formatPrice(currentPrice)}</span>
               </div>
             </div>
             <button
-              className="px-8 py-3 bg-secondary text-white rounded-md font-semibold flex items-center gap-2 transition-colors hover:bg-on-surface disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="px-4 py-2.5 sm:px-8 sm:py-3 bg-secondary text-white rounded-md font-bold flex items-center justify-center gap-2 transition-all hover:bg-opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-[10px] sm:text-sm uppercase tracking-wider shrink-0"
               onClick={handleAddToCart}
               disabled={stock === 0}
             >
-              <FiShoppingCart /> Add to Cart
+              <FiShoppingCart className="hidden xs:block" size={16} /> <span>Add to Cart</span>
             </button>
           </div>
         </div>

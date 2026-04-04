@@ -161,17 +161,17 @@ const CartPage = () => {
                       className="py-10 grid grid-cols-1 sm:grid-cols-12 gap-8 items-center group px-4 hover:bg-white/10 transition-colors"
                     >
                       {/* Product Info */}
-                      <div className="col-span-1 sm:col-span-6 flex gap-8">
-                        <Link to={`/products/${product._id}`} className="w-28 h-36 flex-shrink-0 bg-white p-2 rounded-sm shadow-sm relative border border-gray-100 overflow-hidden">
+                      <div className="col-span-1 sm:col-span-6 flex gap-4 sm:gap-8">
+                        <Link to={`/products/${product._id}`} className="w-20 h-28 sm:w-28 sm:h-36 flex-shrink-0 bg-white p-2 rounded-sm shadow-sm relative border border-gray-100 overflow-hidden">
                           <img
                             src={product.images && product.images[0]?.url ? product.images[0].url : '/placeholder.jpg'}
                             alt={product.name}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
                         </Link>
-                        <div className="flex flex-col justify-center py-1">
-                          <div>
-                            <Link to={`/products/${product._id}`} className="font-secondary text-2xl text-gray-800 hover:text-secondary transition-colors block mb-1 garamond">
+                        <div className="flex flex-col justify-center py-1 min-w-0">
+                          <div className="min-w-0">
+                            <Link to={`/products/${product._id}`} className="font-secondary text-lg sm:text-2xl text-gray-800 hover:text-secondary transition-colors block mb-1 garamond truncate sm:whitespace-normal">
                               {product.name}
                             </Link>
                             <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider space-y-1 mb-4 flex gap-4">
