@@ -243,7 +243,7 @@ const ProductDetailPage = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Image Gallery */}
-          <div className="sticky top-[100px] h-fit">
+          <div className="lg:sticky lg:top-[120px] h-fit">
             <div className="w-full aspect-square bg-white rounded-xl overflow-hidden shadow-lg mb-4">
               <img src={mainImage?.url} alt={mainImage?.alt || product.name} className="w-full h-full object-cover" />
             </div>
