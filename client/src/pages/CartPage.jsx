@@ -1,29 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiTrash2, FiMinus, FiPlus, FiArrowRight, FiShoppingBag, FiCheckCircle } from 'react-icons/fi';
+import { FiTrash2, FiMinus, FiPlus, FiArrowRight, FiShoppingBag, FiCheckCircle, FiLoader } from 'react-icons/fi';
 import ConfirmModal from '../components/ConfirmModal';
 import api from '../services/api';
 
 import { useMerchant } from '../context/MerchantContext';
 
+/**
+ * Senior Note: CartPage uses optimistic context states.
+ * We avoid full-page blockers for small updates to preserve user flow.
+ */
 const CartPage = () => {
-  const { cart, removeFromCart, updateCartItem, getCartTotal, loading, applyCoupon, clearCoupon, appliedCoupon } = useCart();
+  const { 
+    cart, 
+    removeFromCart, 
+    updateCartItem, 
+    getCartTotal, 
+    loading, 
+    isInitialized,
+    applyCoupon, 
+    clearCoupon, 
+    appliedCoupon 
+  } = useCart();
+  
   const { formatPrice } = useCurrency();
   const { settings } = useMerchant();
   const navigate = useNavigate();
 
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
-  const [quantityErrors, setQuantityErrors] = useState({});
   const [promoCode, setPromoCode] = useState('');
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
 
+  // Derived Values
   const threshold = settings?.freeShippingThreshold ?? 13000;
   const subtotal = getCartTotal();
-  const discountAmount = appliedCoupon ? (subtotal * (appliedCoupon.discountPercent / 100)) : 0;
+  const itemsCount = cart.items.length;
+  
+  const discountAmount = useMemo(() => 
+    appliedCoupon ? (subtotal * (appliedCoupon.discountPercent / 100)) : 0
+  , [subtotal, appliedCoupon]);
+
   const total = subtotal - discountAmount;
 
   const handleApplyPromoCode = async () => {
@@ -42,58 +62,25 @@ const CartPage = () => {
     }
   };
 
-  const handleUpdateQuantity = async (itemId, newQuantity) => {
+  const handleUpdateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) return;
-
-    const result = await updateCartItem(itemId, newQuantity);
-    if (result?.success === false && result?.stock !== undefined) {
-      setQuantityErrors((prev) => ({
-        ...prev,
-        [itemId]: `Only ${result.stock} items are available.`
-      }));
-      return;
-    }
-
-    setQuantityErrors((prev) => {
-      if (!prev[itemId]) return prev;
-      const next = { ...prev };
-      delete next[itemId];
-      return next;
-    });
+    updateCartItem(itemId, newQuantity);
+    // Errors are handled internally in context or as a return value if we wanted alert-style feedback
   };
 
-  const getItemStock = (item) => {
-    const product = item?.product || {};
-    const variants = product.variants || [];
-
-    if (item?.size || item?.color) {
-      const matchedVariant = variants.find(v =>
-        (v.size == item.size || (!v.size && !item.size)) &&
-        (v.color == item.color || (!v.color && !item.color))
-      );
-      if (matchedVariant) return Number(matchedVariant.stock) || 0;
-    }
-
-    return Number(product.stock) || 0;
-  };
-
-  const handleRemoveClick = (itemId) => {
-    setItemToRemove(itemId);
-    setShowRemoveModal(true);
-  };
-
-  const confirmRemove = async () => {
+  const confirmRemove = () => {
     if (itemToRemove) {
-      await removeFromCart(itemToRemove);
+      removeFromCart(itemToRemove);
       setShowRemoveModal(false);
-      setItemToRemove(null);
     }
   };
 
-  if (loading) {
+  // Senior UI: Only show initial loader, don't block on subsequent syncs
+  if (!isInitialized) {
     return (
-      <div className="bg-background min-h-screen pt-32 pb-12 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary"></div>
+      <div className="bg-background min-h-screen flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-secondary/20 border-t-secondary rounded-full animate-spin"></div>
+        <p className="mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest animate-pulse">Initializing Bag...</p>
       </div>
     );
   }
@@ -110,13 +97,12 @@ const CartPage = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/20"></div>
         <div className="relative z-10 text-center">
           <h1 className="font-secondary text-5xl md:text-7xl mb-2 text-white garamond drop-shadow-lg">Your Cart</h1>
-          <p className="text-primary text-xs tracking-[0.3em] uppercase opacity-90">Review your selections</p>
+          <p className="text-white/80 text-[10px] tracking-[0.4em] uppercase font-bold">Refining your artisan collection</p>
         </div>
       </section>
 
       <div className="container mx-auto px-4 lg:px-12">
-
-        {cart.items.length === 0 ? (
+        {itemsCount === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-center animate-fade-in bg-white/30 backdrop-blur-sm rounded-3xl border border-white/50 shadow-sm max-w-4xl mx-auto">
             <div className="w-20 h-20 bg-secondary/5 rounded-full flex items-center justify-center mb-6 border border-secondary/10">
               <FiShoppingBag className="w-8 h-8 text-secondary/40" />
@@ -127,46 +113,51 @@ const CartPage = () => {
             </p>
             <Link
               to="/products"
-              className="inline-flex items-center gap-3 bg-secondary text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-opacity-90 transition-all hover:scale-105 duration-300 shadow-xl"
-              style={{ color: "white" }}
+              className="inline-flex items-center gap-3 bg-secondary text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-opacity-90 transition-all hover:translate-y-[-2px] duration-300 shadow-xl"
             >
               Explore Collection <FiArrowRight />
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-12 mt-4">
+          <div className="flex flex-col lg:flex-row gap-12 mt-4 relative">
+            
+            {/* Context Loading Overlay (Subtle) */}
+            {loading && (
+                <div className="absolute top-0 right-0 z-50 flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-secondary/5 shadow-lg animate-fade-in pointer-events-none">
+                    <FiLoader className="animate-spin text-secondary" />
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saving Changes</span>
+                </div>
+            )}
+
             {/* Cart Items List */}
             <div className="flex-grow">
               <div className="hidden sm:grid grid-cols-12 gap-4 pb-6 border-b border-secondary/10 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] px-4">
-                <div className="col-span-6">Product</div>
+                <div className="col-span-6">Artistic Selection</div>
                 <div className="col-span-2 text-center">Price</div>
                 <div className="col-span-2 text-center">Quantity</div>
                 <div className="col-span-2 text-right">Total</div>
               </div>
 
-              <div className="divide-y divide-secondary/5">
+              <div className="divide-y divide-secondary/5 overflow-hidden">
                 {cart.items.map((item) => {
                   if (!item) return null;
                   const product = item.product || {};
-                  const price = item.price || product.price || 1;
+                  const price = item.price || product.price || 0;
                   const itemTotal = price * item.quantity;
                   const itemId = item._id;
-                  if (!itemId) return null;
-                  const itemStock = getItemStock(item);
-                  const isAtMaxStock = item.quantity >= itemStock;
 
                   return (
                     <div
                       key={itemId}
-                      className="py-10 grid grid-cols-1 sm:grid-cols-12 gap-8 items-center group px-4 hover:bg-white/10 transition-colors"
+                      className="py-10 grid grid-cols-1 sm:grid-cols-12 gap-8 items-center group px-4 hover:bg-white/5 transition-colors border-l-2 border-transparent hover:border-secondary/20"
                     >
                       {/* Product Info */}
                       <div className="col-span-1 sm:col-span-6 flex gap-4 sm:gap-8">
                         <Link to={`/products/${product._id}`} className="w-20 h-28 sm:w-28 sm:h-36 flex-shrink-0 bg-white p-2 rounded-sm shadow-sm relative border border-gray-100 overflow-hidden">
                           <img
-                            src={product.images && product.images[0]?.url ? product.images[0].url : '/placeholder.jpg'}
+                            src={product.images?.[0]?.url || '/placeholder.jpg'}
                             alt={product.name}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           />
                         </Link>
                         <div className="flex flex-col justify-center py-1 min-w-0">
@@ -174,50 +165,44 @@ const CartPage = () => {
                             <Link to={`/products/${product._id}`} className="font-secondary text-lg sm:text-2xl text-gray-800 hover:text-secondary transition-colors block mb-1 garamond truncate sm:whitespace-normal">
                               {product.name}
                             </Link>
-                            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider space-y-1 mb-4 flex gap-4">
-                              {item.size && <div className="flex items-center gap-1">Size: <span className="text-gray-600">{item.size}</span></div>}
-                              {item.color && <div className="flex items-center gap-1">Color: <span className="text-gray-600">{item.color}</span></div>}
+                            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider space-x-4 mb-4 flex items-center">
+                              {item.size && <div className="flex items-center gap-1">Size: <span className="text-gray-600 font-black">{item.size}</span></div>}
+                              {item.color && <div className="flex items-center gap-1">Color: <span className="text-gray-600 font-black">{item.color}</span></div>}
                             </div>
                           </div>
                           <button
-                            onClick={() => handleRemoveClick(itemId)}
-                            className="text-secondary transition-all duration-300 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider w-fit group/remove hover:scale-110 origin-left"
+                            onClick={() => { setItemToRemove(itemId); setShowRemoveModal(true); }}
+                            className="text-secondary transition-all duration-300 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider w-fit group/remove hover:scale-105"
                           >
-                            <FiTrash2 size={14} className="transition-transform duration-300" /> Remove Item
+                            <FiTrash2 size={12} /> Remove Choice
                           </button>
                         </div>
                       </div>
 
                       {/* Price */}
-                      <div className="col-span-1 sm:col-span-2 sm:text-center text-sm font-medium text-gray-500 hidden sm:block">
+                      <div className="col-span-1 sm:col-span-2 sm:text-center text-sm font-medium text-gray-400 hidden sm:block">
                         {formatPrice(price)}
                       </div>
 
                       {/* Quantity */}
                       <div className="col-span-1 sm:col-span-2 flex sm:justify-center">
                         <div className="flex flex-col items-start sm:items-center">
-                          <div className="flex items-center border border-gray-200 rounded-full bg-white p-1 w-max">
+                          <div className="flex items-center border border-gray-200 rounded-full bg-white p-1 shadow-inner group/qty transition-all hover:border-secondary/20">
                             <button
                               onClick={() => handleUpdateQuantity(itemId, item.quantity - 1)}
                               disabled={item.quantity <= 1}
-                              className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-secondary disabled:opacity-30 transition-colors"
+                              className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-secondary disabled:opacity-20 transition-colors"
                             >
-                              <FiMinus size={12} />
+                              <FiMinus size={14} />
                             </button>
-                            <span className="w-8 text-center text-sm font-bold text-gray-700">{item.quantity}</span>
+                            <span className="w-8 text-center text-sm font-black text-gray-800">{item.quantity}</span>
                             <button
                               onClick={() => handleUpdateQuantity(itemId, item.quantity + 1)}
-                              disabled={isAtMaxStock}
-                              className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-secondary disabled:opacity-30 transition-colors"
+                              className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-secondary transition-colors"
                             >
-                              <FiPlus size={12} />
+                              <FiPlus size={14} />
                             </button>
                           </div>
-                          {(quantityErrors[itemId] || (isAtMaxStock && itemStock > 0)) && (
-                            <p className="mt-2 text-[11px] font-medium text-red-600 text-center sm:text-left">
-                              {quantityErrors[itemId] || `Only ${itemStock} items are available.`}
-                            </p>
-                          )}
                         </div>
                       </div>
 
@@ -242,21 +227,24 @@ const CartPage = () => {
                     <span>Subtotal</span>
                     <span className="text-gray-800">{formatPrice(subtotal)}</span>
                   </div>
+                  
                   <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
-                    <span>Shipping</span>
-                    <span className={subtotal >= threshold ? "text-green-600" : ""}>
-                      {subtotal >= threshold ? 'FREE' : 'Depends on location'}
+                    <span>Delivery</span>
+                    <span className={subtotal >= threshold ? "text-green-600 font-black" : ""}>
+                      {subtotal >= threshold ? 'COMPLIMENTARY' : 'Calculated at Checkout'}
                     </span>
                   </div>
+
                   {subtotal < threshold && subtotal > 0 && (
-                    <div className="bg-secondary/5 p-4 rounded-sm mt-2">
+                    <div className="bg-secondary/5 p-4 rounded-sm mt-4 border border-secondary/5">
                        <p className="text-[10px] text-secondary font-bold uppercase tracking-wider text-center leading-relaxed">
-                        Free shipping on orders over {formatPrice(threshold)}
+                        Add {formatPrice(threshold - subtotal)} more for free shipping
                       </p>
                     </div>
                   )}
+
                   {appliedCoupon && (
-                    <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-green-600">
+                    <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-green-600 bg-green-50/50 p-4 rounded-sm border border-green-100">
                       <span>Discount ({appliedCoupon.discountPercent}%)</span>
                       <span>-{formatPrice(discountAmount)}</span>
                     </div>
@@ -273,71 +261,60 @@ const CartPage = () => {
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                       disabled={appliedCoupon || promoLoading}
-                      className="flex-grow px-4 py-3 bg-white/50 border border-gray-100 rounded-sm text-xs focus:outline-none focus:border-secondary transition-all uppercase tracking-widest"
+                      className="flex-grow px-4 py-4 bg-white border border-gray-100 rounded-sm text-xs focus:outline-none focus:border-secondary transition-all uppercase tracking-widest shadow-inner"
                     />
                     {appliedCoupon ? (
                       <button
                         onClick={clearCoupon}
-                        className="px-4 py-3 text-xs font-bold text-red-500 uppercase tracking-widest hover:bg-red-50 transition-colors"
+                        className="px-6 py-4 bg-red-50 text-red-500 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-red-100 transition-colors"
                       >
-                        Clear
+                        Remove
                       </button>
                     ) : (
                       <button
                         onClick={handleApplyPromoCode}
                         disabled={promoLoading || !promoCode.trim()}
-                        className="px-6 py-3 bg-secondary text-white rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 transition-all disabled:opacity-50"
+                        className="px-8 py-4 bg-secondary text-white rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 transition-all disabled:opacity-50 shadow-lg shadow-secondary/10"
                       >
                         {promoLoading ? '...' : 'Apply'}
                       </button>
                     )}
                   </div>
                   {promoError && <p className="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-widest">{promoError}</p>}
-                  {appliedCoupon && (
-                    <p className="mt-3 text-[10px] font-bold text-green-600 uppercase tracking-widest flex items-center gap-2 bg-green-50/50 p-2 rounded-sm border border-green-100">
-                      <FiCheckCircle size={14} /> Coupon Applied: {appliedCoupon.code}
-                    </p>
-                  )}
                 </div>
 
                 <div className="flex justify-between font-bold text-3xl mb-10 text-gray-800 items-baseline">
                   <span className="garamond text-xl">Total Due*</span>
                   <span className="text-secondary">{formatPrice(total)}</span>
                 </div>
-                {subtotal < threshold && (
-                  <p className="text-[9px] text-gray-400 uppercase tracking-widest text-center mb-6 -mt-6">
-                    *Shipping & Taxes calculated at checkout
-                  </p>
-                )}
 
                 <button
                   onClick={() => navigate('/checkout')}
-                  className="w-full bg-secondary text-white py-5 rounded-sm font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all shadow-lg hover:shadow-secondary/20 hover:-translate-y-1 active:scale-[0.98]"
+                  className="w-full bg-secondary text-white py-6 rounded-sm font-bold text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-opacity-95 transition-all shadow-2xl shadow-secondary/20 hover:-translate-y-1 active:scale-[0.98]"
                 >
-                  Proceed to Checkout <FiArrowRight />
+                  CHECKOUT <FiArrowRight size={18} />
                 </button>
 
-                <div className="mt-8 flex flex-col items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center opacity-60">
-                  <div className="flex items-center gap-2">
-                    <span className="h-[1px] w-8 bg-gray-200"></span>
-                    <span>Secure Checkout</span>
-                    <span className="h-[1px] w-8 bg-gray-200"></span>
+                <div className="mt-10 pt-8 border-t border-secondary/5 flex flex-col items-center gap-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest text-center">
+                  <div className="flex items-center gap-3">
+                    <FiCheckCircle className="text-secondary/40" />
+                    <span>Curated Selection Ready</span>
                   </div>
-                  <p>Authentic Himalayan Art &nbsp; • &nbsp; {settings?.businessName || 'ZhenKala'}</p>
                 </div>
               </div>
             </div>
           </div>
         )}
       </div>
+
       <ConfirmModal
         isOpen={showRemoveModal}
-        onClose={() => setShowRemoveModal(false)}
+        onClose={() => { setShowRemoveModal(false); setItemToRemove(null); }}
         onConfirm={confirmRemove}
         title="Remove Item"
-        message="Are you sure you want to remove this item from your cart?"
-        confirmText="Remove"
-        cancelText="Cancel"
+        message="Are you sure you want to remove this artistic creation from your collection?"
+        confirmText="Remove Selection"
+        cancelText="Keep"
       />
     </div>
   );

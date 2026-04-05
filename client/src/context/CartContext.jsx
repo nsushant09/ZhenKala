@@ -12,117 +12,89 @@ export const useCart = () => {
   return context;
 };
 
-// --- REDUCER ARCHITECTURE ---
+// --- SENIOR ARCHITECTURE: ATOMIC STATE MANAGEMENT ---
 
 const initialState = {
   items: [],
-  loading: false,
-  initialized: false,
-  localVersion: 0, // Incremented on every local user action
-  lastSyncedVersion: 0, // The localVersion that was last successfully accepted by the server
-  appliedCoupon: null, // Track coupon separately
+  isLoading: false,
+  isInitialized: false,
+  pendingActions: 0, // Number of in-flight sync requests
+  appliedCoupon: null,
 };
 
+/**
+ * Senior Note: We use a simplified reducer.
+ * Client state is treated as the "Intent".
+ * Server state is treated as the "Reality" (Prices, valid IDs, Stock Validation).
+ */
 function cartReducer(state, action) {
   switch (action.type) {
-    case 'INIT_CART':
+    case 'INITIALIZE':
       return {
         ...state,
-        items: action.payload || [],
-        initialized: true,
+        items: action.payload,
+        isInitialized: true,
       };
 
     case 'SET_LOADING':
-      return { ...state, loading: action.payload };
+      return { ...state, isLoading: action.payload };
 
-    case 'OPTIMISTIC_UPDATE': {
-      const { itemId, quantity, product, variant, isNew } = action.payload;
-      let newItems;
+    case 'UPDATE_LOCAL_ITEM': {
+      const { productId, size, color, quantity, product, variant, isNew } = action.payload;
+      let newItems = [...state.items];
 
-      if (isNew) {
-        newItems = [...state.items, {
-          _id: itemId,
-          product,
+      const existingIndex = newItems.findIndex(item => 
+        (item.product?._id || item.product?.id || item.product) === productId &&
+        item.size === size &&
+        item.color === color
+      );
+
+      if (existingIndex > -1) {
+        if (quantity <= 0) {
+          newItems.splice(existingIndex, 1);
+        } else {
+          newItems[existingIndex] = { ...newItems[existingIndex], quantity };
+        }
+      } else if (isNew && quantity > 0) {
+        newItems.push({
+          _id: `temp_${Date.now()}`,
+          product: product || { _id: productId },
           quantity,
-          variantId: variant?._id || variant?.id,
-          size: variant?.size,
-          color: variant?.color,
-          price: variant?.price || product.price
-        }];
-      } else {
-        newItems = state.items.map(item =>
-          item._id === itemId ? { ...item, quantity } : item
-        );
+          size,
+          color,
+          price: variant?.price || product?.price || 0
+        });
       }
 
-      return {
-        ...state,
-        items: newItems,
-        localVersion: state.localVersion + 1
-      };
+      return { ...state, items: newItems };
     }
 
-    case 'OPTIMISTIC_REMOVE':
+    case 'REMOVE_LOCAL_ITEM':
       return {
         ...state,
-        items: state.items.filter(item => item._id !== action.payload),
-        localVersion: state.localVersion + 1
+        items: state.items.filter(item => item._id !== action.payload)
       };
 
-    case 'OPTIMISTIC_CLEAR':
-      return {
-        ...state,
-        items: [],
-        localVersion: state.localVersion + 1,
-        lastSyncedVersion: state.localVersion + 1 // Burn previous syncs to prevent "undelete" race condition
-      };
+    case 'CLEAR_LOCAL':
+      return { ...state, items: [], appliedCoupon: null };
 
-    case 'SYNC_WITH_SERVER': {
-      const { serverCart, syncedVersion } = action.payload;
+    case 'SYNC_START':
+      return { ...state, pendingActions: state.pendingActions + 1 };
 
-      // BI-DIRECTIONAL CONFLICT RESOLUTION:
-      // If our local version has moved past the version that triggered this sync,
-      // we only adopt server values for items we haven't touched recently.
-
-      const isStale = state.localVersion > syncedVersion;
-
-      if (!isStale) {
-        return {
-          ...state,
-          items: serverCart.items || [],
-          lastSyncedVersion: syncedVersion
-        };
+    case 'SYNC_END': {
+      const { serverItems } = action.payload;
+      const nextPending = Math.max(0, state.pendingActions - 1);
+      
+      // Senior Strategy: If there are more pending actions, don't adopt the server items yet
+      // as they represent a stale "Intent". Wait for the final sync to finish.
+      if (nextPending > 0) {
+        return { ...state, pendingActions: nextPending };
       }
 
-      // --- Bi-directional Merge (Stale State) ---
-      // Goal: Keep local quantities for anything touched, but adopt server metadata (prices/ids).
-      // Crucially: Don't drop items that exist locally but haven't reached the server yet.
-
-      const localItems = [...state.items];
-      const serverItems = serverCart.items || [];
-
-      const mergedItems = serverItems.map(serverItem => {
-        const siId = serverItem.product?._id || serverItem.product?.id || serverItem.product;
-
-        // Find if we have a local version of this item
-        const localIdx = localItems.findIndex(li => {
-          const liId = li.product?._id || li.product?.id || li.product;
-          return liId === siId && li.size === serverItem.size && li.color === serverItem.color;
-        });
-
-        if (localIdx > -1) {
-          const localItem = localItems[localIdx];
-          localItems.splice(localIdx, 1); // Remove from pool so we don't duplicate
-          return { ...serverItem, quantity: localItem.quantity }; // Keep local intent, server metadata
-        }
-        return serverItem; // Server only item (from another session)
-      });
-
-      // Add back any items that were ONLY in local state (newly added)
       return {
         ...state,
-        items: [...mergedItems, ...localItems],
-        lastSyncedVersion: syncedVersion
+        items: serverItems || [],
+        pendingActions: nextPending
       };
     }
 
@@ -137,248 +109,218 @@ function cartReducer(state, action) {
   }
 }
 
-// --- PROVIDER ---
-
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
-  const { isAuthenticated } = useAuth();
-  const syncTimerRef = useRef(null);
+  const { isAuthenticated, user } = useAuth();
+  
+  const syncTimeoutRef = useRef(null);
   const stateRef = useRef(state);
 
-  // Keep stateRef fresh for callbacks without closure staleness
+  // Sync stateRef to avoid stale closure in callbacks
   useEffect(() => {
     stateRef.current = state;
-    if (state.initialized) {
-      localStorage.setItem('cart', JSON.stringify({ items: state.items, version: state.localVersion }));
-    }
-  }, [state]);
-
-  // --- API SYNC LOGIC ---
-
-  const refreshCart = useCallback(async (silent = false) => {
-    if (!isAuthenticated) return;
-    try {
-      if (!silent) dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await api.get('/cart');
-      dispatch({
-        type: 'SYNC_WITH_SERVER',
-        payload: { serverCart: response.data, syncedVersion: stateRef.current.localVersion }
-      });
-    } catch (error) {
-      console.error('[CartContext] Fetch failed:', error);
-    } finally {
-      if (!silent) dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  }, [isAuthenticated]);
-
-  const syncToBackend = useCallback(async () => {
-    if (!isAuthenticated) return;
-
-    // Capture the exact intent we are syncing
-    const versionAtStart = stateRef.current.localVersion;
-    const itemsToSync = stateRef.current.items;
-
-    try {
-      const formattedItems = itemsToSync.map(item => ({
-        productId: item.product?._id || item.product?.id || item.product,
-        quantity: item.quantity,
-        size: item.size,
-        color: item.color
+    
+    // Persistence: Always save to local storage as a safety net
+    if (state.isInitialized) {
+      localStorage.setItem('cart_v2', JSON.stringify({
+        items: state.items,
+        user: user?._id || 'guest',
+        timestamp: Date.now()
       }));
+    }
+  }, [state, user]);
 
-      // Use the sync endpoint to synchronize current state exactly as intended
-      const response = await api.post('/cart/sync', { items: formattedItems });
-
-      dispatch({
-        type: 'SYNC_WITH_SERVER',
-        payload: { serverCart: response.data, syncedVersion: versionAtStart }
-      });
+  const fetchServerCart = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const { data } = await api.get('/cart');
+      dispatch({ type: 'INITIALIZE', payload: data.items || [] });
     } catch (error) {
-      console.error('[CartContext] Sync failed:', error);
-      // Wait for next trigger or manual refresh
+      console.error('[Cart] Full fetch failed', error);
     }
   }, [isAuthenticated]);
 
-  const triggerSync = useCallback(() => {
-    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
-    syncTimerRef.current = setTimeout(syncToBackend, 800); // 800ms group delay
-  }, [syncToBackend]);
+  const performSync = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
+    const itemsToSync = stateRef.current.items.map(item => ({
+      productId: item.product?._id || item.product?.id || item.product,
+      quantity: item.quantity,
+      size: item.size,
+      color: item.color
+    }));
 
-  // Init logic: Merge guest -> Auth or just Load Local
+    try {
+      dispatch({ type: 'SYNC_START' });
+      // Use /sync for total alignment
+      const { data } = await api.post('/cart/sync', { items: itemsToSync });
+      dispatch({ type: 'SYNC_END', payload: { serverItems: data.items } });
+    } catch (error) {
+      console.error('[Cart] Sync failed', error);
+      // On failure, we don't dispatch SYNC_END with server items, simply decrementing pending
+      dispatch({ type: 'SYNC_END', payload: { serverItems: stateRef.current.items } });
+    }
+  }, [isAuthenticated]);
+
+  const debounceSync = useCallback(() => {
+    if (!isAuthenticated) return;
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    syncTimeoutRef.current = setTimeout(performSync, 1000); // 1s debounce for stability
+  }, [isAuthenticated, performSync]);
+
+  // --- INITIALIZATION ---
   useEffect(() => {
-    const initialize = async () => {
-      const localData = localStorage.getItem('cart');
-      let localCart = { items: [] };
+    const init = async () => {
+      let localItems = [];
+      const stored = localStorage.getItem('cart_v2');
+      
       try {
-        if (localData) localCart = JSON.parse(localData);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Only adopt local storage if it belongs to current user/guest
+          if (parsed.user === (user?._id || 'guest')) {
+            localItems = parsed.items || [];
+          }
+        }
       } catch (e) {
-        console.error('Local cart corrupted');
+        console.error('Cart parse failed');
       }
 
       if (isAuthenticated) {
-        if (localCart.items && localCart.items.length > 0) {
+        // Auth flow: If we have local items, merge them first
+        if (localItems.length > 0) {
           try {
             dispatch({ type: 'SET_LOADING', payload: true });
-            const formattedItems = localCart.items.map(item => ({
-              productId: item.product?._id || item.product?.id || item.product,
-              quantity: item.quantity,
-              size: item.size,
-              color: item.color
+            const formatted = localItems.map(item => ({
+                productId: item.product?._id || item.product?.id || item.product,
+                quantity: item.quantity,
+                size: item.size,
+                color: item.color
             }));
-            const response = await api.post('/cart/merge', { items: formattedItems });
-            dispatch({ type: 'INIT_CART', payload: response.data.items });
-            localStorage.removeItem('cart');
+            const { data } = await api.post('/cart/merge', { items: formatted });
+            dispatch({ type: 'INITIALIZE', payload: data.items || [] });
+            // Cleanup old storage
+            localStorage.removeItem('cart'); 
           } catch (e) {
-            refreshCart();
+            await fetchServerCart();
           } finally {
             dispatch({ type: 'SET_LOADING', payload: false });
           }
         } else {
-          refreshCart();
+          await fetchServerCart();
         }
       } else {
-        dispatch({ type: 'INIT_CART', payload: localCart.items || [] });
+        // Guest flow: Just use local items
+        dispatch({ type: 'INITIALIZE', payload: localItems });
       }
     };
-    initialize();
-  }, [isAuthenticated, refreshCart]);
 
-  // --- EXPOSED ACTIONS ---
+    init();
+  }, [isAuthenticated, user, fetchServerCart]);
 
-  const getAvailableStock = useCallback((product, variant = null) => {
+  // --- PUBLIC ACTIONS ---
+
+  const getStock = useCallback((product, variant = null) => {
     if (!product) return 0;
-
     if (variant?.size || variant?.color) {
-      const matchedVariant = (product.variants || []).find(v =>
+      const match = (product.variants || []).find(v => 
         (v.size == variant.size || (!v.size && !variant.size)) &&
         (v.color == variant.color || (!v.color && !variant.color))
       );
-      if (matchedVariant) return Number(matchedVariant.stock) || 0;
+      return match ? (Number(match.stock) || 0) : 0;
     }
-
     return Number(product.stock) || 0;
   }, []);
 
-  const addToCart = useCallback(async (product, quantity = 1, variant = null) => {
+  const addToCart = useCallback((product, quantity = 1, variant = null) => {
     const productId = product._id || product.id;
+    const size = variant?.size;
+    const color = variant?.color;
+    const maxStock = getStock(product, variant);
 
-    const maxStock = getAvailableStock(product, variant);
-
-    const existingItem = stateRef.current.items.find(item =>
+    const existing = stateRef.current.items.find(item => 
       (item.product?._id || item.product?.id || item.product) === productId &&
-      item.size === variant?.size &&
-      item.color === variant?.color
+      item.size === size &&
+      item.color === color
     );
 
-    const requestedQuantity = existingItem ? existingItem.quantity + quantity : quantity;
-    if (requestedQuantity > maxStock) {
-      return {
-        success: false,
-        code: 'STOCK_LIMIT',
-        stock: maxStock,
-        message: `Only ${maxStock} items are available`
-      };
+    const newQty = (existing?.quantity || 0) + quantity;
+
+    if (newQty > maxStock) {
+      return { success: false, message: `Only ${maxStock} units available`, stock: maxStock };
     }
 
-    if (existingItem) {
-      dispatch({
-        type: 'OPTIMISTIC_UPDATE',
-        payload: { itemId: existingItem._id, quantity: existingItem.quantity + quantity }
-      });
-    } else {
-      const tempId = 'temp_' + Date.now();
-      dispatch({
-        type: 'OPTIMISTIC_UPDATE',
-        payload: { itemId: tempId, quantity, product, variant, isNew: true }
-      });
-    }
-
-    if (isAuthenticated) triggerSync();
-    return { success: true };
-  }, [getAvailableStock, isAuthenticated, triggerSync]);
-
-  const updateCartItem = useCallback((itemId, quantity) => {
-    if (quantity < 1) return;
-
-    const currentItem = stateRef.current.items.find(item => item._id === itemId);
-    if (!currentItem) {
-      return { success: false, message: 'Item not found in cart' };
-    }
-
-    const product = currentItem.product || {};
-    const maxStock = getAvailableStock(product, {
-      size: currentItem.size,
-      color: currentItem.color
+    dispatch({
+      type: 'UPDATE_LOCAL_ITEM',
+      payload: { productId, size, color, quantity: newQty, product, variant, isNew: !existing }
     });
 
-    if (quantity > maxStock) {
-      return {
-        success: false,
-        code: 'STOCK_LIMIT',
-        stock: maxStock,
-        message: `Only ${maxStock} items are available.`
-      };
+    debounceSync();
+    return { success: true };
+  }, [getStock, debounceSync]);
+
+  const updateCartItem = useCallback((itemId, quantity) => {
+    const item = stateRef.current.items.find(i => i._id === itemId);
+    if (!item) return { success: false };
+
+    const maxStock = getStock(item.product, item);
+    const targetQty = Math.max(0, quantity);
+
+    if (targetQty > maxStock) {
+      return { success: false, message: `Only ${maxStock} units available`, stock: maxStock };
     }
 
-    dispatch({ type: 'OPTIMISTIC_UPDATE', payload: { itemId, quantity } });
-    if (isAuthenticated) triggerSync();
+    const productId = item.product?._id || item.product?.id || item.product;
+
+    dispatch({
+      type: 'UPDATE_LOCAL_ITEM',
+      payload: { productId, size: item.size, color: item.color, quantity: targetQty }
+    });
+
+    debounceSync();
     return { success: true };
-  }, [getAvailableStock, isAuthenticated, triggerSync]);
+  }, [getStock, debounceSync]);
 
-  const removeFromCart = useCallback(async (itemId) => {
-    dispatch({ type: 'OPTIMISTIC_REMOVE', payload: itemId });
-    if (isAuthenticated) triggerSync();
-    return true;
-  }, [isAuthenticated, triggerSync]);
-
-  const removeMultipleFromCart = useCallback(async (itemIds) => {
-    if (!itemIds?.length) return true;
-    itemIds.forEach(id => dispatch({ type: 'OPTIMISTIC_REMOVE', payload: id }));
-    if (isAuthenticated) triggerSync();
-    return true;
-  }, [isAuthenticated, triggerSync]);
+  const removeFromCart = useCallback((itemId) => {
+    dispatch({ type: 'REMOVE_LOCAL_ITEM', payload: itemId });
+    debounceSync();
+  }, [debounceSync]);
 
   const clearCart = useCallback(async () => {
-    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
-    dispatch({ type: 'OPTIMISTIC_CLEAR' });
+    dispatch({ type: 'CLEAR_LOCAL' });
     if (isAuthenticated) {
       try {
         await api.delete('/cart');
       } catch (e) {
-        console.error('Server clear failed');
-        refreshCart();
+        console.error('Remote clear failed');
       }
-    } else {
-      localStorage.removeItem('cart');
     }
-  }, [isAuthenticated, refreshCart]);
+  }, [isAuthenticated]);
 
   const getCartTotal = useCallback(() => {
-    return state.items.reduce((total, item) => {
-      const price = item.price || item.product?.price || 0;
-      return total + (price * item.quantity);
-    }, 0);
+    return state.items.reduce((acc, item) => acc + ((item.price || 0) * item.quantity), 0);
   }, [state.items]);
 
   const getCartCount = useCallback(() => {
-    return state.items.reduce((count, item) => count + item.quantity, 0);
+    return state.items.reduce((acc, item) => acc + item.quantity, 0);
   }, [state.items]);
 
   const value = useMemo(() => ({
     cart: { items: state.items },
-    loading: state.loading,
+    loading: state.isLoading || (state.pendingActions > 0),
+    isInitialized: state.isInitialized,
     addToCart,
     updateCartItem,
     removeFromCart,
-    removeMultipleFromCart,
     clearCart,
     getCartTotal,
     getCartCount,
-    refreshCart,
+    getStock,
+    refreshCart: fetchServerCart,
+    appliedCoupon: state.appliedCoupon,
     applyCoupon: (coupon) => dispatch({ type: 'SET_COUPON', payload: coupon }),
     clearCoupon: () => dispatch({ type: 'CLEAR_COUPON' }),
-    appliedCoupon: state.appliedCoupon
-  }), [state.items, state.loading, state.appliedCoupon, addToCart, updateCartItem, removeFromCart, removeMultipleFromCart, clearCart, getCartTotal, getCartCount, refreshCart]);
+  }), [state, addToCart, updateCartItem, removeFromCart, clearCart, getCartTotal, getCartCount, fetchServerCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

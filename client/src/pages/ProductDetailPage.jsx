@@ -39,6 +39,8 @@ const ProductDetailPage = () => {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewName, setReviewName] = useState(user?.firstName || user?.name || '');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false); // Success toast state
+  const [errorStatus, setErrorStatus] = useState(null); // Stock error state
 
   useEffect(() => {
     if (user) {
@@ -143,15 +145,23 @@ const ProductDetailPage = () => {
   const handleAddToCart = () => {
     if (!product) return;
 
-    // Construct variant object if selected
     const variant = selectedVariant ? {
-      id: selectedVariant._id,
+      _id: selectedVariant._id,
       size: selectedVariant.size,
       color: selectedVariant.color,
       price: selectedVariant.price
     } : null;
 
-    addToCart(product, Number(quantity) || 1, variant);
+    const result = addToCart(product, Number(quantity) || 1, variant);
+    
+    if (result.success) {
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 3000);
+      setErrorStatus(null);
+    } else {
+      setErrorStatus(result.message);
+      setTimeout(() => setErrorStatus(null), 4000);
+    }
   };
 
   const handleSubmitReview = async (e) => {
@@ -402,6 +412,24 @@ const ProductDetailPage = () => {
                   : 'Out of stock'}
               </span>
             </div>
+
+            {/* Success Toast */}
+            {addedToCart && (
+              <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[2000] animate-bounce-short">
+                <div className="bg-secondary text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white/20">
+                  <FiCheckCircle size={18} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Added to Bag</span>
+                  <Link to="/cart" className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-[9px] border border-white/10">View Cart</Link>
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {errorStatus && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-[10px] uppercase font-bold tracking-widest border border-red-100 animate-fade-in">
+                {errorStatus}
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">

@@ -174,7 +174,7 @@ const sendOrderConfirmationEmail = async (order) => {
                         </div>
 
                         <div style="text-align: center;">
-                            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/orders" 
+                            <a href="https://zhenkala.com/admin/orders" 
                                style="display: inline-block; padding: 15px 40px; background: #c53030; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">
                                 VIEW ORDER IN DASHBOARD
                             </a>
