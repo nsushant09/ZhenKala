@@ -25,7 +25,8 @@ const PaymentIcons = {
   'Union Pay': 'https://upload.wikimedia.org/wikipedia/commons/1/1b/UnionPay_logo.svg',
   'American Express': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
   'Alipay': 'https://upload.wikimedia.org/wikipedia/en/thumb/d/dd/Alipay_logo_%282024%29.svg/960px-Alipay_logo_%282024%29.svg.png?_=20240609043243',
-  'WeChat Pay': 'https://brandlogos.net/wp-content/uploads/2023/09/wechat_pay-logo_brandlogos.net_3mmfw-512x152.png'
+  'WeChat Pay': 'https://brandlogos.net/wp-content/uploads/2023/09/wechat_pay-logo_brandlogos.net_3mmfw-512x152.png',
+  'fonepay': 'https://img.businesswire.com/media/20220627005436/en/1498337/23/FonepayLogo.jpg' // User will replace later if needed
 };
 
 const CheckoutPage = () => {
@@ -236,7 +237,7 @@ const CheckoutPage = () => {
 
   // Handle Stripe Intent when method changes
   useEffect(() => {
-    if (step !== 2 || !paymentMethod || paymentMethod === 'PayPal') {
+    if (step !== 2 || !paymentMethod || paymentMethod === 'PayPal' || paymentMethod === 'fonepay') {
       setClientSecret('');
       return;
     }
@@ -297,6 +298,23 @@ const CheckoutPage = () => {
   const handlePaymentSuccess = async () => {
     await clearCart();
     navigate(`/orders/${createdOrderId}?success=true`);
+  };
+
+  const handleFonepayPayment = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { data } = await api.post('/payments/fonepay/create-url', { orderId: createdOrderId });
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      } else {
+        throw new Error('No payment URL returned');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to initiate Fonepay payment.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getDisplayAmount = () => {
@@ -390,11 +408,12 @@ const CheckoutPage = () => {
                 <div className="payment-category">
                   <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Regional Methods</h4>
                   <div className="payment-options-grid">
-                    {['Alipay', 'WeChat Pay'].map((method) => (
+                    {['Alipay', 'WeChat Pay', 'fonepay'].map((method) => (
                       <label key={method} className={`payment-card ${paymentMethod === method ? 'active' : ''}`}>
                         <input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} />
                         <div className="payment-info">
                           <img src={PaymentIcons[method]} alt={method} className="method-logo h-6" />
+                          {method === 'fonepay' && <span className="text-[10px] uppercase font-bold text-gray-500 ml-2">Fonepay (Nepal)</span>}
                         </div>
                       </label>
                     ))}
@@ -420,7 +439,23 @@ const CheckoutPage = () => {
                 </PayPalScriptProvider>
               )}
 
-              {(paymentMethod && paymentMethod !== 'PayPal') && stripeInstance && clientSecret && (
+              {paymentMethod === 'fonepay' && (
+                <div className="mt-8 animate-fade-in">
+                  <div className="bg-secondary/5 p-6 rounded-xl border border-secondary/10 mb-6 text-center">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Fonepay Secure Redirect</p>
+                    <p className="text-[10px] text-gray-400">You will be redirected to Fonepay's secure portal to complete your transaction via QR or Mobile Banking.</p>
+                  </div>
+                  <button 
+                    onClick={handleFonepayPayment} 
+                    className="place-order-btn" 
+                    disabled={loading}
+                  >
+                    {loading ? 'Routing to Fonepay...' : 'Pay with Fonepay'}
+                  </button>
+                </div>
+              )}
+
+              {(paymentMethod && !['PayPal', 'fonepay'].includes(paymentMethod)) && stripeInstance && clientSecret && (
                 <Elements stripe={stripeInstance} options={{ clientSecret }}>
                   <StripePaymentForm
                     amount={getDisplayAmount()}

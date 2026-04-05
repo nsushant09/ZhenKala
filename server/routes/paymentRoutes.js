@@ -4,12 +4,16 @@ const {
     createStripePaymentIntent,
     getPayPalClientId,
     getPaymentConfig,
-    handleStripeWebhook
+    handleStripeWebhook,
+    createFonepayPaymentUrl,
+    verifyFonepayPayment
 } = require('../controllers/paymentController');
 const { protect } = require('../middleware/auth');
 
 router.post('/webhook', handleStripeWebhook);
 router.post('/create-payment-intent', protect, createStripePaymentIntent);
+router.post('/fonepay/create-url', protect, createFonepayPaymentUrl);
+router.get('/fonepay/callback', verifyFonepayPayment);
 router.get('/paypal/client-id', getPayPalClientId);
 router.get('/config', protect, getPaymentConfig);
 

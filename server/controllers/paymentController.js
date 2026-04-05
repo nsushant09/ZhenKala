@@ -199,6 +199,69 @@ exports.getPayPalClientId = async (req, res) => {
     }
 };
 
+const FonepayService = require('../utils/fonepayService');
+
+// @desc    Create Fonepay Payment URL
+// @route   POST /api/payments/fonepay/create-url
+// @access  Private
+exports.createFonepayPaymentUrl = async (req, res) => {
+    const { orderId } = req.body;
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        const result = await FonepayService.generateWebPaymentUrl(order);
+        res.json(result);
+    } catch (error) {
+        console.error('[Fonepay] URL Generation Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Verify Fonepay Payment Callback
+// @route   GET /api/payments/fonepay/callback
+// @access  Public (Redirect from Fonepay)
+exports.verifyFonepayPayment = async (req, res) => {
+    try {
+        const verification = await FonepayService.verifyPayment(req.query);
+        const orderId = req.query.PRN.split('_')[0]; // Extract original OrderID
+
+        const order = await Order.findById(orderId).populate('user', 'firstName lastName email');
+        if (!order) {
+            return res.redirect(`${process.env.CLIENT_URL}/payment/error?message=OrderNotFound`);
+        }
+
+        if (verification.success) {
+            // Mark as paid
+            if (!order.isPaid) {
+                if (!order.stockDeducted) {
+                    await validateAndDeductOrderStock(order);
+                    order.stockDeducted = true;
+                }
+                order.isPaid = true;
+                order.paidAt = Date.now();
+                order.paymentResult = {
+                    id: verification.transactionId,
+                    status: 'completed',
+                    update_time: new Date().toISOString()
+                };
+                order.paymentMethod = 'fonepay';
+                await order.save();
+                await sendOrderConfirmationEmail(order);
+            }
+            return res.redirect(`${process.env.CLIENT_URL}/orders/${orderId}?success=true`);
+        } else {
+            console.warn(`[Fonepay] Payment Failed for Order ${orderId}: ${verification.message}`);
+            return res.redirect(`${process.env.CLIENT_URL}/orders/${orderId}?success=false&error=${encodeURIComponent(verification.message)}`);
+        }
+    } catch (error) {
+        console.error('[Fonepay] Callback Error:', error);
+        res.redirect(`${process.env.CLIENT_URL}/payment/error?message=${encodeURIComponent(error.message)}`);
+    }
+};
+
 // @desc    Retrieve Payment Configuration (Public parts)
 // @route   GET /api/payments/config
 // @access  Private
