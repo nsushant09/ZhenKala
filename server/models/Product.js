@@ -17,6 +17,11 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please provide product description'],
     },
+    sku: {
+      type: String,
+      trim: true,
+      sparse: true,
+    },
     price: {
       type: Number,
       min: 0,

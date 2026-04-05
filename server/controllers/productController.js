@@ -10,7 +10,10 @@ exports.getProducts = async (req, res) => {
     const { category, minPrice, maxPrice, rating, search, sort, page = 1, limit = 12 } = req.query;
 
     // Build query
-    let query = { isActive: true };
+    let query = {};
+    if (req.query.all !== 'true') {
+      query.isActive = true;
+    }
 
     // Robust category filtering: Ignore 'all' or empty strings
     if (category && category !== 'all' && category.trim() !== '') {
@@ -49,11 +52,19 @@ exports.getProducts = async (req, res) => {
     }
 
     if (search && search.trim() !== '') {
+      const searchRegex = { $regex: search, $options: 'i' };
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
+        { name: searchRegex },
+        { description: searchRegex },
+        { sku: searchRegex },
+        { 'variants.sku': searchRegex },
         { tags: { $in: [new RegExp(search, 'i')] } },
       ];
+
+      // If search string is a valid MongoDB ID, search by ID too
+      if (mongoose.Types.ObjectId.isValid(search)) {
+        query.$or.push({ _id: search });
+      }
     }
 
     // Sort

@@ -26,6 +26,7 @@ const AdminProductForm = () => {
         isFeatured: false,
         isActive: true,
         tags: '',
+        sku: '',
     });
 
     const [variants, setVariants] = useState([]);
@@ -63,6 +64,7 @@ const AdminProductForm = () => {
                 isFeatured: data.isFeatured,
                 isActive: data.isActive,
                 tags: data.tags ? data.tags.join(', ') : '',
+                sku: data.sku || '',
             });
             setVariants(data.variants || []);
             setImages(data.images || []);
@@ -95,7 +97,7 @@ const AdminProductForm = () => {
     const addVariant = () => {
         setVariants([
             ...variants,
-            { size: '', color: '', price: 0, costPrice: 0, originalPrice: 0, stock: 10, discount: 0, isActive: true }
+            { size: '', color: '', price: 0, costPrice: 0, originalPrice: 0, stock: 10, discount: 0, sku: '', isActive: true }
         ]);
     };
 
@@ -203,8 +205,20 @@ const AdminProductForm = () => {
 
             const payload = {
                 ...finalFormData,
+                price: Number(finalFormData.price) || 0,
+                costPrice: Number(finalFormData.costPrice) || 0,
+                originalPrice: Number(finalFormData.originalPrice) || 0,
+                discount: Number(finalFormData.discount) || 0,
+                stock: Number(finalFormData.stock) || 0,
                 tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
-                variants,
+                variants: variants.map(v => ({
+                    ...v,
+                    price: Number(v.price) || 0,
+                    costPrice: Number(v.costPrice) || 0,
+                    originalPrice: Number(v.originalPrice) || 0,
+                    discount: Number(v.discount) || 0,
+                    stock: Number(v.stock) || 0
+                })),
                 images: images.filter(img => img.url), // Filter out empty images
             };
 
@@ -299,7 +313,7 @@ const AdminProductForm = () => {
                                 </select>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-1">
                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tags</label>
                                 <input
                                     type="text"
@@ -308,6 +322,18 @@ const AdminProductForm = () => {
                                     onChange={handleChange}
                                     placeholder="e.g. thangka, gold, handmade"
                                     className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-1">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest underline decoration-secondary decoration-wavy">General SKU (Internal Reference ID)</label>
+                                <input
+                                    type="text"
+                                    name="sku"
+                                    value={formData.sku}
+                                    onChange={handleChange}
+                                    placeholder="e.g. TH-MNDL-001"
+                                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-secondary transition-all font-medium placeholder:italic placeholder:opacity-50"
                                 />
                             </div>
 
@@ -373,90 +399,104 @@ const AdminProductForm = () => {
                                 <p className="text-[11px] text-gray-400 italic font-medium">No variants added yet.</p>
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-separate border-spacing-y-2">
-                                    <thead>
-                                        <tr className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                                            <th className="px-4 pb-4">Size</th>
-                                            <th className="px-4 pb-4">Color</th>
-                                            <th className="px-4 pb-4">Cost Price (Rs)</th>
-                                            <th className="px-4 pb-4">Orig. Price (Rs)</th>
-                                            <th className="px-4 pb-4">Discount (%)</th>
-                                            <th className="px-4 pb-4">Final Price (Rs)</th>
-                                            <th className="px-4 pb-4">Stock</th>
-                                            <th className="px-4 pb-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {variants.map((variant, index) => (
-                                            <tr key={index} className="bg-white group">
-                                                <td className="px-4 py-4 first:rounded-l-sm">
-                                                    <input
-                                                        type="text"
-                                                        value={variant.size || ''}
-                                                        onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
-                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-full"
-                                                        placeholder="Size"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <input
-                                                        type="text"
-                                                        value={variant.color || ''}
-                                                        onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
-                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-full"
-                                                        placeholder="Color"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <input
-                                                        type="number"
-                                                        value={variant.costPrice || ''}
-                                                        onChange={(e) => handleVariantChange(index, 'costPrice', parseFloat(e.target.value) || 0)}
-                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-20"
-                                                        placeholder="Cost"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <input
-                                                        type="number"
-                                                        value={variant.originalPrice || ''}
-                                                        onChange={(e) => handleVariantChange(index, 'originalPrice', parseFloat(e.target.value) || 0)}
-                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-20"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <input
-                                                        type="number"
-                                                        value={variant.discount}
-                                                        onChange={(e) => handleVariantChange(index, 'discount', parseFloat(e.target.value) || 0)}
-                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-16"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-4 font-bold text-gray-800 text-sm">
-                                                    {variant.price}
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <input
-                                                        type="number"
-                                                        value={variant.stock}
-                                                        onChange={(e) => handleVariantChange(index, 'stock', parseInt(e.target.value) || 0)}
-                                                        className="bg-transparent border-b border-transparent focus:border-secondary transition-all outline-none text-sm w-16"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-4 text-right last:rounded-r-sm">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeVariant(index)}
-                                                        className="text-gray-300 hover:text-red-500 transition-colors"
-                                                    >
-                                                        <FiTrash2 size={16} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {variants.map((variant, index) => (
+                                    <div key={index} className="bg-white p-8 rounded-sm shadow-sm border border-secondary/10 group relative hover:border-secondary/30 transition-all">
+                                        <div className="absolute top-4 right-4 flex gap-4">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={variant.isActive}
+                                                    onChange={(e) => handleVariantChange(index, 'isActive', e.target.checked)}
+                                                    className="w-4 h-4 rounded-sm"
+                                                />
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Active</span>
+                                            </label>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeVariant(index)}
+                                                className="text-gray-300 hover:text-red-500 transition-colors"
+                                            >
+                                                <FiTrash2 size={16} />
+                                            </button>
+                                        </div>
+
+                                        <h4 className="text-sm font-bold text-gray-800 mb-6 pb-2 border-b border-gray-100 uppercase tracking-widest">Variant #{index + 1}</h4>
+
+                                        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Size</label>
+                                                <input
+                                                    type="text"
+                                                    value={variant.size || ''}
+                                                    onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-sm py-1"
+                                                    placeholder="e.g. M, XL"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Color</label>
+                                                <input
+                                                    type="text"
+                                                    value={variant.color || ''}
+                                                    onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-sm py-1"
+                                                    placeholder="Red, Blue"
+                                                />
+                                            </div>
+                                            <div className="space-y-1 col-span-2">
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">SKU</label>
+                                                <input
+                                                    type="text"
+                                                    value={variant.sku || ''}
+                                                    onChange={(e) => handleVariantChange(index, 'sku', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-sm py-1 placeholder:italic"
+                                                    placeholder="Specific SKU for this variant"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cost Price</label>
+                                                <input
+                                                    type="number"
+                                                    value={variant.costPrice}
+                                                    onChange={(e) => handleVariantChange(index, 'costPrice', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-sm py-1"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Stock</label>
+                                                <input
+                                                    type="number"
+                                                    value={variant.stock}
+                                                    onChange={(e) => handleVariantChange(index, 'stock', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-sm py-1"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Orig. Price</label>
+                                                <input
+                                                    type="number"
+                                                    value={variant.originalPrice}
+                                                    onChange={(e) => handleVariantChange(index, 'originalPrice', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-sm py-1"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Disc. %</label>
+                                                <input
+                                                    type="number"
+                                                    value={variant.discount}
+                                                    onChange={(e) => handleVariantChange(index, 'discount', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-gray-100 focus:border-secondary transition-all outline-none text-sm py-1"
+                                                />
+                                            </div>
+                                            <div className="col-span-2 pt-2 border-t border-secondary/5 mt-2 flex justify-between items-center">
+                                                <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.1em]">Final Selling Price:</span>
+                                                <span className="text-lg font-bold text-gray-800">Rs. {variant.price}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>

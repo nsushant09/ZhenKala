@@ -91,10 +91,14 @@ const AdminCoupons = () => {
         setError('');
 
         try {
+            const payload = {
+                ...formData,
+                discountPercent: Number(formData.discountPercent) || 0
+            };
             if (isEditing) {
-                await api.put(`/coupons/${currentCouponId}`, formData);
+                await api.put(`/coupons/${currentCouponId}`, payload);
             } else {
-                await api.post('/coupons', formData);
+                await api.post('/coupons', payload);
             }
             setShowFormModal(false);
             fetchCoupons();

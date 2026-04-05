@@ -45,7 +45,7 @@ const AdminMiscellaneous = () => {
             ...prev,
             deliveryCharges: {
                 ...prev.deliveryCharges,
-                [location]: Number(value)
+                [location]: value
             }
         }));
     };
@@ -53,7 +53,7 @@ const AdminMiscellaneous = () => {
     const handleThresholdChange = (value) => {
         setSettings(prev => ({
             ...prev,
-            freeShippingThreshold: Number(value)
+            freeShippingThreshold: value
         }));
     };
 
@@ -63,7 +63,15 @@ const AdminMiscellaneous = () => {
             setSaving(true);
             setError('');
             setSuccess('');
-            const { data } = await api.put('/merchant-details', settings);
+            const finalSettings = {
+                ...settings,
+                deliveryCharges: {
+                    nepal: Number(settings.deliveryCharges.nepal) || 0,
+                    international: Number(settings.deliveryCharges.international) || 0
+                },
+                freeShippingThreshold: Number(settings.freeShippingThreshold) || 0
+            };
+            const { data } = await api.put('/merchant-details', finalSettings);
             if (data) {
                 setSettings({
                     deliveryCharges: data.deliveryCharges || { nepal: 130, international: 2000 },

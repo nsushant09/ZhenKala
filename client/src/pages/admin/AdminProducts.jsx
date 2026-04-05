@@ -59,7 +59,7 @@ const AdminProducts = () => {
     setLoading(true);
     try {
       const { data } = await api.get(
-        `/products?page=${page}&limit=20&search=${search}&_t=${Date.now()}`
+        `/products?page=${page}&limit=20&search=${search}&all=true&_t=${Date.now()}`
       );
       setProducts(data.products);
       setTotalPages(data.pages);
@@ -130,7 +130,7 @@ const AdminProducts = () => {
           >
             <input
               type="text"
-              placeholder="Search by product name..."
+              placeholder="Search by name, SKU, or ID..."
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="w-full pl-4 pr-12 py-3 bg-white border border-gray-100 rounded-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-secondary transition-all"
@@ -157,7 +157,7 @@ const AdminProducts = () => {
               <table className="w-full text-left">
                 <thead className="bg-secondary text-white uppercase text-[10px] font-bold tracking-[0.2em]">
                   <tr>
-                    <th className="px-8 py-5">Ref ID</th>
+                    <th className="px-8 py-5">Ref / SKU</th>
                     <th className="px-8 py-5">Image</th>
                     <th className="px-8 py-5">Product Name</th>
                     <th className="px-8 py-5">Category</th>
@@ -180,8 +180,17 @@ const AdminProducts = () => {
                       key={product._id}
                       className="hover:bg-white/40 transition-colors group"
                     >
-                      <td className="px-8 py-6 font-mono text-[11px] text-gray-400 uppercase">
-                        {product._id.substring(product._id.length - 6)}
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col gap-1.5">
+                          <span className="font-mono text-[11px] text-gray-400 uppercase">
+                            ID: {product._id.substring(product._id.length - 6)}
+                          </span>
+                          {product.sku && (
+                            <span className="font-black text-[9px] text-secondary uppercase tracking-widest bg-secondary/5 px-2 py-0.5 rounded-full w-fit">
+                              {product.sku}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       <td className="px-8 py-6">

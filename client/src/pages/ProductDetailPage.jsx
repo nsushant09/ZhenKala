@@ -151,7 +151,7 @@ const ProductDetailPage = () => {
       price: selectedVariant.price
     } : null;
 
-    addToCart(product, quantity, variant);
+    addToCart(product, Number(quantity) || 1, variant);
   };
 
   const handleSubmitReview = async (e) => {
@@ -369,14 +369,32 @@ const ProductDetailPage = () => {
             <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-200">
               <label className="font-semibold text-on-surface uppercase text-sm tracking-wide">Quantity:</label>
               <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 bg-primary text-black text-xl font-semibold hover:opacity-80 transition-opacity">-</button>
+                <button 
+                  onClick={() => setQuantity(Math.max(1, (Number(quantity) || 1) - 1))} 
+                  className="w-10 h-10 bg-primary text-black text-xl font-semibold hover:opacity-80 transition-opacity"
+                >-</button>
                 <input
                   type="number"
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                        setQuantity('');
+                    } else {
+                        setQuantity(Math.max(1, parseInt(val) || 1));
+                    }
+                  }}
+                  onBlur={() => {
+                    if (quantity === '' || quantity < 1) {
+                        setQuantity(1);
+                    }
+                  }}
                   className="w-16 h-10 border-x border-gray-300 text-center font-semibold focus:outline-none appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
-                <button onClick={() => setQuantity(Math.min(stock, quantity + 1))} className="w-10 h-10 bg-primary text-black text-xl font-semibold hover:opacity-80 transition-opacity">+</button>
+                <button 
+                  onClick={() => setQuantity(Math.min(stock, (Number(quantity) || 1) + 1))} 
+                  className="w-10 h-10 bg-primary text-black text-xl font-semibold hover:opacity-80 transition-opacity"
+                >+</button>
               </div>
               <span className={`text-sm ${stock > 0 && stock < 5 ? 'text-red-600 font-medium' : 'text-gray-600'}`}>
                 {stock > 0
