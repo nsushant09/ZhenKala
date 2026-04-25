@@ -129,8 +129,8 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                     </div>
 
                     {/* Price Section */}
-                    <div className="flex items-center justify-between mt-auto gap-2 pt-2 border-t border-black/5">
-                        <div className="flex flex-col min-w-0">
+                    <div className="flex items-center justify-between mt-auto gap-2">
+                        <div className="flex flex-wrap items-baseline gap-1.5 min-w-0">
                             <span className="text-base sm:text-lg font-medium text-on-background whitespace-nowrap">
                                 {formatPrice(price)}
                             </span>
@@ -144,8 +144,8 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                         {/* Add to Cart Button */}
                         <button
                             className={`
-                                relative overflow-hidden px-3 sm:px-4 py-2 rounded-md text-sm transition-all duration-300 flex items-center gap-1 shadow-sm shrink-0
-                                ${isAdding ? 'bg-secondary cursor-default' : 'bg-secondary hover:bg-black hover:scale-[1.02]'} text-white
+                                relative overflow-hidden px-4 py-2 rounded-md text-sm transition-all duration-300 flex items-center gap-1 shadow-sm
+                                ${isAdding ? 'bg-secondary cursor-default' : 'bg-secondary hover:bg-red-500 hover:scale-[1.05]'} text-white shrink-0
                             `}
                             onClick={handleAddToCart}
                             disabled={isAdding}
@@ -156,6 +156,7 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
                                 <><span className="text-lg font-light">+</span> <span className="font-medium text-xs sm:text-sm">Cart</span></>
                             )}
                         </button>
+                        
                     </div>
                 </div>
             </div>

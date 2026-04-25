@@ -113,7 +113,8 @@ const CartPage = () => {
             </p>
             <Link
               to="/products"
-              className="inline-flex items-center gap-3 bg-secondary text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-opacity-90 transition-all hover:translate-y-[-2px] duration-300 shadow-xl"
+              className="inline-flex items-center gap-3 bg-secondary px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-opacity-90 transition-all hover:translate-y-[-2px] duration-300 shadow-xl"
+              style={{ color: 'white' }}
             >
               Explore Collection <FiArrowRight />
             </Link>

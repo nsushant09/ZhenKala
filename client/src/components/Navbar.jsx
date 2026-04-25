@@ -106,26 +106,45 @@ const Navbar = () => {
     setCurrentLang(lang.name);
     setIsLangOpen(false);
 
-    const triggerGoogleTranslate = () => {
-      const googleSelect = document.querySelector('.goog-te-combo');
-      if (googleSelect) {
-        googleSelect.value = lang.code;
-        googleSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        googleSelect.dispatchEvent(new Event('click', { bubbles: true }));
-      } else {
-        // Fallback retry
-        setTimeout(() => {
-          const retrySelect = document.querySelector('.goog-te-combo');
-          if (retrySelect) {
-            retrySelect.value = lang.code;
-            retrySelect.dispatchEvent(new Event('change', { bubbles: true }));
-            retrySelect.dispatchEvent(new Event('click', { bubbles: true }));
-          }
-        }, 500);
+    const changeLanguage = () => {
+      // Method 1: Try using Google's internal API via the element
+      const translateElement = window.google?.translate?.TranslateElement?.getInstance();
+      if (translateElement) {
+        translateElement.setLanguage(lang.code);
+        return true;
+      }
+
+      // Method 2: Use the cookie-based approach Google Translate understands
+      // Delete existing googtrans cookie and set new one
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'googtrans=/en/' + lang.code + '; path=/';
+
+      // Method 3: Trigger via the combo box if available
+      const googleCombo = document.querySelector('.goog-te-combo');
+      if (googleCombo) {
+        googleCombo.value = lang.code;
+        googleCombo.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
+
+      // Method 4: Reload to apply translation if widget not available
+      // Only use as last resort
+      return false;
+    };
+
+    // Try immediately, then retry with backoff
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    const tryChange = () => {
+      if (changeLanguage()) return;
+      attempts++;
+      if (attempts < maxAttempts) {
+        setTimeout(tryChange, attempts * 300);
       }
     };
 
-    triggerGoogleTranslate();
+    tryChange();
   };
 
   return (

@@ -14,8 +14,8 @@
 <body>
   <div id="root"></div>
   <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
+    window.googleTranslateElementInit = function() {
+      window.googleTranslateInstance = new google.translate.TranslateElement({
         pageLanguage: 'en',
         includedLanguages: 'en,zh-CN,ne,hi,ja',
         layout: google.translate.TranslateElement.InlineLayout.SIMPLE,

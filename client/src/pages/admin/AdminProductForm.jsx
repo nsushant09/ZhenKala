@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { FiSave, FiArrowLeft, FiPlus, FiTrash2, FiImage, FiLayers, FiUpload, FiRefreshCw } from 'react-icons/fi';
 import api from '../../services/api';
+import imageCompression from 'browser-image-compression';
 
 const AdminProductForm = () => {
     const { id } = useParams();
@@ -122,12 +123,32 @@ const AdminProductForm = () => {
 
     // --- Images Management ---
     const uploadFileHandler = async (e) => {
-        const file = e.target.files[0];
+        let file = e.target.files[0];
         if (!file) return;
+
+        setUploading(true);
+
+        // Compress if larger than 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            try {
+                const options = {
+                    maxSizeMB: 5,
+                    maxWidthOrHeight: 1920,
+                    useWebWorker: true,
+                };
+                const compressedFile = await imageCompression(file, options);
+                file = compressedFile;
+                console.log(`Image compressed from ${(e.target.files[0].size / 1024 / 1024).toFixed(2)}MB to ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+            } catch (error) {
+                console.error('Image compression failed:', error);
+                setUploading(false);
+                alert('Image is too large and compression failed. Please try a smaller image.');
+                return;
+            }
+        }
 
         const uploadData = new FormData();
         uploadData.append('image', file);
-        setUploading(true);
 
         try {
             const { data } = await api.post('/upload', uploadData, {
