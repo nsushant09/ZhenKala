@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStripe, useElements, PaymentElement, ExpressCheckoutElement } from '@stripe/react-stripe-js';
-import api from '../../services/api';
+import api from '@/services/api';
 
 const StripePaymentForm = ({ amount, orderId, selectedMethod, onSuccess, onError, orderSummaryTotals }) => {
     const stripe = useStripe();

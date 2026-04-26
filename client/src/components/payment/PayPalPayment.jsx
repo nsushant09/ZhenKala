@@ -1,6 +1,6 @@
 import React from 'react';
 import { PayPalButtons } from '@paypal/react-paypal-js';
-import api from '../../services/api';
+import api from '@/services/api';
 
 const PayPalPayment = ({ amount, orderId, onSuccess, onError, orderSummaryTotals }) => {
     return (

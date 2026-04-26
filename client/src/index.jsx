@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import App from '@/app/router';
 
 // Google Translate + React DOM Fix
 // This prevents React from crashing when Google Translate's DOM manipulation 

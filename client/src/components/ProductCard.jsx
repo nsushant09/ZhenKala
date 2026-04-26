@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useCart } from '../context/CartContext';
-import { useCurrency } from '../context/CurrencyContext';
+import { useCart } from '@/app/providers/CartContext';
+import { useCurrency } from '@/app/providers/CurrencyContext';
 import { Link } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight, FiCheck } from 'react-icons/fi';
 

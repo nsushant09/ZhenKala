@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiShoppingCart, FiUser, FiSearch, FiMenu, FiX, FiGlobe, FiChevronDown } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '@/app/providers/AuthContext';
+import { useCart } from '@/app/providers/CartContext';
+import { useCurrency } from '@/app/providers/CurrencyContext';
 import './Navbar.css';
-import api from '../services/api';
+import api from '@/services/api';
 import ConfirmModal from './ConfirmModal';
 
 const languages = [

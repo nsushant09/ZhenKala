@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../services/api';
+import api from '@/services/api';
 
 export const useProductsViewModel = () => {
     const [products, setProducts] = useState([]);

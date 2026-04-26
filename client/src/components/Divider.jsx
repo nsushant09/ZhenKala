@@ -1,5 +1,5 @@
 import React from 'react';
-import MandalaDivider from '../assets/mandala-divider.png';
+import MandalaDivider from '@/assets/mandala-divider.png';
 import './Divider.css';
 
 const Divider = () => {
