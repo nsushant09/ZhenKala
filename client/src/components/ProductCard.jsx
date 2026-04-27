@@ -52,12 +52,16 @@ const ProductCard = ({ id, name = "Product Name", price = 0, originalPrice = 0, 
 
     // Pass the product and the variant info
     // addToCart(product, quantity, variant)
-    await addToCart({ _id: id, name, price, images, stock }, 1, firstVariant ? {
+    const result = await addToCart({ _id: id, name, price, images, stock, variants }, 1, firstVariant ? {
       id: firstVariant._id,
       size: firstVariant.size,
       color: firstVariant.color,
       price: firstVariant.price
     } : null);
+
+    if (!result.success) {
+      alert(result.message || 'Failed to add to cart');
+    }
 
     setIsAdding(false);
   };

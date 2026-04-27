@@ -7,6 +7,7 @@ import {
   FiStar,
   FiChevronLeft,
   FiChevronRight,
+  FiCheckCircle,
 } from 'react-icons/fi';
 import { FaFacebook, FaTwitter, FaPinterest, FaWhatsapp } from 'react-icons/fa';
 import api from '@/services/api';
