@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { FiSave, FiArrowLeft, FiPlus, FiTrash2, FiImage, FiLayers, FiUpload, FiRefreshCw } from 'react-icons/fi';
+import { FiSave, FiArrowLeft, FiPlus, FiTrash2, FiImage, FiLayers, FiUpload, FiRefreshCw, FiInfo } from 'react-icons/fi';
 import api from '@/services/api';
 import imageCompression from 'browser-image-compression';
 
