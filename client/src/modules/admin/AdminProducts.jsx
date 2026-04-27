@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fi';
 import api from '@/services/api';
 import { useCurrency } from '@/app/providers/CurrencyContext';
+import ConfirmModal from '@/components/ConfirmModal';
 
 const AdminProducts = () => {
   const { formatPrice } = useCurrency();
@@ -116,7 +117,7 @@ const AdminProducts = () => {
 
           <Link
             to="/admin/products/new"
-            className="flex items-center gap-3 bg-secondary text-white px-8 py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 shadow-xl shadow-secondary/10 transition-all hover:-translate-y-1 active:scale-95 w-fit"
+            className="flex items-center gap-3 bg-secondary text-white px-8 py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-opacity-95 shadow-xl shadow-secondary/10 transition-all hover:-translate-y-1 active:scale-95 w-fit text-white"
           >
             <FiPlus size={14} /> Add New Product
           </Link>
@@ -289,44 +290,15 @@ const AdminProducts = () => {
         </div>
       </div>
 
-      {/* Custom Delete Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-primary-dark rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-primary-light/30 transform transition-all">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Confirm Deletion</h3>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="text-gray-400 hover:text-gray-500 transition-colors"
-              >
-                <FiX size={24} />
-              </button>
-            </div>
-
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Are you sure you want to delete <span className="font-semibold text-gray-900 dark:text-white">{productToDelete?.name}</span>?
-              This action cannot be undone.
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmDelete}
-                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors font-medium shadow-sm shadow-red-500/30"
-              >
-                Delete Product
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        message={`Are you sure you want to delete ${productToDelete?.name}? This action cannot be undone.`}
+        confirmText="Delete Product"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

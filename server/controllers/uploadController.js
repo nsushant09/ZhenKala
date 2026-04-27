@@ -3,7 +3,12 @@ const fs = require('fs');
 const multer = require('multer');
 const client = require('../config/oss');
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({
+    dest: 'uploads/',
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB limit
+    }
+});
 
 // @desc    Upload file to Aliyun OSS
 // @route   POST /api/upload
