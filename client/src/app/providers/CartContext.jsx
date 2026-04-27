@@ -165,7 +165,7 @@ export const CartProvider = ({ children }) => {
   const debounceSync = useCallback(() => {
     if (!isAuthenticated) return;
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
-    syncTimeoutRef.current = setTimeout(performSync, 1000); // 1s debounce for stability
+    syncTimeoutRef.current = setTimeout(performSync, 300); // 300ms debounce for snappier feel
   }, [isAuthenticated, performSync]);
 
   // --- INITIALIZATION ---

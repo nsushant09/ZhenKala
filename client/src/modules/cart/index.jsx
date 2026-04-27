@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useCart } from '@/app/providers/CartContext';
 import { useCurrency } from '@/app/providers/CurrencyContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,21 +13,25 @@ import { useMerchant } from '@/app/providers/MerchantContext';
  * We avoid full-page blockers for small updates to preserve user flow.
  */
 const CartPage = () => {
-  const { 
-    cart, 
-    removeFromCart, 
-    updateCartItem, 
-    getCartTotal, 
-    loading, 
+  const {
+    cart,
+    removeFromCart,
+    updateCartItem,
+    getCartTotal,
+    loading,
     isInitialized,
-    applyCoupon, 
-    clearCoupon, 
-    appliedCoupon 
+    applyCoupon,
+    clearCoupon,
+    appliedCoupon
   } = useCart();
-  
+
   const { formatPrice } = useCurrency();
   const { settings } = useMerchant();
   const navigate = useNavigate();
+
+  // Local optimistic state for immediate feedback
+  const [localQuantities, setLocalQuantities] = useState({});
+  const [removingItems, setRemovingItems] = useState(new Set());
 
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
@@ -35,14 +39,25 @@ const CartPage = () => {
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
 
+  // Sync local quantities with cart items on mount/updates
+  useEffect(() => {
+    const quantities = {};
+    cart.items.forEach(item => {
+      if (item._id) {
+        quantities[item._id] = item.quantity;
+      }
+    });
+    setLocalQuantities(prev => ({ ...prev, ...quantities }));
+  }, [cart.items]);
+
   // Derived Values
   const threshold = settings?.freeShippingThreshold ?? 13000;
   const subtotal = getCartTotal();
   const itemsCount = cart.items.length;
-  
-  const discountAmount = useMemo(() => 
+
+  const discountAmount = useMemo(() =>
     appliedCoupon ? (subtotal * (appliedCoupon.discountPercent / 100)) : 0
-  , [subtotal, appliedCoupon]);
+    , [subtotal, appliedCoupon]);
 
   const total = subtotal - discountAmount;
 
@@ -64,15 +79,32 @@ const CartPage = () => {
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) return;
-    updateCartItem(itemId, newQuantity);
-    // Errors are handled internally in context or as a return value if we wanted alert-style feedback
+    // Optimistic update: show change immediately
+    setLocalQuantities(prev => ({ ...prev, [itemId]: newQuantity }));
+    // Then trigger backend sync
+    const result = updateCartItem(itemId, newQuantity);
+    if (!result.success) {
+      // Revert on error
+      const item = cart.items.find(i => i._id === itemId);
+      if (item) {
+        setLocalQuantities(prev => ({ ...prev, [itemId]: item.quantity }));
+      }
+    }
   };
 
   const confirmRemove = () => {
     if (itemToRemove) {
+      // Optimistic: mark as removing immediately
+      setRemovingItems(prev => new Set(prev).add(itemToRemove));
       removeFromCart(itemToRemove);
       setShowRemoveModal(false);
+      setItemToRemove(null);
     }
+  };
+
+  // Get display quantity (optimistic or actual)
+  const getDisplayQuantity = (itemId, actualQuantity) => {
+    return localQuantities[itemId] ?? actualQuantity;
   };
 
   // Senior UI: Only show initial loader, don't block on subsequent syncs
@@ -121,13 +153,13 @@ const CartPage = () => {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-12 mt-4 relative">
-            
+
             {/* Context Loading Overlay (Subtle) */}
             {loading && (
-                <div className="absolute top-0 right-0 z-50 flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-secondary/5 shadow-lg animate-fade-in pointer-events-none">
-                    <FiLoader className="animate-spin text-secondary" />
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saving Changes</span>
-                </div>
+              <div className="absolute top-0 right-0 z-50 flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-secondary/5 shadow-lg animate-fade-in pointer-events-none">
+                <FiLoader className="animate-spin text-secondary" />
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saving Changes</span>
+              </div>
             )}
 
             {/* Cart Items List */}
@@ -144,8 +176,14 @@ const CartPage = () => {
                   if (!item) return null;
                   const product = item.product || {};
                   const price = item.price || product.price || 0;
-                  const itemTotal = price * item.quantity;
                   const itemId = item._id;
+
+                  // Use optimistic quantity for snappy UI
+                  const displayQuantity = getDisplayQuantity(itemId, item.quantity);
+                  const itemTotal = price * displayQuantity;
+
+                  // Skip rendering if item is being removed
+                  if (removingItems.has(itemId)) return null;
 
                   return (
                     <div
@@ -190,16 +228,16 @@ const CartPage = () => {
                         <div className="flex flex-col items-start sm:items-center">
                           <div className="flex items-center border border-gray-200 rounded-full bg-white p-1 shadow-inner group/qty transition-all hover:border-secondary/20">
                             <button
-                              onClick={() => handleUpdateQuantity(itemId, item.quantity - 1)}
-                              disabled={item.quantity <= 1}
-                              className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-secondary disabled:opacity-20 transition-colors"
+                              onClick={() => handleUpdateQuantity(itemId, displayQuantity - 1)}
+                              disabled={displayQuantity <= 1}
+                              className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-secondary disabled:opacity-20 transition-colors active:scale-95"
                             >
                               <FiMinus size={14} />
                             </button>
-                            <span className="w-8 text-center text-sm font-black text-gray-800">{item.quantity}</span>
+                            <span className="w-8 text-center text-sm font-black text-gray-800">{displayQuantity}</span>
                             <button
-                              onClick={() => handleUpdateQuantity(itemId, item.quantity + 1)}
-                              className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-secondary transition-colors"
+                              onClick={() => handleUpdateQuantity(itemId, displayQuantity + 1)}
+                              className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-secondary transition-colors active:scale-95"
                             >
                               <FiPlus size={14} />
                             </button>
@@ -228,7 +266,7 @@ const CartPage = () => {
                     <span>Subtotal</span>
                     <span className="text-gray-800">{formatPrice(subtotal)}</span>
                   </div>
-                  
+
                   <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
                     <span>Delivery</span>
                     <span className={subtotal >= threshold ? "text-green-600 font-black" : ""}>
@@ -238,7 +276,7 @@ const CartPage = () => {
 
                   {subtotal < threshold && subtotal > 0 && (
                     <div className="bg-secondary/5 p-4 rounded-sm mt-4 border border-secondary/5">
-                       <p className="text-[10px] text-secondary font-bold uppercase tracking-wider text-center leading-relaxed">
+                      <p className="text-[10px] text-secondary font-bold uppercase tracking-wider text-center leading-relaxed">
                         Add {formatPrice(threshold - subtotal)} more for free shipping
                       </p>
                     </div>
